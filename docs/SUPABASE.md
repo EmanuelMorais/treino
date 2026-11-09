@@ -1,6 +1,6 @@
 # Configuração da gravação online
 
-Estado: projeto Treino ligado; migração aplicada e RLS verificada. O primeiro login por link de email e a primeira gravação privada já foram confirmados. O SMTP de produção continua pendente.
+Estado: projeto Treino ligado; migração aplicada e RLS verificada. O primeiro login por link de email e a primeira gravação privada já foram confirmados. O SMTP Brevo está configurado; a entrega do email de teste foi confirmada no Brevo e pelo destinatário. O servidor de envio foi autorizado no Brevo, mantendo o bloqueio dos outros IPs.
 
 ## Projeto separado
 
@@ -57,3 +57,19 @@ URL e chave publicável são configuração pública, não credenciais de admini
 ## Limites
 
 A exportação JSON é a cópia independente do fornecedor. As últimas 20 versões online são histórico de recuperação da aplicação, não um substituto de uma política de backup da base de dados. A disponibilidade e retenção do projeto dependem do plano Supabase escolhido.
+
+## Aplicar o SMTP Brevo sem expor a chave
+
+1. No Brevo → SMTP & API, criar uma chave SMTP específica para esta aplicação.
+2. Criar `.env.smtp.local` na raiz (ignorado pelo Git), com `TREINO_SMTP_USER`, `TREINO_SMTP_FROM` e `TREINO_SMTP_PASSWORD`. O utilizador SMTP é o Login mostrado pelo Brevo, não necessariamente o email da conta.
+3. Executar `node scripts/configure-smtp.mjs`. O script passa os valores à CLI pelo ambiente e não imprime o diff com a palavra-passe.
+4. Confirmar a receção de um email de acesso e o registo de entrega no Brevo.
+
+Não executar `supabase config push` com as credenciais no ambiente numa sessão que publique o seu output: o diff da CLI pode mostrar campos privados. Nunca colocar a chave SMTP em `config.js`, no chat, num commit ou num ficheiro de cópia de dados.
+
+## Diagnosticar falhas de envio
+
+- Erro SMTP `525 5.7.1 Unauthorized IP address`: verificar o IP bloqueado no Brevo e correlacionar com o teste realizado. Autorizar apenas o servidor reconhecido, com aprovação do titular; manter o bloqueio dos outros endereços.
+- Erro `535`: verificar Login SMTP, chave SMTP (não chave API), validade e estado da chave.
+- Não mostrar chaves, códigos ou links de autenticação em logs de diagnóstico.
+- “Envio aceite” confirma a aceitação SMTP; confirmar a entrega nos Logs transacionais do Brevo sem abrir o corpo do email de acesso.

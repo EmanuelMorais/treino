@@ -10,7 +10,7 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 - Criação e edição de fichas próprias; importação e exportação JSON.
 - Gravação local imediata de planos, rascunhos e sessões.
 - Integração de login Supabase e sincronização privada por conta implementada.
-- **Base de dados Supabase ligada e migração aplicada.** O envio de emails para pessoas fora da equipa Supabase aguarda SMTP de produção. O serviço padrão limita o login por email a membros da organização e a 2 mensagens por hora. O primeiro login por link de email e a criação do documento privado da conta já foram confirmados no projeto real. A edição a partir de dois dispositivos deve ser verificada após importação dos registos.
+- **Base de dados Supabase ligada e migração aplicada.** SMTP Brevo configurado para os emails de acesso, com limite de 30 envios por hora no Supabase. O email de teste foi entregue pelo Brevo e a receção confirmada pelo destinatário. O primeiro login por link de email e a criação do documento privado da conta já foram confirmados no projeto real. A edição a partir de dois dispositivos deve ser verificada após importação dos registos.
 - [Plano da segunda fase: personalização por questionário](docs/FASE-2.md).
 
 ## Usar e migrar registos
