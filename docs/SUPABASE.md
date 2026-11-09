@@ -1,6 +1,6 @@
 # Configuração da gravação online
 
-Estado: projeto Treino ligado; migração aplicada e RLS verificada. O SMTP de produção e a verificação de login real continuam pendentes.
+Estado: projeto Treino ligado; migração aplicada e RLS verificada. O primeiro login por link de email e a primeira gravação privada já foram confirmados. O SMTP de produção continua pendente.
 
 ## Projeto separado
 
