@@ -1,0 +1,4 @@
+interface:
+  display_name: "Treino: produto e alterações"
+  short_description: "Preservar registos e validar fluxos do Treino"
+  default_prompt: "Usa $treino-product-workflow para alterar um fluxo do Treino e verificar o resultado sem perder registos."

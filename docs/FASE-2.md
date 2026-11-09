@@ -1,5 +1,7 @@
 # Fase 2 — programas personalizados por questionário
 
+> Atualização de 9 de novembro de 2026: o [novo plano de experiência de treino](PLANO-EXPERIENCIA-TREINO.md) passa a ordenar as próximas alterações de criação/edição, catálogo, substituições, vídeos e execução. Consultar também a [arquitetura](ARQUITETURA.md) e a [matriz de testes](TESTES-FLUXOS.md). Estes novos fluxos ainda não estão implementados.
+
 ## Objetivo
 
 Permitir que qualquer pessoa crie uma conta, preencha um questionário e receba um programa de treino adequado à sua experiência, objetivos, tempo disponível, material e limitações declaradas. A pessoa pode seguir o programa, registar a execução e rever o plano com base no progresso.

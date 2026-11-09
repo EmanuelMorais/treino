@@ -4,6 +4,12 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 **Endereço:** https://emanuelmorais.github.io/treino/
 
+## Próximas alterações
+
+O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação está por fazer.
+
+A [avaliação da arquitetura](docs/ARQUITETURA.md) separa catálogo, prescrição, sessão e histórico antes de ampliar o editor. A [matriz de testes](docs/TESTES-FLUXOS.md) regista a verificação atual, lacunas reproduzidas e os percursos a validar. As regras específicas estão no skill `.agents/skills/treino-product-workflow/`, indicado em `AGENTS.md`.
+
 ## Estado
 
 - Aplicação privada: sessão validada antes de abrir treinos, biblioteca e histórico. Contas novas começam sem planos.
