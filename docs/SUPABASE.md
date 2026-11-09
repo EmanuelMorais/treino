@@ -28,7 +28,7 @@ O cliente subscreve as alterações dessa tabela com `user_id=eq.<conta>`. O fil
 
 Cada aviso provoca uma consulta autenticada da revisão. O documento completo só é lido quando necessário; revisões já confirmadas não voltam a renderizar o treino. A mesma verificação corre ao voltar à página, recuperar a internet e a cada 30 segundos enquanto a página está visível. Leituras atrasadas nunca substituem alterações locais pendentes, uma gravação em curso ou dados de outra conta.
 
-## Login por email
+## Login com email e palavra-passe
 
 Em Authentication → URL Configuration:
 
@@ -36,7 +36,9 @@ Em Authentication → URL Configuration:
 - Redirect URL: `https://emanuelmorais.github.io/treino/`
 - Desenvolvimento (opcional): `http://localhost:8775/`
 
-Ativar o fornecedor Email. O cliente usa `signInWithOtp`, com criação de conta permitida e confirmação de posse do email. Depois de configurar SMTP próprio, o template de Magic Link pode usar `supabase/templates/access.html`, que inclui `{{ .Token }}` e o link de confirmação. O Supabase não permite alterar estes templates no Free enquanto se usa o serviço de email padrão; nesse caso, entrar pelo link recebido.
+Manter o fornecedor Email e a confirmação de email ativos. O cliente usa `signInWithPassword` para entrar, `signUp` para registar e `resetPasswordForEmail` para recuperar. O evento `PASSWORD_RECOVERY` abre o formulário que usa `updateUser({password})` na conta autenticada. Uma conta que usava apenas links pode definir a palavra-passe através do mesmo formulário em **A minha conta**, conservando o `user_id` e os dados existentes.
+
+`signInWithOtp` permanece como alternativa para contas existentes (`shouldCreateUser:false`). O template de Magic Link pode usar `supabase/templates/access.html`, que inclui `{{ .Token }}` e o link de confirmação. Os templates de confirmação de conta e de recuperação devem manter os links de confirmação oficiais do Supabase. Nunca guardar palavras-passe em tabelas da aplicação ou passar chaves de administrador para o browser.
 
 **Configurar SMTP de produção** antes de dar acesso a emails externos à equipa: o serviço de email padrão do Supabase tem restrições de destinatários e limites baixos. Não desligar a confirmação de email para contornar essas restrições. Não commitar credenciais SMTP.
 
@@ -59,7 +61,7 @@ URL e chave publicável são configuração pública, não credenciais de admini
 2. Manter a página aberta noutro dispositivo, na mesma conta. Editar cargas, séries e notas no primeiro e confirmar que aparecem no segundo sem recarregar nem usar Sincronizar; repetir no sentido inverso.
 3. Entrar com a conta B e confirmar que não vê os dados de A.
 4. Alterar offline; voltar a ligar e confirmar a gravação.
-5. Editar a partir de dois dispositivos e confirmar que aparece o aviso de conflito, sem substituição automática.
+5. Entrar num dispositivo com uma cópia local desatualizada e confirmar que recebe a versão online mais recente, sem escolha manual. Se existiam alterações pendentes, confirmar que a cópia local anterior pode ser exportada em Cópias online nesse dispositivo.
 6. Exportar uma cópia JSON, importar numa conta de teste e recuperar uma versão online.
 
 ## Limites
@@ -86,4 +88,4 @@ Não executar `supabase config push` com as credenciais no ambiente numa sessão
 
 A interface pode ter uma conta em memória enquanto a sessão do SDK já não está disponível. Cada leitura e gravação de dados privados valida agora a sessão da conta e envia explicitamente o seu JWT. Um erro 401 permite uma única tentativa com token renovado; se não houver sessão válida, a sincronização pára e mostra “Renovar acesso”.
 
-Voltar a entrar na mesma conta retoma as alterações locais pendentes. Não apagar o armazenamento do navegador para resolver este aviso. Não conceder a `anon` acesso à função de gravação: as permissões continuam limitadas a contas autenticadas e as linhas continuam protegidas por RLS.
+Voltar a entrar na mesma conta retoma automaticamente a sincronização. Se a revisão online já avançou, a versão confirmada no servidor prevalece e os dados locais pendentes são preservados numa cópia de recuperação exportável. Não apagar o armazenamento do navegador para resolver este aviso. Não conceder a `anon` acesso à função de gravação: as permissões continuam limitadas a contas autenticadas e as linhas continuam protegidas por RLS.

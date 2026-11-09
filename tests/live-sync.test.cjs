@@ -9,10 +9,10 @@ function server(){
   commit(id,next){const revision=documents.get(id).revision+1;documents.set(id,{revision,payload:clone(next)});this.notify(id);return revision;},
  };
 }
-async function device(db,id='owner-a'){
+async function device(db,id='owner-a',cached={}){
  const timers=new Map(),controls=new Map(),events={},windowEvents={};let counter=0,session={user:{id,email:'test@example.invalid'},access_token:'test-token'},authEvent;
  const $=selector=>{if(!controls.has(selector))controls.set(selector,{dataset:{},value:'',open:false,hidden:false,textContent:'',addEventListener:(name,fn)=>events[selector+':'+name]=fn});return controls.get(selector)};
- const values=new Map([['treino-account-'+id,JSON.stringify(db.documents.get(id).payload)],['treino-account-'+id+'-sync',JSON.stringify({revision:1,dirty:false})]]);
+ const values=new Map([['treino-account-'+id,JSON.stringify(cached.payload||db.documents.get(id).payload)],['treino-account-'+id+'-sync',JSON.stringify({revision:cached.revision||1,dirty:cached.dirty||false})]]);
  const client={auth:{onAuthStateChange:fn=>authEvent=fn,getSession:async()=>({data:{session}}),refreshSession:async()=>({data:{session}})},realtime:{setAuth:async()=>{}},
   channel(){const channel={removed:false,on(type,filter,change){assert.equal(type,'postgres_changes');assert.equal(filter.table,'training_documents');this.id=filter.filter.slice('user_id=eq.'.length);this.change=change;return this},subscribe(status){this.status=status;db.channels.push(this);queueMicrotask(()=>status('SUBSCRIBED'));return this}};return channel},
   removeChannel:async ch=>{ch.removed=true},
@@ -29,6 +29,7 @@ async function device(db,id='owner-a'){
  return {context,$,loads,modals,events,windowEvents,timers,run,values,
   edit(note){context.state.plans[0].note=note;window.TreinoCloud.changed()},
   async switchTo(next){session=next?{user:{id:next,email:'test@example.invalid'},access_token:'test-token'}:null;authEvent(next?'SIGNED_IN':'SIGNED_OUT',session);await run(0)},
+  async authEvent(event){authEvent(event,session);await run(0)},
  };
 }
 test('edits propagate both ways between two open devices without a click or reload; own echoes do not render',async()=>{
@@ -47,15 +48,36 @@ test('fallback checks only the revision and retrieves missed updates; unchanged 
  db.commit('owner-a',payload('while disconnected'));db.channels[0].status('SUBSCRIBED');await pc.run(200);
  assert.equal(pc.context.state.plans[0].note,'while disconnected');
 });
-test('pending local edits survive conflicting remote changes, with an explicit choice on manual sync',async()=>{
+test('a newer server version is adopted automatically, archiving pending local edits without a dialog',async()=>{
  const db=server(),pc=await device(db);pc.edit('keep local');db.commit('owner-a',payload('remote'));await pc.run(200);await pc.run(1300);
- assert.equal(pc.context.state.plans[0].note,'keep local');assert.equal(db.writes.length,0);assert.equal(pc.$('#sync-bar').dataset.status,'conflict');assert.equal(pc.modals.length,0);
- await pc.context.window.TreinoCloud.syncNow();assert.deepEqual(pc.modals,['Escolher a versão dos dados']);
+ assert.equal(pc.context.state.plans[0].note,'remote');assert.equal(db.writes.length,0);assert.equal(pc.$('#sync-bar').dataset.status,'ok');assert.equal(pc.modals.length,0);
+ assert.equal(JSON.parse(pc.values.get('treino-account-owner-a-recovery')).payload.plans[0].note,'keep local');
+ await pc.context.window.TreinoCloud.syncNow();assert.equal(pc.modals.length,0);
 });
-test('a local edit while a remote request is in flight cannot be overwritten',async()=>{
+test('logging in with a stale dirty cache loads the PC history automatically and preserves a recovery copy',async()=>{
+ const db=server(),local=payload('old phone draft'),remote=payload('latest PC');remote.history.push({id:'saved-on-PC'});
+ db.commit('owner-a',remote);const phone=await device(db,'owner-a',{payload:local,revision:1,dirty:true});
+ assert.equal(phone.context.state.history[0].id,'saved-on-PC');assert.equal(phone.modals.length,0);assert.equal(db.writes.length,0);
+ assert.equal(JSON.parse(phone.values.get('treino-account-owner-a-recovery')).payload.plans[0].note,'old phone draft');assert.equal(phone.$('#sync-title').textContent,'Tudo guardado online');
+});
+test('a stale save rejected by the server automatically reloads the newest version without a manual choice',async()=>{
+ const db=server(),phone=await device(db);db.broadcast=false;phone.edit('unsent');db.commit('owner-a',payload('latest PC'));
+ await phone.run(1300);await phone.run(200);
+ assert.equal(phone.context.state.plans[0].note,'latest PC');assert.equal(phone.modals.length,0);assert.equal(db.documents.get('owner-a').payload.plans[0].note,'latest PC');
+ assert.equal(JSON.parse(phone.values.get('treino-account-owner-a-recovery')).payload.plans[0].note,'unsent');
+});
+test('returning from the mobile page cache automatically retrieves updates',async()=>{
+ const db=server(),phone=await device(db);db.broadcast=false;db.commit('owner-a',payload('changed while away'));
+ phone.windowEvents.pageshow();await phone.run(200);assert.equal(phone.context.state.plans[0].note,'changed while away');
+});
+test('password recovery opens the password screen in the same authenticated account',async()=>{
+ const db=server(),phone=await device(db);await phone.authEvent('PASSWORD_RECOVERY');assert.equal(phone.modals.at(-1),'Definir palavra-passe');assert.equal(db.writes.length,0);
+});
+test('local edits made during a remote read are archived before adopting the latest online version',async()=>{
  const db=server(),pc=await device(db);let release;db.readGate=new Promise(resolve=>release=resolve);
  db.commit('owner-a',payload('remote'));await pc.run(200);pc.edit('typed during request');release();await settle();
- assert.equal(pc.context.state.plans[0].note,'typed during request');assert.equal(pc.loads.length,0);assert.equal(pc.$('#sync-bar').dataset.status,'conflict');
+ assert.equal(pc.context.state.plans[0].note,'remote');assert.equal(pc.loads.length,1);assert.equal(pc.$('#sync-bar').dataset.status,'ok');
+ assert.equal(JSON.parse(pc.values.get('treino-account-owner-a-recovery')).payload.plans[0].note,'typed during request');
 });
 test('events during a save are reconciled after the save completes, without a false conflict',async()=>{
  const db=server(),pc=await device(db);let release;db.saveGate=new Promise(resolve=>release=resolve);

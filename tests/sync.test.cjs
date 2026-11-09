@@ -6,8 +6,8 @@ test('new account creates a document; existing account on a new device pulls',()
 test('offline edits can save against their known revision',()=>{
  assert.equal(rules.decide({localExists:true,dirty:true,baseRevision:4,remote:{revision:4}}),'push');
 });
-test('offline edits never silently replace a newer online document',()=>{
- assert.equal(rules.decide({localExists:true,dirty:true,baseRevision:4,remote:{revision:5}}),'conflict');
+test('a stale offline document automatically pulls the newer confirmed online version',()=>{
+ assert.equal(rules.decide({localExists:true,dirty:true,baseRevision:4,remote:{revision:5}}),'pull');
  assert.equal(rules.isConflict({code:'PT409'}),true);
 });
 test('changes made during a save stay pending',()=>{

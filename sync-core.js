@@ -5,7 +5,7 @@
    if(!remote)return localExists?'push':'create';
    if(!localExists)return 'pull';
    if(!dirty)return 'pull';
-   return Number(baseRevision||0)===Number(remote.revision)?'push':'conflict';
+   return Number(baseRevision||0)===Number(remote.revision)?'push':'pull';
   },
   afterSave({sentSequence,currentSequence}){return sentSequence!==currentSequence;},
   isConflict(error){return error?.code==='PT409'||/revision_conflict/.test(error?.message||'');}
