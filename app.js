@@ -3,8 +3,20 @@ function renderHome(){
  $('#content').innerHTML=heading('O teu treino.<br>A tua evolução.','Planos e registos organizados no mesmo lugar. Cada conta tem os seus próprios dados.')+`<section class="program-intro"><span class="eyebrow">Começa aqui</span><h2 style="margin:10px 0">Escolhe o teu ponto de partida</h2><p>Cria uma ficha, importa um plano ou usa o modelo de 12 semanas com rotinas públicas do Bioforceman. O modelo deve ser ajustado ao teu nível e material.</p><div class="home-actions"><button class="btn" id="home-new">+ Criar plano</button><button class="btn secondary" id="home-template">${state.courseEnabled?'Continuar o programa de 12 semanas':'Usar modelo de 12 semanas'}</button><button class="btn secondary" id="home-import">Importar plano / cópia</button></div></section>${custom.length?`<section class="program-intro"><h2>Os meus planos</h2><div class="other-plans">${custom.map(p=>`<button class="other-plan" data-home-plan="${esc(p.id)}"><strong>${esc(p.name)}</strong><span>${p.exercises.length} exercícios →</span></button>`).join('')}</div></section>`:''}<section class="program-intro"><h3>Gravação e cópias de segurança</h3><p>Entra na tua conta para sincronizar os planos, rascunhos e histórico. Sem ligação, os dados ficam neste navegador e são enviados quando a ligação regressar. O estado de gravação aparece no topo.</p><p>Se vens da página anterior, exporta lá a tua cópia JSON e importa-a aqui depois de entrares. Para outra pessoa, usa outra conta: os dados não se misturam.</p></section>`;
  $('#home-new').onclick=newPlanForm;$('#home-import').onclick=()=>$('#import-file').click();$('#home-template').onclick=()=>{const w=state.courseEnabled?state.courseWeek||1:1;state.courseEnabled=true;persist();chooseCourse(w,state.courseSession||'A')};document.querySelectorAll('[data-home-plan]').forEach(b=>b.onclick=()=>{selectedPlan=b.dataset.homePlan;renderPlans()});
 }
-function loadAccountState(next,key){
- state=next;activeStorageKey=key;storageOK=true;$('#storage-error').hidden=true;installPrepared();state.courseEnabled??=true;selectedPlan=state.courseEnabled===false?'':courseId(state.courseWeek||1,state.courseSession||'A');view='plans';render();
+function loadAccountState(next,key,{preserveView=false}={}){
+ const previousPlan=selectedPlan,previousView=view,scrollTop=window.scrollY;
+ const detailKey=el=>(el.closest('[data-exercise]')?.dataset.exercise||'')+'|'+el.querySelector('summary')?.textContent;
+ const openDetails=preserveView?new Set(Array.from($('#content').querySelectorAll('details[open]'),detailKey)):new Set();
+ const focused=preserveView&&$('#content').contains(document.activeElement)?document.activeElement:null;
+ const focus=focused?{id:focused.id,label:focused.getAttribute('aria-label'),check:focused.getAttribute('data-course-check'),start:focused.selectionStart,end:focused.selectionEnd}:null;
+ state=next;activeStorageKey=key;storageOK=true;$('#storage-error').hidden=true;installPrepared();state.courseEnabled??=true;
+ selectedPlan=preserveView&&(!previousPlan||state.plans.some(p=>p.id===previousPlan))?previousPlan:state.courseEnabled===false?'':courseId(state.courseWeek||1,state.courseSession||'A');view=preserveView?previousView:'plans';render();
+ if(preserveView){
+  $('#content').querySelectorAll('details').forEach(el=>{if(openDetails.has(detailKey(el)))el.open=true;});
+  const replacement=focus&&Array.from($('#content').querySelectorAll('input,textarea,select')).find(el=>focus.id?el.id===focus.id:focus.label?el.getAttribute('aria-label')===focus.label:focus.check&&el.getAttribute('data-course-check')===focus.check);
+  if(replacement){replacement.focus({preventScroll:true});if(typeof focus.start==='number'&&typeof replacement.setSelectionRange==='function')replacement.setSelectionRange(focus.start,focus.end);}
+  window.scrollTo({top:scrollTop,behavior:'instant'});
+ }
 }
 const KEY='bioforceman-treino-v1';
 let activeStorageKey=KEY;

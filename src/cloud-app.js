@@ -1,4 +1,4 @@
-/* Account-local cache + optimistic online saves. No administrator key is used. */
+/* Account-local cache, optimistic saves and live updates. No administrator key is used. */
 (function(){
  'use strict';
  const cfg=window.TREINO_CONFIG||{},rules=window.TreinoSyncRules;
@@ -7,6 +7,7 @@
  const dataRequests=client?window.TreinoAuthData.create(client.auth):null;
  let authNeeded=false;
  let user=null,baseRevision=0,dirty=false,sequence=0,loading=false,saving=false,conflict=false,timer,retryTimer,accountEpoch=0;
+ let liveChannel=null,pollTimer,autoTimer,autoPending=false,reading=null;
  const cacheKey=id=>'treino-account-'+id;
  const metaKey=id=>cacheKey(id)+'-sync';
  const snapshot=()=>JSON.parse(JSON.stringify(state));
@@ -15,7 +16,7 @@
   $('#sync-title').textContent=title;$('#sync-detail').textContent=detail;$('#sync-bar').dataset.status=status;
   $('#account').textContent=authNeeded?'Renovar acesso':user?'A minha conta':'Entrar';$('#sync-now').hidden=!user;$('#online-backups').hidden=!user;
  }
- function needAuth(){authNeeded=true;clearTimeout(timer);clearTimeout(retryTimer);showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
+ function needAuth(){authNeeded=true;clearTimeout(timer);clearTimeout(retryTimer);stopAutoSync();showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
  function writeMeta(){if(!user)return;try{localStorage.setItem(metaKey(user.id),JSON.stringify({revision:baseRevision,dirty,updatedAt:Date.now()}))}catch{showStatus('Cópia local sem espaço','Exporta uma cópia; a sincronização online será tentada.','error')}}
  function cacheCurrent(){try{localStorage.setItem(activeStorageKey,JSON.stringify(state));return true}catch{return false}}
  function recoveryCopy(){if(!user)return;try{localStorage.setItem(cacheKey(user.id)+'-recovery',JSON.stringify({date:new Date().toISOString(),payload:snapshot()}));return true}catch{return false}}
@@ -27,14 +28,44 @@
   showStatus(navigator.onLine?'Alterações por sincronizar':'Sem ligação · cópia local',navigator.onLine?'A enviar dentro de instantes.':'Os dados serão enviados quando a ligação regressar.');
   clearTimeout(timer);timer=setTimeout(flush,1300);
  }
- async function remoteDocument(id){
-  const {data,error}=await dataRequests.run(id,token=>client.from('training_documents').select('payload,revision,updated_at').eq('user_id',id).maybeSingle().setHeader('Authorization','Bearer '+token));if(error)throw error;
-  if(data&&!validState(data.payload))throw Error('A cópia online tem um formato inválido. Exporta a cópia local antes de continuar.');return data;
+ async function remoteDocument(id,revisionOnly=false){
+  const {data,error}=await dataRequests.run(id,token=>client.from('training_documents').select(revisionOnly?'revision':'payload,revision,updated_at').eq('user_id',id).maybeSingle().setHeader('Authorization','Bearer '+token));if(error)throw error;
+  if(data&&!revisionOnly&&!validState(data.payload))throw Error('A cópia online tem um formato inválido. Exporta a cópia local antes de continuar.');return data;
  }
- function usePayload(payload){loadAccountState(JSON.parse(JSON.stringify(payload)),cacheKey(user.id));cacheCurrent()}
+ function usePayload(payload,preserveView=false){loadAccountState(JSON.parse(JSON.stringify(payload)),cacheKey(user.id),{preserveView});cacheCurrent()}
+ function stopAutoSync(){
+  clearTimeout(pollTimer);clearTimeout(autoTimer);autoPending=false;reading=null;
+  if(liveChannel){const old=liveChannel;liveChannel=null;Promise.resolve(client.removeChannel(old)).catch(()=>{});}
+ }
+ function queueAutoSync(){
+  autoPending=true;clearTimeout(autoTimer);
+  if(!user||authNeeded||conflict||loading||saving||reading||!navigator.onLine||document.visibilityState==='hidden'||$('#modal').open)return;
+  autoTimer=setTimeout(()=>{autoPending=false;syncNow(true)},200);
+ }
+ async function startAutoSync(){
+  stopAutoSync();if(!user||authNeeded)return;
+  const epoch=accountEpoch,id=user.id;
+  const poll=()=>{if(epoch!==accountEpoch)return;queueAutoSync();pollTimer=setTimeout(poll,30000)};
+  pollTimer=setTimeout(poll,30000);
+  try{
+  // Finish the authenticated handshake before joining; the SDK refreshes it afterwards.
+  await dataRequests.run(id,async token=>{if(epoch===accountEpoch)await client.realtime.setAuth(token);return {status:200}});
+  if(epoch!==accountEpoch||authNeeded)return;
+  // The row filter reduces traffic; the table's SELECT RLS policy enforces ownership.
+  liveChannel=client.channel('training:'+id).on('postgres_changes',{
+   event:'*',schema:'public',table:'training_documents',filter:'user_id=eq.'+id
+  },event=>{
+   if(epoch!==accountEpoch||event.new?.user_id!==id)return;
+   if(Number(event.new.revision)>baseRevision)queueAutoSync();
+  }).subscribe(status=>{
+   if(epoch!==accountEpoch)return;
+   if(status==='SUBSCRIBED')queueAutoSync(); // Also catches changes missed during reconnect.
+  });
+  }catch(error){if(epoch===accountEpoch&&error.code==='AUTH_REQUIRED')needAuth();} // Polling covers a failed socket setup.
+ }
  async function enterAccount(session){
-  const next=session?.user||null;if(next?.id===user?.id){if(next&&authNeeded){authNeeded=false;if(dirty)setTimeout(flush,0);}return;}
-  const epoch=++accountEpoch;clearTimeout(timer);clearTimeout(retryTimer);loading=true;$('#content').inert=true;conflict=false;saving=false;
+  const next=session?.user||null;if(next?.id===user?.id){if(next&&authNeeded){authNeeded=false;startAutoSync();if(dirty)setTimeout(flush,0);else queueAutoSync();}return;}
+  const epoch=++accountEpoch;stopAutoSync();clearTimeout(timer);clearTimeout(retryTimer);loading=true;$('#content').inert=true;conflict=false;saving=false;
   user=next;sequence=0;authNeeded=false;
   if(!user){dirty=false;baseRevision=0;loadAccountState(fresh(),KEY);loading=false;$('#content').inert=false;showStatus('Sessão terminada','Os dados da conta ficaram guardados; entra para os voltar a consultar.');return}
   const local=readJSON(cacheKey(user.id)),localExists=!!local&&validState(local),meta=readJSON(metaKey(user.id));
@@ -49,18 +80,18 @@
    else {dirty=true;showStatus('Conta pronta','A guardar os planos e registos.');}
    writeMeta();
   }catch(error){if(epoch!==accountEpoch)return;dirty=dirty||!localExists;if(error.code==='AUTH_REQUIRED')needAuth();else showStatus('Não foi possível ligar à conta',error.message||'A cópia local está disponível. Tenta sincronizar novamente.','error');writeMeta()}
-  finally{if(epoch===accountEpoch){loading=false;$('#content').inert=false;if(dirty&&!conflict&&!authNeeded)flush();}}
+  finally{if(epoch===accountEpoch){loading=false;$('#content').inert=false;startAutoSync();if(dirty&&!conflict&&!authNeeded)flush();}}
  }
  async function flush(){
   if(!user||!client||loading||saving||conflict||authNeeded||!dirty)return;
   if(!navigator.onLine){showStatus('Sem ligação · cópia local','Os dados serão enviados quando a ligação regressar.');return}
-  const target=user.id,epoch=accountEpoch,sentSequence=sequence,payload=snapshot();saving=true;
+  const target=user.id,epoch=accountEpoch,sentSequence=sequence,payload=snapshot();let saved=false;saving=true;
   showStatus('A guardar online','Mantém esta página aberta até aparecer a confirmação.');
   try{
    const {data,error}=await dataRequests.run(target,token=>client.rpc('save_training_document',{p_user_id:target,p_payload:payload,p_expected_revision:baseRevision}).setHeader('Authorization','Bearer '+token));
    if(epoch!==accountEpoch)return;if(error)throw error;
    if(!Number.isSafeInteger(Number(data?.revision))||Number(data.revision)<=baseRevision)throw Error('O servidor não confirmou a gravação.');
-   baseRevision=Number(data.revision);dirty=rules.afterSave({sentSequence,currentSequence:sequence});writeMeta();
+   saved=true;baseRevision=Number(data.revision);dirty=rules.afterSave({sentSequence,currentSequence:sequence});writeMeta();
    if(!dirty)showStatus('Tudo guardado online','Última gravação: '+new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})+'. Cópia local disponível.');
   }catch(error){
    if(epoch!==accountEpoch)return;
@@ -68,22 +99,36 @@
    if(error.code==='AUTH_REQUIRED'){needAuth()}
    else if(rules.isConflict(error)){conflict=true;showStatus('Há uma versão mais recente online','Abre Sincronizar para resolver sem perder os registos locais.','conflict')}
    else{showStatus('Gravação online pendente',error.message||'A cópia local foi mantida. Tenta novamente quando houver ligação.','error');clearTimeout(retryTimer);retryTimer=setTimeout(flush,30000)}
-  }finally{if(epoch===accountEpoch){saving=false;if(dirty&&!conflict&&!authNeeded) {clearTimeout(timer);timer=setTimeout(flush,30000)}}}
+  }finally{if(epoch===accountEpoch){saving=false;if(dirty&&!conflict&&!authNeeded) {clearTimeout(timer);timer=setTimeout(flush,saved?1300:30000)}if(autoPending)queueAutoSync();}}
  }
- async function syncNow(){
-  if(!user||authNeeded)return authDialog(true);if(saving)return toast('A gravação ainda está a decorrer.');
-  const epoch=accountEpoch;
-  try{
-   const remote=await remoteDocument(user.id);if(epoch!==accountEpoch)return;
-   if(remote&&dirty&&remote.revision!==baseRevision){conflict=true;return conflictDialog(remote)}
-   if(!dirty&&remote){loading=true;baseRevision=remote.revision;usePayload(remote.payload);writeMeta();loading=false;showStatus('Tudo guardado online','A versão mais recente está neste dispositivo.');return}
-   conflict=false;await flush();
-  }catch(e){if(e.code==='AUTH_REQUIRED')needAuth();else showStatus('Não foi possível sincronizar',e.message||'Mantém a cópia local e tenta novamente.','error')}
+ async function syncNow(automatic=false){
+  if(!user||authNeeded){if(!automatic)return authDialog(true);return;}
+  if(loading||saving||reading||(automatic&&(conflict||$('#modal').open||document.visibilityState==='hidden'))){if(automatic)autoPending=true;else toast('A sincronização ainda está a decorrer.');return;}
+  if(!navigator.onLine)return;
+  const epoch=accountEpoch,id=user.id;
+  const task=(async()=>{try{
+   const latest=await remoteDocument(id,true);if(epoch!==accountEpoch)return;
+   // Own save events and the fallback poll must not re-render an unchanged workout.
+   if(latest&&(Number(latest.revision)>baseRevision||(!automatic&&conflict))){
+    const remote=await remoteDocument(id);if(epoch!==accountEpoch||!remote)return;
+    // A local edit or save can start while either request is in flight.
+    if(loading||saving||(automatic&&$('#modal').open)){autoPending=true;return;}
+    if(Number(remote.revision)>baseRevision||(!automatic&&conflict)){
+     if(dirty||conflict){conflict=true;showStatus('Há alterações em dois dispositivos','Abre Sincronizar para escolher a versão; os teus registos locais foram mantidos.','conflict');if(!automatic)conflictDialog(remote);return;}
+     loading=true;baseRevision=Number(remote.revision);usePayload(remote.payload,true);writeMeta();loading=false;showStatus('Tudo guardado online','Planos e registos atualizados automaticamente neste dispositivo.');return;
+    }
+   }
+   conflict=false;
+   if(!dirty){showStatus('Tudo guardado online','Planos e registos atualizados nesta conta.');return;}
+   await flush();
+  }catch(e){if(epoch!==accountEpoch)return;if(e.code==='AUTH_REQUIRED')needAuth();else showStatus('Não foi possível sincronizar',e.message||'Mantém a cópia local; a atualização será tentada automaticamente.','error')}
+  })();
+  reading=task;try{await task}finally{if(reading===task)reading=null;if(epoch===accountEpoch&&autoPending)queueAutoSync();}
  }
  function conflictDialog(remote){
   modal('Escolher a versão dos dados',`<p>Existem alterações locais e uma versão online mais recente. Exporta a cópia deste dispositivo antes de escolher. Os planos e registos não serão combinados automaticamente.</p><p class="auth-note">Versão online: ${esc(new Date(remote.updated_at).toLocaleString('pt-PT'))}. Ao guardar, o servidor mantém cópias das últimas 20 versões.</p><div class="home-actions"><button class="btn secondary" id="conflict-export">Exportar deste dispositivo</button><button class="btn" id="conflict-cloud">Usar a versão online</button><button class="btn secondary" id="conflict-local">Guardar esta versão online</button></div>`);
   $('#conflict-export').onclick=downloadBackup;
-  $('#conflict-cloud').onclick=()=>{recoveryCopy();loading=true;baseRevision=remote.revision;dirty=false;conflict=false;usePayload(remote.payload);writeMeta();loading=false;closeModal();showStatus('Tudo guardado online','Versão online carregada. A cópia anterior deste dispositivo foi preservada localmente.')};
+  $('#conflict-cloud').onclick=()=>{recoveryCopy();loading=true;baseRevision=remote.revision;dirty=false;conflict=false;usePayload(remote.payload,true);writeMeta();loading=false;closeModal();queueAutoSync();showStatus('Tudo guardado online','Versão online carregada. A cópia anterior deste dispositivo foi preservada localmente.')};
   $('#conflict-local').onclick=()=>{recoveryCopy();baseRevision=remote.revision;conflict=false;dirty=true;writeMeta();closeModal();flush()};
  }
  function authError(error){
@@ -116,12 +161,14 @@
   showStatus(dirty?'Alterações por sincronizar':'Tudo guardado online','Cópias de segurança disponíveis.');
  }
  window.TreinoCloud={changed,syncNow};
- $('#account').onclick=()=>authDialog();$('#sync-now').onclick=syncNow;$('#online-backups').onclick=backupsDialog;
- window.addEventListener('online',()=>{if(user){conflict?syncNow():flush()}});
- window.addEventListener('offline',()=>{if(user)showStatus('Sem ligação · cópia local',dirty?'Os dados serão enviados quando a ligação regressar.':'A última versão confirmada continua disponível neste navegador.')});
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dirty)flush();else if(document.visibilityState==='visible'&&user&&!dirty)syncNow()});
+ $('#account').onclick=()=>authDialog();$('#sync-now').onclick=()=>syncNow();$('#online-backups').onclick=backupsDialog;
+ window.addEventListener('online',queueAutoSync);
+ window.addEventListener('offline',()=>{if(user&&!conflict)showStatus('Sem ligação · cópia local',dirty?'Os dados serão enviados quando a ligação regressar.':'A última versão confirmada continua disponível neste navegador.')});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dirty)flush();else if(document.visibilityState==='visible')queueAutoSync()});
+ window.addEventListener('focus',queueAutoSync);
+ $('#modal').addEventListener('close',()=>{if(autoPending)queueAutoSync()});
  window.addEventListener('beforeunload',event=>{if(user&&dirty){event.preventDefault();event.returnValue='';}});
- window.addEventListener('storage',event=>{if(user&&event.key===cacheKey(user.id)){conflict=true;showStatus('O treino mudou noutra janela','Sincroniza antes de continuar para escolher os registos a manter.','conflict')}});
+ window.addEventListener('storage',event=>{if(user&&event.key===cacheKey(user.id))queueAutoSync()});
  startApp();
  if(client){
   client.auth.onAuthStateChange((event,session)=>{if(['SIGNED_IN','SIGNED_OUT','INITIAL_SESSION','TOKEN_REFRESHED'].includes(event))setTimeout(()=>{if(event==='SIGNED_IN')closeModal();enterAccount(session)},0)});

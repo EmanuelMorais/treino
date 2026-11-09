@@ -8,3 +8,5 @@ work/
 backups/
 supabase/.temp/
 graft/
+.playwright-cli/
+output/playwright/

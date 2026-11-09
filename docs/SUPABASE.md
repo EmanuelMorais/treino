@@ -20,6 +20,14 @@ Todas as tabelas têm RLS. O papel `anon` não tem acesso. As políticas e a fun
 
 Executar os advisors de segurança do projeto e verificar os testes com duas contas antes de considerar a sincronização ativa.
 
+### Atualizações automáticas
+
+Aplicar também `supabase/migrations/20261109191626_training_realtime.sql` (já aplicada no projeto Treino). Adiciona apenas `training_documents` à publicação `supabase_realtime`, mantendo as políticas e permissões existentes. Os backups não são publicados.
+
+O cliente subscreve as alterações dessa tabela com `user_id=eq.<conta>`. O filtro reduz tráfego; a autorização é feita pela política SELECT com `auth.uid()`. Ao sair ou mudar de conta, o canal anterior e os temporizadores são removidos. O SDK renova o token do Realtime juntamente com a sessão de autenticação.
+
+Cada aviso provoca uma consulta autenticada da revisão. O documento completo só é lido quando necessário; revisões já confirmadas não voltam a renderizar o treino. A mesma verificação corre ao voltar à página, recuperar a internet e a cada 30 segundos enquanto a página está visível. Leituras atrasadas nunca substituem alterações locais pendentes, uma gravação em curso ou dados de outra conta.
+
 ## Login por email
 
 Em Authentication → URL Configuration:
@@ -48,7 +56,7 @@ URL e chave publicável são configuração pública, não credenciais de admini
 ## Verificação antes de usar
 
 1. Entrar com a conta A, criar uma ficha e guardar uma sessão. Esperar por “Tudo guardado online”.
-2. Abrir noutro dispositivo, entrar na mesma conta e confirmar as cargas e séries.
+2. Manter a página aberta noutro dispositivo, na mesma conta. Editar cargas, séries e notas no primeiro e confirmar que aparecem no segundo sem recarregar nem usar Sincronizar; repetir no sentido inverso.
 3. Entrar com a conta B e confirmar que não vê os dados de A.
 4. Alterar offline; voltar a ligar e confirmar a gravação.
 5. Editar a partir de dois dispositivos e confirmar que aparece o aviso de conflito, sem substituição automática.
