@@ -75,6 +75,11 @@ Camadas: **D** domínio, **I** integração/persistência, **N** navegador real,
 | F36 | Alterar calendário, feedback ou evento depois de ativar: diferenças e âmbito visíveis, overrides respeitados e histórico intacto | D, I, N |
 | F37 | Programa expõe versão/fontes/pressupostos corretos; regra sem revisão não é publicada como validada; vídeo pessoal não recebe selo científico | D, I, N |
 | F38 | Migração de conta antiga sem dados desportivos, export/import e dois dispositivos: continua no percurso geral e não recebe modalidades/planos por defeito | D, I, N |
+| F39 | Relatório de catálogo cruza material, padrão/direção, nível e condições; identifica lacunas/alternativas, aliases não contam como exercícios adicionais | D, I |
+| F40 | Perfis sem material, só halteres sem banco, barra sem rack e elásticos sem ancoragem: seleção e pesquisa não assumem apoios/acessórios ausentes | D, N |
+| F41 | Ginásio com apenas algumas máquinas identificadas: não sugere as outras; adicionar/remover uma máquina recalcula compatibilidade sem alterar histórico | D, I, N |
+| F42 | Falta conteúdo para uma função obrigatória: resultado limitado ou módulo indisponível com explicação; não apresenta falsa equivalência nem proposta completa por omissão | D, N |
+| F43 | Lote de catálogo revisto: identidades/aliases consistentes, unidades/requisitos/instruções/fontes presentes e ação de demonstração útil; imports e exercícios pessoais continuam compatíveis | D, I, N |
 
 ## Como testar
 
@@ -93,6 +98,7 @@ Provocar também gravação recusada, resposta lenta/fora de ordem, pesquisa vaz
 - Histórico, privacidade, migração e séries preenchidas são critérios bloqueantes nas alterações que os afetem.
 - Antes de entregar o conjunto, executar F01–F30, registar exceções por ambiente e decidir explicitamente quais impedem publicar.
 - Para as extensões desportivas e de proveniência, executar também F31–F38 antes de as entregar. Continuam planeados e não foram executados nesta atualização de documentação.
+- A ampliação do catálogo/editor exige F39–F43 antes de concluir a etapa 2. Foram acrescentados ao plano; ainda não foram executados. A sequência planeada passa a F01–F43.
 - Guardar resultados/versionamento e evidência sem dados pessoais. Não prometer ausência total de erros.
 - Configurar Pages por workflow dependente dos checks; um workflow paralelo à publicação por branch não impede publicar com falhas.
 - Repetir um percurso curto no artefacto publicado. Nesta entrega, os novos fluxos e a matriz permanecem por implementar/executar.

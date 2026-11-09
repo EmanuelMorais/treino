@@ -16,6 +16,8 @@ O gerador está em `program-engine.js`, na função `generate`. É **um motor de
 
 Nem todos os campos mudam a escolha: observações livres são guardadas com um aviso de que não são interpretadas; cargas máximas produzem uma orientação para respeitar o material, sem cálculo automático de pesos iniciais. Vários objetivos partilham a mesma estrutura de base. Portanto, «personalizado» nesta versão significa uma adaptação limitada por regras, não uma avaliação individual completa nem preparação desportiva especializada.
 
+O catálogo atual de 25 entradas também limita a diversidade por equipamento. A [ampliação planeada](PLANO-EXPERIENCIA-TREINO.md#cobertura-do-catálogo-requisito-para-disponibilizar-o-gerador) passa a exigir cobertura por contexto, alternativas e um relatório de lacunas; não foi feita nesta atualização. A categoria atual genérica de máquinas não identifica o inventário real de cada ginásio e precisa de maior detalhe.
+
 ## Fontes que o código referencia
 
 | Fonte | Papel real | Limite |

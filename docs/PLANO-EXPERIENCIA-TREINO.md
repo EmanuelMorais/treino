@@ -48,6 +48,29 @@ O botão **«Adicionar exercício»** abre o catálogo, com pesquisa focada, em 
 
 Um mapa corporal pode ajudar posteriormente, mas não é pré-requisito: lista acessível de zonas primeiro. Não obrigar a navegar por uma imagem pequena para encontrar um exercício.
 
+### Cobertura do catálogo: requisito para disponibilizar o gerador
+
+Os 25 exercícios atuais são um catálogo inicial insuficiente para a variedade de contextos pretendida. Ampliar e rever o catálogo é trabalho próprio da etapa 2, em paralelo com a pesquisa/editor; melhorar a interface sem melhorar o conteúdo não satisfaz esta etapa.
+
+Avaliar a cobertura por **contexto de material × padrão/direção × nível × condições de execução**, além dos grupos musculares. Não definir sucesso apenas por um número total de exercícios ou inflacionar a contagem com aliases e mudanças de nome.
+
+| Contexto a testar separadamente | Cobertura e distinções necessárias |
+| --- | --- |
+| Sem equipamento | Variantes com peso corporal, regressões/progressões e mobilidade; não pressupor cadeira, banco, apoio, barra de elevações ou ponto de fixação |
+| Só halteres | Exercícios viáveis sem banco, variantes por carga/complexidade e alternativas; banco e inclinação são requisitos adicionais explícitos |
+| Barra e discos | Distinguir exercícios que exigem suporte/rack, banco, espaço ou outros acessórios; possuir uma barra não equivale a ter um ginásio completo |
+| Elásticos | Distinguir tipo de elástico e necessidade de ancoragem/apoio; não sugerir uma variante com requisitos não declarados |
+| Ginásio com máquinas | Identificar máquinas concretas e polias/acessórios disponíveis; «tenho máquinas» não significa ter leg press, chest press e remada ao mesmo tempo |
+| Material misto e condições de espaço | Combinar apenas o material disponível, incluindo limites de altura, espaço para caminhar e variantes sentadas/ajoelhadas quando executáveis |
+
+Cobrir movimentos de joelho/anca, empurrar e puxar nas direções relevantes, trabalho unilateral, tronco, transporte, acessórios musculares e mobilidade de acordo com o âmbito do módulo. Para cada função exigida pelo plano, procurar variantes apropriadas ao contexto e alternativas realmente distintas; como objetivo editorial, ter pelo menos duas opções compatíveis onde forem viáveis. Uma ausência legítima não deve ser escondida com uma falsa equivalência: indicar a lacuna e o que o programa consegue/não consegue cobrir.
+
+Cada entrada revista precisa de identidade estável, nomes/aliases PT/EN, material e apoios obrigatórios, músculos/padrão/direção, nível de complexidade, instruções, tipo de medida/referência da carga, demonstração ou pesquisa e proveniência/estado de revisão. Nomes diferentes do mesmo exercício são aliases; mudanças reais de variante/material podem justificar entradas distintas. Conteúdo pessoal continua separado do catálogo público.
+
+Construir um relatório automático de cobertura e de lacunas por contexto. A geração verifica os requisitos do seu módulo antes de apresentar a proposta: não inventa equipamento, não chama completo a um plano que omite funções necessárias e explica quando é preciso rever material/objetivo. Conteúdo insuficiente mantém esse módulo limitado ou indisponível; aumentar o catálogo não torna automaticamente disponíveis módulos desportivos ainda não revistos.
+
+Entregar por lotes revistos, com origem/licença verificadas e testes dos contextos acima. Não importar em massa uma lista de nomes sem instruções, compatibilidade ou revisão, nem tratar um vídeo/pesquisa como validação da prescrição. Critérios de saída adicionais: F39–F43 da matriz e evidência de que uma pessoa encontra e troca exercícios no seu contexto real.
+
 ### 3. Construir e editar um treino
 
 O editor mostra nome do treino, lista de exercícios ordenada e dose resumida. Reordenar por arrasto **e por botões acessíveis**. Editar séries, repetições/tempo/passos, descanso e esforço dentro do exercício; opções avançadas apenas quando abertas. Mostrar explicitamente carga por haltere ou total da barra.
@@ -130,7 +153,7 @@ Cada etapa tem demonstração com dados fictícios, testes e critério de saída
 | --- | --- | --- |
 | 0 — Base e correções | Contratos/fixtures, identidade estável, proteger séries realizadas ao editar unidade/variante, corrigir procura de histórico e introduzir fallback de demonstração | Documentos antigos legíveis, histórico intacto, regressões dos problemas encontrados e percurso básico no navegador |
 | 1 — Estrutura | Extrair domínio/dados/UI por fluxo, formatar fontes separadamente da refatoração, build versionado e migração ensaiada | Mesmo comportamento externo, build reproduzível, migração/export/import sem perda e plano de recuperação |
-| 2 — Catálogo e editor | Pesquisa PT/EN, filtros, detalhes, favoritos/recentes, multisseleção, criação pessoal e edição de doses | Criar um treino do zero no móvel/PC, incluindo estados vazios, sem conhecer o nome exato de todos os exercícios |
+| 2 — Catálogo e editor | Ampliar/rever conteúdo pela matriz de cobertura, relatório de lacunas, pesquisa PT/EN, filtros, detalhes, favoritos/recentes, multisseleção, criação pessoal e doses | Cobertura verificada por contexto/material (F39–F43) e criação de treino no móvel/PC, incluindo estados vazios, sem conhecer todos os nomes |
 | 3 — Substituição e programas | Alternativas explicáveis, âmbito, troca a meio da sessão, overrides e regeneração com diferenças | Alterações futuras corretas, sem reinterpretar séries/cargas nem reescrever o passado |
 | 4 — Execução e propostas | Reduzir ruído, separar editor/sessão, simplificar questionário/proposta e vídeos pessoais integrados | Uma conta nova chega ao primeiro treino, regista e retoma; uma pessoa experiente adapta-o sem perder controlo |
 | 5 — Qualidade de publicação | Matriz completa, E2E Chromium/WebKit, dois dispositivos, acessibilidade e Pages condicionado aos testes | Percursos críticos verificados no artefacto a publicar; limitações móveis documentadas |
