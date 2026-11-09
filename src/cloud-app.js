@@ -18,7 +18,7 @@
   $('#sync-title').textContent=title;$('#sync-detail').textContent=detail;$('#sync-bar').dataset.status=status;
   $('#account').textContent=authNeeded?'Renovar acesso':user?'A minha conta':'Entrar';$('#sync-now').hidden=!user;$('#online-backups').hidden=!user;
  }
- function needAuth(){authNeeded=true;clearTimeout(timer);clearTimeout(retryTimer);stopAutoSync();showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
+ function needAuth(){authNeeded=true;clearTimeout(timer);clearTimeout(retryTimer);stopAutoSync();setAccountAccess(false,'A sessão terminou. Entra novamente para continuar; os dados locais foram preservados.');showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
  function writeMeta(){if(!user)return;try{localStorage.setItem(metaKey(user.id),JSON.stringify({revision:baseRevision,dirty,updatedAt:Date.now()}))}catch{showStatus('Cópia local sem espaço','Exporta uma cópia; a sincronização online será tentada.','error')}}
  function cacheCurrent(){try{localStorage.setItem(activeStorageKey,JSON.stringify(state));return true}catch{return false}}
  function recoveryCopy(){if(!user)return;try{localStorage.setItem(cacheKey(user.id)+'-recovery',JSON.stringify({date:new Date().toISOString(),payload:snapshot()}));return true}catch{return false}}
@@ -66,22 +66,23 @@
   }catch(error){if(epoch===accountEpoch&&error.code==='AUTH_REQUIRED')needAuth();} // Polling covers a failed socket setup.
  }
  async function enterAccount(session){
-  const next=session?.user||null;if(next?.id===user?.id){if(next&&authNeeded){authNeeded=false;startAutoSync();if(dirty)setTimeout(flush,0);else queueAutoSync();}return;}
+  const next=session?.user||null;if(next?.id===user?.id&&!authNeeded)return;
   const epoch=++accountEpoch;stopAutoSync();clearTimeout(timer);clearTimeout(retryTimer);loading=true;$('#content').inert=true;conflict=false;saving=false;
+  setAccountAccess(false,'A validar o acesso à tua conta…');let verified=false;
   user=next;sequence=0;authNeeded=false;
-  if(!user){dirty=false;baseRevision=0;loadAccountState(fresh(),KEY);loading=false;$('#content').inert=false;showStatus('Sessão terminada','Os dados da conta ficaram guardados; entra para os voltar a consultar.');return}
+  if(!user){dirty=false;baseRevision=0;loadAccountState(fresh(),KEY);loading=false;$('#content').inert=false;setAccountAccess(false);showStatus('Sessão terminada','Os dados da conta ficaram guardados; entra para os voltar a consultar.');return}
   const local=readJSON(cacheKey(user.id)),localExists=!!local&&validState(local),meta=readJSON(metaKey(user.id));
   baseRevision=Number.isSafeInteger(meta?.revision)?meta.revision:0;dirty=localExists&&(meta?.dirty!==false);
   loadAccountState(localExists?local:fresh(),cacheKey(user.id));cacheCurrent();
   showStatus('A carregar a conta','A comparar a cópia local com os dados online.');
   try{
-   const remote=await remoteDocument(user.id);if(epoch!==accountEpoch)return;
+   const remote=await remoteDocument(user.id);if(epoch!==accountEpoch)return;verified=true;
    const decision=rules.decide({localExists,dirty,baseRevision,remote});
    if(decision==='pull'){adoptRemote(remote,false);}
    else {dirty=true;showStatus('Conta pronta','A guardar os planos e registos.');}
    writeMeta();
   }catch(error){if(epoch!==accountEpoch)return;dirty=dirty||!localExists;if(error.code==='AUTH_REQUIRED')needAuth();else showStatus('Não foi possível ligar à conta',error.message||'A cópia local está disponível. Tenta sincronizar novamente.','error');writeMeta()}
-  finally{if(epoch===accountEpoch){loading=false;$('#content').inert=false;startAutoSync();if(dirty&&!conflict&&!authNeeded)flush();}}
+  finally{if(epoch===accountEpoch){loading=false;$('#content').inert=false;setAccountAccess(verified&&!authNeeded,authNeeded?'Entra novamente para continuar.':'Não foi possível validar a sessão. Verifica a ligação e tenta entrar novamente.');startAutoSync();if(verified&&dirty&&!conflict&&!authNeeded)flush();}}
  }
  async function flush(){
   if(!user||!client||loading||saving||conflict||authNeeded||!dirty)return;
@@ -159,6 +160,7 @@
   showStatus(dirty?'Alterações por sincronizar':'Tudo guardado online','Cópias de segurança disponíveis.');
  }
  window.TreinoCloud={changed,syncNow};
+ $('#gate-login').onclick=()=>authDialog(true);
  $('#account').onclick=()=>authDialog();$('#sync-now').onclick=()=>syncNow();$('#online-backups').onclick=backupsDialog;
  window.addEventListener('online',queueAutoSync);
  window.addEventListener('offline',()=>{if(user&&!conflict)showStatus('Sem ligação · cópia local',dirty?'Os dados serão enviados quando a ligação regressar.':'A última versão confirmada continua disponível neste navegador.')});
@@ -174,6 +176,6 @@
    if(event==='PASSWORD_RECOVERY')passwordRecovery=true;
    if(['SIGNED_IN','SIGNED_OUT','INITIAL_SESSION','TOKEN_REFRESHED','PASSWORD_RECOVERY'].includes(event))setTimeout(async()=>{if(event==='SIGNED_IN'&&!passwordRecovery)closeModal();await enterAccount(session);if(event==='PASSWORD_RECOVERY'&&user?.id===session?.user?.id)authUI.open({mode:'password',email:user.email||'',accountId:user.id});},0);
   });
-  client.auth.getSession().then(({data,error})=>{if(error)showStatus('Não foi possível recuperar o login',error.message,'error');else if(data.session)enterAccount(data.session);else showStatus('Guardado neste navegador','Entra para sincronizar entre computador e telemóvel.')});
+  client.auth.getSession().then(({data,error})=>{if(error){setAccountAccess(false,'Não foi possível recuperar a sessão. Entra novamente.');showStatus('Não foi possível recuperar o login',error.message,'error');}else if(data.session)enterAccount(data.session);else setAccountAccess(false)});
  }else showStatus('Guardado neste navegador','A gravação online aguarda a ligação ao novo Supabase.');
 })();

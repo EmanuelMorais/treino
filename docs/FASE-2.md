@@ -4,7 +4,25 @@
 
 Permitir que qualquer pessoa crie uma conta, preencha um questionário e receba um programa de treino adequado à sua experiência, objetivos, tempo disponível, material e limitações declaradas. A pessoa pode seguir o programa, registar a execução e rever o plano com base no progresso.
 
-Este documento é um plano de implementação. A geração automática e o registo público de produção ainda não estão entregues nesta fase.
+## Estado da implementação — 9 de novembro de 2026
+
+Entregue a primeira versão funcional das etapas 2.1–2.3, com acompanhamento inicial da 2.4:
+
+- Acesso à aplicação só depois de validar a sessão no servidor. Sem login, só há entrada, registo e recuperação; treinos, biblioteca e histórico não são apresentados.
+- Contas novas começam vazias. O programa pessoal de 12 semanas não é um modelo comum nem é incluído no ficheiro público de dados. As fichas existentes do titular mantêm-se na conta privada.
+- Questionário privado, rascunho com autorização de gravação e versões das respostas ao ativar programas.
+- Objetivos explícitos: **perder peso**, ganhar força, ganhar massa muscular, melhorar mobilidade e condição física. Podem combinar-se, com uma prioridade.
+- Gerador determinístico com material declarado, experiência, dias, duração, espaço acima da cabeça e limite de tempo estimado. Propostas de 4, 8 ou 12 semanas, sempre revistas e ativadas pela pessoa.
+- Exemplos YouTube privados: zona principal e secundárias, material, notas de variante, início/fim; pesquisa, filtros, edição e associação a exercícios, sem mudar doses ou histórico.
+- Registos de evolução e revisão inicial por esforço/recuperação, sem aumentos automáticos de carga ou diagnóstico a partir das notas.
+
+O MVP usa o documento privado já protegido por RLS e pelo controlo de revisão. A normalização em várias entidades, o acompanhamento avançado, o papel de treinador por convite, os procedimentos completos de privacidade/eliminação e a IA opcional continuam planeados. Não há envio de respostas a um fornecedor de IA.
+
+## Acesso e propriedade dos planos
+
+O login é obrigatório em todas as áreas funcionais. Uma cópia em cache não basta para abrir uma conta numa página nova: é validada uma leitura autenticada no servidor. Terminar sessão remove os dados da vista e limpa o estado ativo; as cópias privadas no navegador continuam disponíveis apenas quando a conta volta a entrar.
+
+Não criar planos a partir de conteúdo pessoal no carregamento, no login, numa conta nova ou numa atualização de versão. Importar uma ficha de outra pessoa é uma ação explícita. O código público contém apenas o catálogo de referências e as regras gerais; os exercícios e doses do programa pessoal ficam no documento do titular.
 
 ## Fluxo proposto
 
@@ -21,7 +39,7 @@ Este documento é um plano de implementação. A geração automática e o regis
 | Área | Dados a recolher | Uso no programa |
 | --- | --- | --- |
 | Perfil | Nome de apresentação, idade ou faixa etária; altura e peso opcionais quando relevantes | Apresentação, contexto e acompanhamento; recolher apenas o necessário |
-| Objetivos | Prioridade entre força, massa muscular, mobilidade, condição física e composição corporal; objetivos secundários | Escolha de volume, exercícios e métricas |
+| Objetivos | Prioridade entre **perder peso**, força, massa muscular, mobilidade e condição física; objetivos secundários | Escolha de volume, exercícios, atividade complementar e métricas |
 | Experiência | Tempo de prática, regularidade, movimentos conhecidos, cargas/repetições atuais e nível de esforço | Ponto de partida e complexidade dos movimentos |
 | Disponibilidade | Dias por semana, dias preferidos, minutos por sessão, horário e duração do ciclo | Calendário e orçamento de tempo |
 | Local | Casa, ginásio, exterior ou combinação; espaço para caminhar e treinar | Compatibilidade dos movimentos |
@@ -31,6 +49,10 @@ Este documento é um plano de implementação. A geração automática e o regis
 | Recuperação | Sono, atividade diária, tempo sentado, outros desportos e esforço percebido | Dose inicial e ajustes conservadores |
 
 Distinguir sempre kg por haltere, kg totais da barra, peso corporal, segundos e passos. Não inferir diagnósticos a partir das respostas nem exigir medições de gordura corporal.
+
+Para perder peso, combinar uma proposta de força com sugestões de atividade regular e acompanhamento opcional da tendência do peso e minutos de caminhada. Não prometer perda de gordura abdominal localizada, prescrever défices calóricos automaticamente ou tratar o peso como a única medida de progresso. Peso e altura são opcionais e não condicionam a geração.
+
+Na primeira versão, nome, confirmação de maioridade, objetivos, experiência, disponibilidade, material e condições de espaço são estruturados. Observações livres não são interpretadas por IA. Limitações atuais ou exercícios a evitar suspendem a geração para permitir revisão; a pessoa pode guardar o perfil e usar uma ficha própria/importada. Sono, atividade diária e revisão assistida mais detalhada ficam para a expansão do questionário.
 
 ## Biblioteca de vídeos de exercícios do YouTube
 
@@ -73,7 +95,11 @@ A proposta deve cumprir:
 
 ## Dados e arquitetura
 
-Separar os dados do questionário, a proposta, o programa ativado e os registos de execução. Evoluir o documento sincronizado da fase 1 para entidades próprias:
+O MVP separa logicamente `profile`, `questionnaireVersions`, `proposal`, `programVersions`, `plans`, `history`, `exerciseExamples` e `checkIns` dentro do documento privado da conta. Os exemplos têm IDs estáveis e os exercícios mantêm `exampleIds` e `primaryExample`. Questionários não são enviados a outras contas; gerar ou ativar não substitui o histórico.
+
+As respostas ativas podem ser limpas pela interface. As versões anteriores podem permanecer nas últimas 20 cópias de segurança até estas rodarem; esta retenção é explicada na confirmação. Exportar inclui os dados da própria conta. A eliminação completa de conta e o prazo formal de retenção precisam de uma entrega própria.
+
+Evoluir posteriormente para entidades próprias:
 
 - `profiles` e `questionnaire_versions`: respostas e consentimentos versionados, com data.
 - `exercise_library`: conteúdo revisto e compatibilidades.
@@ -90,12 +116,12 @@ Qualquer chave de IA fica no servidor. Não enviar dados pessoais ou de saúde a
 
 | Etapa | Resultado | Critério para avançar |
 | --- | --- | --- |
-| 2.1 | Questionário privado e editável | Rascunho, validação, consentimentos e isolamento entre contas verificados |
-| 2.2 | Biblioteca de exercícios, exemplos YouTube e gerador por regras | Vídeos classificados por zona muscular e ligados ao exercício; cenários de material, duração e nível passam nos testes; fontes e doses rastreáveis |
-| 2.3 | Pré-visualização e ativação do programa | Alterações explícitas e versões anteriores recuperáveis |
-| 2.4 | Revisão baseada nos registos | Ajustes explicados, sem aumentos impostos por calendário |
-| 2.5 | Abertura ao público | Email de produção, proteção contra abuso, custos/limites, monitorização, privacidade e recuperação verificados |
-| 2.6 | Apoio opcional de IA | Validação estruturada, avaliação de qualidade e custos, sem chaves no cliente |
+| 2.1 | MVP entregue: questionário privado e editável | Rascunho autorizado, validação, login obrigatório e isolamento por conta |
+| 2.2 | MVP entregue: biblioteca, exemplos YouTube e gerador por regras | Material, duração, nível, etiquetas e associações cobertos por verificações |
+| 2.3 | MVP entregue: proposta e ativação explícita | Fichas anteriores e histórico preservados; versões de programa e respostas guardadas |
+| 2.4 | Base entregue: check-ins e orientação por esforço; continuar revisão por desempenho | Acrescentar sugestões por exercício e comparação de registos, sempre confirmadas |
+| 2.5 | Pendente: preparação para distribuição alargada | Proteção contra abuso, limites, monitorização, política de privacidade, eliminação completa e revisão humana operacional |
+| 2.6 | Opcional e pendente: apoio de IA | Validação estruturada, avaliação de qualidade e custos, sem chaves no cliente |
 
 ## Testes de aceitação
 
@@ -107,6 +133,8 @@ Qualquer chave de IA fica no servidor. Não enviar dados pessoais ou de saúde a
 - Respostas incompletas, incompatíveis ou que exigem avaliação antes de prescrever.
 - Unidades de carga ambíguas e exercícios unilaterais.
 - Conta nova sem histórico, importação de plano anterior e mudança de objetivos.
+- Visitante e sessão rejeitada sem acesso à aplicação; conta nova sem programa de 12 semanas.
+- Perder peso como objetivo principal ou secundário, sem exigir peso/altura e sem promessas de perda localizada.
 - Duas contas sem acesso cruzado; dispositivos offline; conflito e recuperação de cópias.
 - Alterar ou gerar um plano nunca apaga sessões já realizadas.
 

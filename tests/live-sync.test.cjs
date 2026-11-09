@@ -16,22 +16,28 @@ async function device(db,id='owner-a',cached={}){
  const client={auth:{onAuthStateChange:fn=>authEvent=fn,getSession:async()=>({data:{session}}),refreshSession:async()=>({data:{session}})},realtime:{setAuth:async()=>{}},
   channel(){const channel={removed:false,on(type,filter,change){assert.equal(type,'postgres_changes');assert.equal(filter.table,'training_documents');this.id=filter.filter.slice('user_id=eq.'.length);this.change=change;return this},subscribe(status){this.status=status;db.channels.push(this);queueMicrotask(()=>status('SUBSCRIBED'));return this}};return channel},
   removeChannel:async ch=>{ch.removed=true},
-  from(table){assert.equal(table,'training_documents');let columns,target;return {select(value){columns=value;return this},eq(key,value){assert.equal(key,'user_id');target=value;return this},maybeSingle(){return this},async setHeader(){assert.equal(target,session.user.id);db.reads.push({id:target,columns});const result=clone(db.documents.get(target)||null);if(db.readGate)await db.readGate;return {data:columns==='revision'&&result?{revision:result.revision}:result}}}},
+  from(table){assert.equal(table,'training_documents');let columns,target;return {select(value){columns=value;return this},eq(key,value){assert.equal(key,'user_id');target=value;return this},maybeSingle(){return this},async setHeader(){assert.equal(target,session.user.id);db.reads.push({id:target,columns});if(db.readError)return db.readError;const result=clone(db.documents.get(target)||null);if(db.readGate)await db.readGate;return {data:columns==='revision'&&result?{revision:result.revision}:result}}}},
   rpc(name,args){assert.equal(name,'save_training_document');return {async setHeader(){assert.equal(args.p_user_id,session.user.id);db.writes.push(clone(args));const current=db.documents.get(args.p_user_id);if(current.revision!==args.p_expected_revision)return {error:{code:'PT409'}};const revision=db.commit(args.p_user_id,args.p_payload);if(db.saveGate)await db.saveGate;return {data:{revision}}}}},
  };
  const window={TREINO_CONFIG:{supabaseUrl:'https://test.supabase.co',supabasePublishableKey:'sb_publishable_test_key_valid_length'},TreinoSupabase:{createClient:()=>client},addEventListener:(name,fn)=>windowEvents[name]=fn};
- const context=vm.createContext({window,document:{addEventListener:(name,fn)=>events[name]=fn,visibilityState:'visible'},navigator:{onLine:true},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)},state:payload('guest'),KEY:'guest',activeStorageKey:'guest',$,validState:()=>true,loadAccountState:(next,key,options)=>{context.state=next;context.activeStorageKey=key;loads.push({next:clone(next),options})},fresh:()=>payload('guest'),startApp(){},modal:(title)=>modals.push(title),closeModal:()=>{$('#modal').open=false;events['#modal:close']?.()},toast(){},downloadBackup(){},esc:x=>x,setTimeout:(fn,ms)=>{const timer=++counter;timers.set(timer,{fn,ms});return timer},clearTimeout:timer=>timers.delete(timer),console});
- const loads=[],modals=[];
+ const context=vm.createContext({window,document:{addEventListener:(name,fn)=>events[name]=fn,visibilityState:'visible'},navigator:{onLine:true},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)},state:payload('guest'),KEY:'guest',activeStorageKey:'guest',$,validState:()=>true,loadAccountState:(next,key,options)=>{context.state=next;context.activeStorageKey=key;loads.push({next:clone(next),options})},fresh:()=>payload('guest'),startApp(){},setAccountAccess(value){access.push(value)},modal:(title)=>modals.push(title),closeModal:()=>{$('#modal').open=false;events['#modal:close']?.()},toast(){},downloadBackup(){},esc:x=>x,setTimeout:(fn,ms)=>{const timer=++counter;timers.set(timer,{fn,ms});return timer},clearTimeout:timer=>timers.delete(timer),console});
+ const loads=[],modals=[],access=[];
  vm.runInContext(fs.readFileSync('sync-core.js','utf8'),context);
  vm.runInContext(fs.readFileSync('cloud.js','utf8'),context);
  const run=async ms=>{for(const [key,timer]of [...timers])if(timer.ms===ms&&timers.delete(key))timer.fn();await settle()};
  await settle();await run(200);loads.length=0;
- return {context,$,loads,modals,events,windowEvents,timers,run,values,
+ return {context,$,loads,modals,access,events,windowEvents,timers,run,values,
   edit(note){context.state.plans[0].note=note;window.TreinoCloud.changed()},
   async switchTo(next){session=next?{user:{id:next,email:'test@example.invalid'},access_token:'test-token'}:null;authEvent(next?'SIGNED_IN':'SIGNED_OUT',session);await run(0)},
   async authEvent(event){authEvent(event,session);await run(0)},
  };
 }
+test('cached account data does not unlock the application before an authenticated server read succeeds',async()=>{
+ const db=server();let release;db.readGate=new Promise(resolve=>release=resolve);const pc=await device(db);assert.equal(pc.access.includes(true),false);release();await settle();assert.equal(pc.access.at(-1),true);
+});
+test('a rejected session keeps the application locked even when cached plans exist',async()=>{
+ const db=server();db.readError={status:401,error:{code:'bad_jwt'}};const pc=await device(db);assert.equal(pc.access.includes(true),false);assert.equal(pc.$('#account').textContent,'Renovar acesso');
+});
 test('edits propagate both ways between two open devices without a click or reload; own echoes do not render',async()=>{
  const db=server(),phone=await device(db),pc=await device(db);
  phone.edit('from iPhone');await phone.run(1300);await pc.run(200);await phone.run(200);

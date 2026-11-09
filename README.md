@@ -6,7 +6,11 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 ## Estado
 
-- Página e modelo de 12 semanas com rotinas públicas do Bioforceman.
+- Aplicação privada: sessão validada antes de abrir treinos, biblioteca e histórico. Contas novas começam sem planos.
+- Questionário privado e gerador por regras, com proposta e ativação explícita de 4, 8 ou 12 semanas. Inclui o objetivo perder peso.
+- O programa pessoal de 12 semanas permanece na conta do titular; não é incluído nos dados públicos nem distribuído a outras contas.
+- Exemplos YouTube privados por zona muscular, material, variante e intervalo, associados a exercícios sem modificar os registos.
+- Acompanhamento inicial de esforço, recuperação, peso opcional e caminhadas.
 - Criação e edição de fichas próprias; importação e exportação JSON.
 - Gravação local imediata de planos, rascunhos e sessões.
 - Login com email e palavra-passe, registo com confirmação de email e recuperação de palavra-passe. Contas que usavam links podem definir uma palavra-passe sem mudar de conta nem perder registos; o link de acesso continua disponível como alternativa.
@@ -45,7 +49,15 @@ As alterações são enviadas automaticamente cerca de 1,3 segundos depois da ú
 
 Palavras-passe são processadas pelo Supabase Auth; não ficam nos documentos de treino, exports, código ou armazenamento local da aplicação. O navegador pode disponibilizar o seu próprio gestor de palavras-passe.
 
-Sem internet, a cópia local continua disponível num navegador já usado. Para abrir a página de raiz é necessária ligação; esta versão não inclui uma PWA offline.
+Com a página já autenticada, perder a ligação mantém a sessão de treino em memória e permite voltar a sincronizar. Uma abertura nova valida o acesso no servidor antes de mostrar dados em cache, pelo que exige internet. Esta versão não inclui uma PWA offline. Sem sessão válida, a aplicação não mostra dados de treino.
+
+## Personalização e dados privados
+
+O botão **Preencher questionário** recolhe objetivos (incluindo **Perder peso**), experiência, tempo, local, material e condições relevantes. O rascunho só é guardado depois de autorizar a gravação privada. A proposta inclui orçamento de tempo e progressão por desempenho, sem cargas inventadas ou promessas de emagrecimento. Limitações/exclusões declaradas requerem revisão antes da geração. As regras gerais apoiam-se nas recomendações [ACSM 2026](https://acsm.org/resistance-training-guidelines-update-2026/) e [CDC](https://www.cdc.gov/healthy-weight-growth/physical-activity/).
+
+Ativar adiciona fichas com IDs próprios e uma versão do programa; não remove planos nem sessões anteriores. Na biblioteca, os exemplos pessoais podem ser pesquisados por exercício/variante e filtrados por zona muscular e material. Associar um exemplo só altera a referência de demonstração.
+
+O MVP guarda estes dados no documento privado da conta existente, com RLS, revisão e backups. Não usa IA nem envia respostas para outro fornecedor. A normalização das entidades, revisão avançada e preparação para distribuição alargada estão descritas em [FASE-2.md](docs/FASE-2.md).
 
 ## Desenvolvimento
 
