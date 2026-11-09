@@ -1,6 +1,6 @@
 # Estrutura do Treino: avaliação e decisões
 
-Data: 9 de novembro de 2026. Estado: avaliação concluída; estrutura alvo ainda por implementar. Plano de execução: [experiência de treino](PLANO-EXPERIENCIA-TREINO.md). Evidência: [testes e auditoria](TESTES-FLUXOS.md).
+Data: 9 de novembro de 2026. Estado: avaliação concluída; estrutura alvo parcialmente iniciada em `src/domain`, `src/data`, `src/ui` e `src/styles`, conforme a [primeira entrega na branch](ENTREGA-CATALOGO-EDITOR.md). A separação integral continua planeada. Plano: [experiência de treino](PLANO-EXPERIENCIA-TREINO.md). Evidência: [testes e auditoria](TESTES-FLUXOS.md).
 
 ## Decisão
 
@@ -38,7 +38,7 @@ docs/                     decisões, plano e evidência
 .agents/skills/           regras de trabalho específicas deste produto
 ```
 
-Esta árvore é um destino, não uma reorganização feita nesta entrega. Primeiro extrair módulos JavaScript com contratos JSDoc e validação em runtime; usar o esbuild já existente para produzir assets compatíveis com `/treino/`. Não introduzir React nem uma migração integral para TypeScript como pré-requisito. Reavaliar TypeScript quando os contratos estiverem estáveis e houver um benefício demonstrável. Não acumular um sistema antigo e outro novo sem prazo de remoção do adapter.
+Esta árvore é um destino, parcialmente iniciado na branch; não é ainda a estrutura integral da aplicação. Continuar a extração de módulos JavaScript com contratos JSDoc e validação em runtime; usar o esbuild já existente para produzir assets compatíveis com `/treino/`. Não introduzir React nem uma migração integral para TypeScript como pré-requisito. Reavaliar TypeScript quando os contratos estiverem estáveis e houver um benefício demonstrável. Não acumular um sistema antigo e outro novo sem prazo de remoção do adapter.
 
 ### Modelo lógico mínimo
 

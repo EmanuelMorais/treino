@@ -6,6 +6,8 @@
   "scripts": {
     "build": "esbuild src/supabase-client.js --bundle --minify --format=iife --outfile=vendor/supabase.js && node scripts/build-cloud.mjs",
     "test": "node --test tests/*.test.cjs",
+    "test:browser": "node scripts/test-workout-browser.cjs",
+    "catalog:coverage": "node scripts/catalog-coverage.cjs",
     "dev": "python3 -m http.server 8775"
   },
   "dependencies": {
@@ -13,6 +15,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.15",
+    "@playwright/cli": "0.1.23",
     "esbuild": "0.25.12"
   }
 }

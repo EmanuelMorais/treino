@@ -94,7 +94,9 @@ function linkExample(example){
 }
 function openExerciseExample(exercise){
  const examples=(exercise.exampleIds||[]).map(id=>state.exerciseExamples?.find(e=>e.id===id)).filter(Boolean);
- if(!examples.length)return openVideo(exercise.video,exercise.start);
+ const preferred=examples.find(e=>e.id===exercise.primaryExample&&e.video===exercise.video&&e.start===exercise.start);
+ if(preferred)return openExample(preferred);
+ if(!examples.length||exercise.video&&!examples.some(e=>e.video===exercise.video))return exercise.video?openVideo(exercise.video,exercise.start):openExerciseSearch(exercise);
  if(examples.length===1)return openExample(examples[0]);
  modal('Demonstrações do exercício',`<p>${esc(exercise.name)}</p><div class="other-plans">${examples.map(e=>`<button class="other-plan" data-choose-example="${e.id}"><strong>${esc(e.name)}${exercise.primaryExample===e.id?' · principal':''}</strong><span>${e.muscles.map(esc).join(' · ')}</span></button>`).join('')}</div>`,true);
  document.querySelectorAll('[data-choose-example]').forEach(b=>b.onclick=()=>openExample(examples.find(e=>e.id===b.dataset.chooseExample)));

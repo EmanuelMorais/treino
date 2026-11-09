@@ -1,0 +1,30 @@
+.catalog-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.catalog-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
+.catalog-tools .choice { margin: 0; }
+#catalog-count { margin-left: auto; color: #56665c; font-size: .9rem; }
+.catalog-results { max-height: 42vh; max-height: 42dvh; overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid #dfe5da; }
+.catalog-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 12px 0; border-bottom: 1px solid #e6e9e1; }
+.catalog-choice { display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; cursor: pointer; }
+.catalog-choice input { width: 22px; height: 22px; flex: 0 0 22px; accent-color: #183e32; }
+.catalog-choice span { min-width: 0; }
+.catalog-choice strong, .catalog-choice small { display: block; overflow-wrap: anywhere; }
+.catalog-choice strong { font-size: 1rem; }
+.catalog-choice small { color: #56665c; font-size: .85rem; margin-top: 5px; font-weight: 400; }
+.catalog-item-actions { display: flex; align-items: center; }
+.catalog-item-actions button { min-width: 44px; min-height: 44px; }
+.catalog-star { font-size: 1.45rem; }
+.catalog-options { margin: 14px 0; }
+.catalog-options summary { padding-block: 10px; cursor: pointer; }
+.catalog-options .choice { margin: 12px 0; }
+.catalog-footer { position: sticky; bottom: 0; background: #fff; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding-top: 12px; }
+.catalog-footer p { margin: 0; }
+.catalog-picker input:focus-visible, .catalog-picker button:focus-visible, .catalog-picker select:focus-visible { outline: 3px solid #527448; outline-offset: 3px; }
+@media (max-width: 540px) {
+  .catalog-filters { grid-template-columns: 1fr; gap: 0; }
+  .catalog-results { max-height: 34vh; max-height: 34dvh; }
+  .catalog-picker input[type="search"], .catalog-picker select, #exercise-form input, #exercise-form select, #exercise-form textarea { font-size: 16px; }
+  .catalog-item { grid-template-columns: minmax(0, 1fr); }
+  .catalog-item-actions { justify-content: flex-end; }
+  .catalog-footer { grid-template-columns: 1fr; }
+  .catalog-footer .btn { width: 100%; }
+}

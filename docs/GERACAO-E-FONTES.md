@@ -2,6 +2,8 @@
 
 Verificado nas fontes do repositório em 9 de novembro de 2026. Este documento descreve o gerador geral atual, não audita o conteúdo dos programas privados de cada conta. [Plano de evolução](PLANO-EXPERIENCIA-TREINO.md).
 
+Na [primeira entrega da branch](ENTREGA-CATALOGO-EDITOR.md), o editor passa a ter 93 entradas para escolha manual. O gerador abaixo continua com as 25 entradas anteriores; os dois catálogos têm âmbitos distintos nesta fase.
+
 ## O que acontece hoje
 
 O gerador está em `program-engine.js`, na função `generate`. É **um motor determinístico de regras escritas no código**, executado no navegador. Não chama um modelo de IA, não pesquisa na internet e não analisa automaticamente vídeos quando alguém responde ao questionário. O YouTube é uma origem de exemplos/referências, não o motor de prescrição.
@@ -16,7 +18,7 @@ O gerador está em `program-engine.js`, na função `generate`. É **um motor de
 
 Nem todos os campos mudam a escolha: observações livres são guardadas com um aviso de que não são interpretadas; cargas máximas produzem uma orientação para respeitar o material, sem cálculo automático de pesos iniciais. Vários objetivos partilham a mesma estrutura de base. Portanto, «personalizado» nesta versão significa uma adaptação limitada por regras, não uma avaliação individual completa nem preparação desportiva especializada.
 
-O catálogo atual de 25 entradas também limita a diversidade por equipamento. A [ampliação planeada](PLANO-EXPERIENCIA-TREINO.md#cobertura-do-catálogo-requisito-para-disponibilizar-o-gerador) passa a exigir cobertura por contexto, alternativas e um relatório de lacunas; não foi feita nesta atualização. A categoria atual genérica de máquinas não identifica o inventário real de cada ginásio e precisa de maior detalhe.
+O catálogo atual do gerador, com 25 entradas, limita a diversidade por equipamento. A [ampliação planeada](PLANO-EXPERIENCIA-TREINO.md#cobertura-do-catálogo-requisito-para-disponibilizar-o-gerador) exige cobertura por contexto, alternativas e relatório de lacunas. A branch introduz o relatório e o catálogo ampliado para o editor, sem os integrar ainda nas regras automáticas. A categoria genérica de máquinas do questionário/gerador precisa de maior detalhe; o filtro manual do editor já distingue máquinas concretas.
 
 ## Fontes que o código referencia
 

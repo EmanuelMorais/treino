@@ -2,6 +2,12 @@
 
 Data: 9 de novembro de 2026. [Plano](PLANO-EXPERIENCIA-TREINO.md) · [Arquitetura](ARQUITETURA.md).
 
+## Execução na branch
+
+A [primeira entrega](ENTREGA-CATALOGO-EDITOR.md) acrescenta testes de contratos/catálogo/editor e um percurso real de browser com fixture local. Resultado: **80 testes Node, build, Chrome e WebKit**, com larguras de 320 a 1440 px. Não testa contas reais nem certifica Safari/iPhone físico. Esta evidência substitui apenas os pontos cobertos; a auditoria inicial abaixo fica como histórico.
+
+Há cobertura parcial dos critérios F05–F11, F17–F20, F22, F28 e F39–F43. F42, em particular, tem apenas um relatório de lacunas do catálogo: o gerador ainda não consome o novo relatório. F24 tem contratos aditivos e fixtures sintéticas, não a migração integral planeada. Substituições com âmbito, fluxos desportivos, acesso/sincronização real no browser, acessibilidade completa e o resto da matriz continuam pendentes. Não marcar estes IDs como integralmente aprovados.
+
 ## Evidência desta entrega
 
 | Verificação | Resultado | Alcance real |

@@ -1,6 +1,6 @@
 # Plano: criar, adaptar e seguir treinos com facilidade
 
-Data: 9 de novembro de 2026. **Novo plano de trabalho, ainda sem implementação dos novos fluxos.** A avaliação, as decisões e o skill foram preparados nesta entrega. Este documento passa a ordenar as próximas alterações de criação/edição previstas na [fase 2](FASE-2.md), sem dar essa fase como concluída.
+Data: 9 de novembro de 2026. Plano de trabalho faseado. A [primeira entrega na branch `codex/catalogo-editor-treino`](ENTREGA-CATALOGO-EDITOR.md) implementa parte das bases e do catálogo/editor; não está integrada em `main` nem publicada. Os restantes fluxos continuam planeados. Este documento ordena as alterações de criação/edição previstas na [fase 2](FASE-2.md), sem dar essa fase como concluída.
 
 Objetivo: uma pessoa sem experiência consegue obter uma proposta compreensível e começar; uma pessoa experiente consegue construir e adaptar o plano, incluindo os gerados, sem perder o histórico. Durante a sessão, a interface concentra-se no exercício, na série e no próximo passo.
 

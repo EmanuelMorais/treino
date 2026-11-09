@@ -6,6 +6,7 @@
 <title>Treino — planos e evolução</title>
 <meta name="description" content="Os teus planos de treino e registos, numa conta privada.">
 <link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="src/styles/exercise-catalog.css?v=7">
 <style>body:not([data-auth="ready"])>.side,body:not([data-auth="ready"])>.main,body:not([data-auth="ready"])>#storage-error{display:none!important}body[data-auth="ready"]>#auth-gate{display:none!important}</style>
 </head>
 <body data-auth="loading">
@@ -20,8 +21,14 @@
 <script src="vendor/supabase.js"></script>
 <script src="data.js?v=5"></script>
 <script src="program-engine.js?v=6"></script>
-<script src="app.js?v=5"></script>
-<script src="profile-ui.js?v=6"></script>
+<script src="src/data/exercise-catalog.js?v=7"></script>
+<script src="src/domain/exercise-catalog.js?v=7"></script>
+<script src="src/domain/workout-records.js?v=7"></script>
+<script src="app.js?v=7"></script>
+<script src="src/ui/exercise-editor.js?v=7"></script>
+<script src="src/ui/exercise-help.js?v=7"></script>
+<script src="src/ui/exercise-picker.js?v=7"></script>
+<script src="profile-ui.js?v=7"></script>
 <script src="sync-core.js?v=5"></script>
 <script src="cloud.js?v=5"></script>
 </body></html>

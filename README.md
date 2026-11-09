@@ -6,7 +6,9 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 ## Próximas alterações
 
-O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação está por fazer.
+**Nesta branch:** ver a [primeira entrega do catálogo/editor](docs/ENTREGA-CATALOGO-EDITOR.md): 93 exercícios para seleção manual, pesquisa/filtros, demonstrações e proteção dos registos. O gerador automático mantém as 25 entradas anteriores. As alterações da branch ainda não estão no site de produção.
+
+O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação é faseada; consultar o estado da entrega acima.
 
 A [avaliação da arquitetura](docs/ARQUITETURA.md) separa catálogo, prescrição, sessão e histórico antes de ampliar o editor. A [matriz de testes](docs/TESTES-FLUXOS.md) regista a verificação atual, lacunas reproduzidas e os percursos a validar. As regras específicas estão no skill `.agents/skills/treino-product-workflow/`, indicado em `AGENTS.md`.
 
