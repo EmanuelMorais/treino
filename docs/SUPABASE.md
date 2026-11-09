@@ -1,5 +1,7 @@
 # Configuração da gravação online
 
+Estado: projeto Treino ligado; migração aplicada e RLS verificada. O SMTP de produção e a verificação de login real continuam pendentes.
+
 ## Projeto separado
 
 Criar o projeto na organização/conta Supabase escolhida para este produto. Não reutilizar bases de dados de outras aplicações. Confirmar custos antes de criar recursos pagos.
@@ -26,7 +28,7 @@ Em Authentication → URL Configuration:
 - Redirect URL: `https://emanuelmorais.github.io/treino/`
 - Desenvolvimento (opcional): `http://localhost:8775/`
 
-Ativar o fornecedor Email. O cliente usa `signInWithOtp`, com criação de conta permitida e confirmação de posse do email. Para disponibilizar entrada por código, o template de Magic Link deve incluir `{{ .Token }}`; pode manter também o link de confirmação.
+Ativar o fornecedor Email. O cliente usa `signInWithOtp`, com criação de conta permitida e confirmação de posse do email. Depois de configurar SMTP próprio, o template de Magic Link pode usar `supabase/templates/access.html`, que inclui `{{ .Token }}` e o link de confirmação. O Supabase não permite alterar estes templates no Free enquanto se usa o serviço de email padrão; nesse caso, entrar pelo link recebido.
 
 **Configurar SMTP de produção** antes de dar acesso a emails externos à equipa: o serviço de email padrão do Supabase tem restrições de destinatários e limites baixos. Não desligar a confirmação de email para contornar essas restrições. Não commitar credenciais SMTP.
 

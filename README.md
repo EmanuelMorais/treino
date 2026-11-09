@@ -10,7 +10,7 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 - Criação e edição de fichas próprias; importação e exportação JSON.
 - Gravação local imediata de planos, rascunhos e sessões.
 - Integração de login Supabase e sincronização privada por conta implementada.
-- **A sincronização online só fica ativa depois de configurar o novo Supabase e aplicar a migração.** Sem configuração, a página indica claramente que guarda apenas no navegador.
+- **Base de dados Supabase ligada e migração aplicada.** O envio de emails para pessoas fora da equipa Supabase aguarda SMTP de produção. O serviço padrão limita o login por email a membros da organização e a 2 mensagens por hora. O fluxo completo de login e gravação deve ser confirmado com uma conta real antes de usar entre dispositivos.
 - [Plano da segunda fase: personalização por questionário](docs/FASE-2.md).
 
 ## Usar e migrar registos
@@ -21,7 +21,9 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 4. Esperar pelo estado **Tudo guardado online** antes de trocar de dispositivo.
 5. Noutra pessoa/dispositivo, entrar com o email correspondente. Os dados de contas diferentes são privados e separados.
 
-A cópia JSON inclui fichas, rascunhos e histórico. Guardá-la fora do repositório; nunca fazer commit de dados pessoais.
+A opção **Exportar só este plano**, em “Notas e ajustes pessoais” da ficha, exporta apenas essa ficha, sem histórico ou séries realizadas. Pode ser importada por outra pessoa sem substituir os seus registos.
+
+A opção global **Exportar cópia** inclui fichas, rascunhos e histórico. Guardá-la fora do repositório; nunca fazer commit de dados pessoais.
 
 ## Configurar Supabase
 
