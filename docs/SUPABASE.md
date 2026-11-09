@@ -73,3 +73,9 @@ Não executar `supabase config push` com as credenciais no ambiente numa sessão
 - Erro `535`: verificar Login SMTP, chave SMTP (não chave API), validade e estado da chave.
 - Não mostrar chaves, códigos ou links de autenticação em logs de diagnóstico.
 - “Envio aceite” confirma a aceitação SMTP; confirmar a entrega nos Logs transacionais do Brevo sem abrir o corpo do email de acesso.
+
+## Sessão expirada durante uma gravação
+
+A interface pode ter uma conta em memória enquanto a sessão do SDK já não está disponível. Cada leitura e gravação de dados privados valida agora a sessão da conta e envia explicitamente o seu JWT. Um erro 401 permite uma única tentativa com token renovado; se não houver sessão válida, a sincronização pára e mostra “Renovar acesso”.
+
+Voltar a entrar na mesma conta retoma as alterações locais pendentes. Não apagar o armazenamento do navegador para resolver este aviso. Não conceder a `anon` acesso à função de gravação: as permissões continuam limitadas a contas autenticadas e as linhas continuam protegidas por RLS.

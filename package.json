@@ -4,7 +4,7 @@
   "private": true,
   "description": "Planos de treino e registos pessoais com sincronizacao privada",
   "scripts": {
-    "build": "esbuild src/supabase-client.js --bundle --minify --format=iife --outfile=vendor/supabase.js",
+    "build": "esbuild src/supabase-client.js --bundle --minify --format=iife --outfile=vendor/supabase.js && node scripts/build-cloud.mjs",
     "test": "node --test tests/*.test.cjs",
     "dev": "python3 -m http.server 8775"
   },

@@ -44,7 +44,7 @@ npm test
 npm run dev
 ```
 
-Abrir `http://localhost:8775`. O bundle Supabase fica em `vendor/supabase.js`; o Pages serve os ficheiros estáticos sem compilação remota.
+Abrir `http://localhost:8775`. O bundle Supabase fica em `vendor/supabase.js`. O código de autenticação em `auth-data.js` e `src/cloud-app.js` gera `cloud.js` no mesmo build, para que a página carregue a validação de sessão junto com a sincronização. O Pages serve os ficheiros estáticos sem compilação remota.
 
 Os testes incluem isolamento entre duas contas, bloqueio a visitantes sem login, conflito de revisão e retenção das últimas 20 cópias, usando Postgres local em memória. Não substituem a verificação de login/email no projeto Supabase real.
 
