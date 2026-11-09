@@ -11,6 +11,7 @@ Entregue a primeira versão funcional das etapas 2.1–2.3, com acompanhamento i
 - Acesso à aplicação só depois de validar a sessão no servidor. Sem login, só há entrada, registo e recuperação; treinos, biblioteca e histórico não são apresentados.
 - Contas novas começam vazias. O programa pessoal de 12 semanas não é um modelo comum nem é incluído no ficheiro público de dados. As fichas existentes do titular mantêm-se na conta privada.
 - Questionário privado, rascunho com autorização de gravação e versões das respostas ao ativar programas.
+- Validação com resumo visível e focado ao enviar, incluindo campos opcionais fechados; objetivo principal sincronizado com os objetivos assinalados. Limitações/exclusões mostram um resultado explícito de revisão, sem um botão aparentemente inativo. Alterar respostas invalida propostas anteriores por ativar.
 - Objetivos explícitos: **perder peso**, ganhar força, ganhar massa muscular, melhorar mobilidade e condição física. Podem combinar-se, com uma prioridade.
 - Gerador determinístico com material declarado, experiência, dias, duração, espaço acima da cabeça e limite de tempo estimado. Propostas de 4, 8 ou 12 semanas, sempre revistas e ativadas pela pessoa.
 - Exemplos YouTube privados: zona principal e secundárias, material, notas de variante, início/fim; pesquisa, filtros, edição e associação a exercícios, sem mudar doses ou histórico.

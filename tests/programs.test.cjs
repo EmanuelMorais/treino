@@ -1,5 +1,16 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),engine=require('../program-engine.js');
 const profile=extra=>({...engine.defaults(),name:'Example',adult:true,consent:true,goals:['strength'],primaryGoal:'strength',...extra});
+test('choosing a priority includes it among objectives without dropping other selected goals',()=>{
+ const selected=['weight_loss','mobility'];const result=engine.reconcileGoals(selected,'strength','primaryGoal');assert.deepEqual(result,{goals:['weight_loss','mobility','strength'],primaryGoal:'strength'});assert.deepEqual(selected,['weight_loss','mobility']);
+});
+test('unchecking the current priority selects a remaining objective or leaves an explicit empty choice',()=>{
+ assert.deepEqual(engine.reconcileGoals(['weight_loss','mobility'],'strength','goals'),{goals:['weight_loss','mobility'],primaryGoal:'weight_loss'});
+ assert.deepEqual(engine.reconcileGoals([],'strength','goals'),{goals:[],primaryGoal:''});
+});
+test('existing inconsistent questionnaire priorities are reconciled for display without mutating stored answers',()=>{
+ const original=profile({goals:['weight_loss','mobility'],primaryGoal:'strength'}),before=JSON.stringify(original);
+ const next={...original,...engine.reconcileGoals(original.goals,original.primaryGoal)};assert.deepEqual(engine.profileErrors(next),[]);assert.equal(JSON.stringify(original),before);
+});
 test('three home sessions fit 30–45 minutes and use only declared equipment',()=>{
  const p=profile({days:3,minutes:35,equipment:['dumbbells','bench','bands'],goals:['strength','muscle','weight_loss'],primaryGoal:'muscle'}),result=engine.generate(p);
  assert.equal(result.errors,undefined);assert.equal(result.sessions.length,36);assert.equal(result.weightLoss,true);

@@ -33,6 +33,14 @@
   ['hip-mobility','Mobilidade da anca em meio-ajoelhado','mobility',[],['Glúteos'],'Move a bacia suavemente para a frente, mantendo o tronco alinhado. Sem dor.',true],
  ].map(([id,name,pattern,equipment,muscles,how,unilateral=false])=>({id,name,pattern,equipment,muscles,how,unilateral}));
  const copy=x=>JSON.parse(JSON.stringify(x));
+ function reconcileGoals(goals,primaryGoal,changedField=''){
+  const selected=[...new Set((Array.isArray(goals)?goals:[]).filter(g=>Object.hasOwn(GOALS,g)))];
+  let primary=Object.hasOwn(GOALS,primaryGoal)?primaryGoal:'';
+  if(changedField==='goals'&&!selected.includes(primary))primary=selected[0]||'';
+  else if(primary&&!selected.includes(primary))selected.push(primary);
+  if(!primary&&selected.length)primary=selected[0];
+  return {goals:selected,primaryGoal:primary};
+ }
  function profileErrors(p,complete=true){
   if(!p||typeof p!=='object'||Array.isArray(p))return ['Questionário inválido.'];
   const errors=[];
@@ -105,6 +113,6 @@
   if(d.activeProgramWeek!==undefined&&(!Number.isInteger(d.activeProgramWeek)||d.activeProgramWeek<1||d.activeProgramWeek>12))return false;
   return true;
  }
- const api={VERSION,GOALS,EQUIPMENT,MUSCLES,DAYS,library,defaults,profileErrors,generate,videoId,validExample,validExtras};
+ const api={VERSION,GOALS,EQUIPMENT,MUSCLES,DAYS,library,defaults,profileErrors,reconcileGoals,generate,videoId,validExample,validExtras};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.TreinoPrograms=api;
 })(typeof window!=='undefined'?window:this);
