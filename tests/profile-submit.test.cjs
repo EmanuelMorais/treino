@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),engine=require('../program-engine.js');
 function questionnaire(extra={},options={}){
- const fields={...engine.defaults(),name:'Example',adult:true,consent:true,goals:['weight_loss'],primaryGoal:'weight_loss',...extra},state={profile:{answers:fields},plans:[],history:[],drafts:{},favorites:[],...(options.initialProposal?{proposal:options.initialProposal}:{})};
+ const fields={...engine.defaults(),name:'Example',adult:true,consent:true,goals:['weight_loss'],primaryGoal:'weight_loss',...extra},state={profile:{answers:JSON.parse(JSON.stringify(fields))},plans:[],history:[],drafts:{},favorites:[],...(options.initialProposal?{proposal:options.initialProposal}:{})};
  const goals=Object.keys(engine.GOALS).map(value=>({value,checked:fields.goals.includes(value)})),priority={value:fields.primaryGoal},elements=options.invalid?[options.invalid]:[];
  elements.namedItem=name=>name==='primaryGoal'?priority:null;
  const form={elements,querySelectorAll:()=>goals},controls=new Map([['#profile-form',form]]),modals=[];let saved=0;
