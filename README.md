@@ -10,6 +10,8 @@ O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) defin
 
 A [avaliação da arquitetura](docs/ARQUITETURA.md) separa catálogo, prescrição, sessão e histórico antes de ampliar o editor. A [matriz de testes](docs/TESTES-FLUXOS.md) regista a verificação atual, lacunas reproduzidas e os percursos a validar. As regras específicas estão no skill `.agents/skills/treino-product-workflow/`, indicado em `AGENTS.md`.
 
+O plano inclui ainda preparação complementar por modalidade e, posteriormente, módulos completos para provas/corrida/ciclismo, com calendário e fontes específicos. [Como funciona o gerador atual e quais são as fontes](docs/GERACAO-E-FONTES.md): regras locais, sem IA nem consulta automática de vídeos; a preparação desportiva especializada ainda não existe.
+
 ## Estado
 
 - Aplicação privada: sessão validada antes de abrir treinos, biblioteca e histórico. Contas novas começam sem planos.

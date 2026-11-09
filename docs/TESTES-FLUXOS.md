@@ -14,6 +14,8 @@ Data: 9 de novembro de 2026. [Plano](PLANO-EXPERIENCIA-TREINO.md) · [Arquitetur
 
 O build e os 59 testes foram executados sobre a revisão `8c6416e`, antes das alterações de documentação/skill. Estas alterações não mudam a aplicação publicada.
 
+A extensão de modalidades/fontes altera apenas documentação. Foram verificadas as ligações locais, a sequência F01–F38 e a contagem de 25 exercícios nas fontes; os novos percursos desportivos continuam por implementar/executar.
+
 ### Lacunas reproduzidas com dados fictícios
 
 | ID | Montagem e observação | Regressão a acrescentar na correção |
@@ -65,6 +67,14 @@ Camadas: **D** domínio, **I** integração/persistência, **N** navegador real,
 | F28 | Larguras 320/390/768/1440 px, zoom 200%, teclado e rotação: confirmação/campos visíveis, sem scroll horizontal | N, M |
 | F29 | Teclado, leitor de ecrã, foco de diálogos/erros, nomes dos controlos, contraste e movimento reduzido | N, M |
 | F30 | Artefacto sob `/treino/`: assets, login/reset, links diretos, cache antiga e atualização de versão; percurso curto após deploy | I, N |
+| F31 | Escolher condição geral, complemento desportivo ou prova: só aparecem as perguntas relevantes; mudar de percurso conserva respostas e invalida proposta incompatível | D, N |
+| F32 | Perfil de maratona com calendário de corrida externo: distingue complemento de força de plano completo, respeita disponibilidade e não duplica treinos | D, I, N |
+| F33 | Ciclismo sem potência/FTP conhecido e com prova: não inventa watts/zonas; unidades, dias e duração coerentes com o módulo suportado | D, N |
+| F34 | Padel com jogos/torneio e objetivos combinados: calendário considerado; recomendações só do módulo revisto, sem prometer substituir treino técnico | D, N |
+| F35 | Prazo incompatível, dados insuficientes, várias modalidades ou modalidade não suportada: saída explícita, sem gerar plano genérico rotulado como especializado | D, N |
+| F36 | Alterar calendário, feedback ou evento depois de ativar: diferenças e âmbito visíveis, overrides respeitados e histórico intacto | D, I, N |
+| F37 | Programa expõe versão/fontes/pressupostos corretos; regra sem revisão não é publicada como validada; vídeo pessoal não recebe selo científico | D, I, N |
+| F38 | Migração de conta antiga sem dados desportivos, export/import e dois dispositivos: continua no percurso geral e não recebe modalidades/planos por defeito | D, I, N |
 
 ## Como testar
 
@@ -82,6 +92,7 @@ Provocar também gravação recusada, resposta lenta/fora de ordem, pesquisa vaz
 - Cada entrega passa as regressões e os casos novos relevantes; não adiar o teste do percurso alterado para o fim.
 - Histórico, privacidade, migração e séries preenchidas são critérios bloqueantes nas alterações que os afetem.
 - Antes de entregar o conjunto, executar F01–F30, registar exceções por ambiente e decidir explicitamente quais impedem publicar.
+- Para as extensões desportivas e de proveniência, executar também F31–F38 antes de as entregar. Continuam planeados e não foram executados nesta atualização de documentação.
 - Guardar resultados/versionamento e evidência sem dados pessoais. Não prometer ausência total de erros.
 - Configurar Pages por workflow dependente dos checks; um workflow paralelo à publicação por branch não impede publicar com falhas.
 - Repetir um percurso curto no artefacto publicado. Nesta entrega, os novos fluxos e a matriz permanecem por implementar/executar.

@@ -96,6 +96,32 @@ Sem autoplay. Fechar o diálogo, navegar ou terminar sessão destrói o player e
 
 Nesta fase, «vídeo próprio» significa ligação para um vídeo YouTube, incluindo não listado quando acessível. Upload direto de ficheiros fica para uma fase posterior, com armazenamento privado, permissões, limites e custos definidos; não o apresentar como já disponível.
 
+## Preparação por modalidade e para provas
+
+Extensão pedida em 9 de novembro de 2026: apoiar também pessoas que treinam para uma modalidade ou um evento, como uma maratona, ciclismo ou padel. **Ainda não implementada.** Não tratar esta opção como um simples filtro de músculos nem dar um nome desportivo a uma rotina genérica.
+
+Na entrada guiada, distinguir **condição física geral**, **preparação complementar para o meu desporto** e **preparar uma prova**. Só abrir perguntas da modalidade quando esta for escolhida; manter o percurso geral curto. Permitir conciliar objetivos, mas definir a prioridade e mostrar incompatibilidades antes de gerar.
+
+| Contexto | Informação adicional relevante | Resultado a desenhar e validar |
+| --- | --- | --- |
+| Corrida / maratona | Distância e data da prova, terminar ou tempo pretendido, experiência, frequência/volume recente, sessão mais longa recente, dias de corrida e plano já seguido | Primeiro, força/mobilidade complementar coordenada com a corrida. Um plano completo exige sessões próprias de corrida, duração/distância/intensidade, fases e preparação para a prova; não é entregue apenas com séries de musculação |
+| Ciclismo | Estrada/BTT/indoor, prova/percurso e data quando existirem, horas e sessões habituais, dias disponíveis, treinos intensos/longos; potência/FTP apenas se conhecidos e relevantes | Complemento coordenado com as saídas; um módulo completo distingue sessões de bicicleta, unidades e métodos de intensidade, sem inventar watts ou zonas |
+| Padel | Nível, frequência/duração de jogos e treinos técnicos, competições, calendário e condições relevantes | Preparação física complementar com critérios específicos revistos para a modalidade, coordenada com jogos; não apresentar trabalho físico como substituto de treino técnico/tático |
+| Outras modalidades / várias | Modalidade principal, atividades secundárias, calendário e prioridade | Só gerar preparação especializada quando houver módulo suportado/revisto. Caso contrário, declarar o limite e oferecer apenas a opção geral/complementar que esteja validada |
+
+Regras do produto:
+
+- Contabilizar **todos** os treinos e jogos relevantes, incluindo um plano externo; separar dias/minutos disponíveis para força dos dias/minutos da modalidade. Não acrescentar automaticamente várias sessões de força a uma semana já preenchida.
+- Considerar calendário, recuperação declarada e feedback ao propor distribuição e alterações. Não aplicar a regra genérica de intervalo entre sessões de corpo inteiro a todas as sessões desportivas sem distinguir o tipo de trabalho.
+- Recolher uma linha de base real. Uma data próxima ou objetivo incompatível com a experiência/tempo disponível produz uma explicação e revisão do objetivo, não uma progressão agressiva para cumprir o calendário.
+- Trabalhar preparação geral, específica e período de prova/recuperação apenas com regras próprias documentadas e revistas. Fases e redução de carga não são copiadas mecanicamente da atual semana leve a cada quatro semanas.
+- Permitir importar/registar o calendário externo e manter blocos do treinador; propor ajustes com âmbito explícito, sem reescrever sessões concluídas ou substituir um plano externo em silêncio.
+- Medir o que corresponde ao objetivo: regularidade, feedback, distância/tempo e métricas da modalidade quando existentes. Não prometer um tempo de prova, prevenção de lesões ou melhoria de desempenho só por associar uma etiqueta ao exercício.
+- Se houver concorrência entre preparar uma prova, ganhar massa e perder peso, apresentar a prioridade e as escolhas da proposta; não aumentar restrições alimentares nem volumes automaticamente.
+- Manter demonstrações e substituições adaptáveis. Uma alternativa deve preservar a função do bloco e a fase do programa, além do padrão/músculo/material, ou pedir revisão quando não houver equivalência.
+
+**Ordem de implementação:** primeiro os fluxos gerais e a preservação de dados; depois o contexto desportivo e o planeamento complementar. Planos completos de corrida/ciclismo/prova são módulos posteriores, entregues modalidade a modalidade, depois de recolher fontes específicas e obter revisão qualificada das regras. Não ativar a geração especializada só porque o questionário já permite selecionar a modalidade. A [proveniência das regras](GERACAO-E-FONTES.md) define os critérios de publicação do conteúdo.
+
 ## Entrega faseada
 
 Cada etapa tem demonstração com dados fictícios, testes e critério de saída; a seguinte não substitui a verificação da anterior.
@@ -108,6 +134,8 @@ Cada etapa tem demonstração com dados fictícios, testes e critério de saída
 | 3 — Substituição e programas | Alternativas explicáveis, âmbito, troca a meio da sessão, overrides e regeneração com diferenças | Alterações futuras corretas, sem reinterpretar séries/cargas nem reescrever o passado |
 | 4 — Execução e propostas | Reduzir ruído, separar editor/sessão, simplificar questionário/proposta e vídeos pessoais integrados | Uma conta nova chega ao primeiro treino, regista e retoma; uma pessoa experiente adapta-o sem perder controlo |
 | 5 — Qualidade de publicação | Matriz completa, E2E Chromium/WebKit, dois dispositivos, acessibilidade e Pages condicionado aos testes | Percursos críticos verificados no artefacto a publicar; limitações móveis documentadas |
+| 6 — Contexto desportivo e complemento | Modalidade/evento, linha de base, calendário externo, carga global e módulos complementares revistos | Compatibilidade com treinos/jogos, limites claros de suporte e testes específicos; sem prometer um plano completo da modalidade |
+| 7 — Módulos completos por modalidade | Regras/fontes próprias, sessões desportivas, fases e ajustes por feedback; começar por uma modalidade validada | Um módulo de cada vez, revisto e testado; objetivos e datas inviáveis tratados sem inventar prescrições |
 
 Os testes acompanham **todas** as etapas; a etapa 5 completa a cobertura e o bloqueio da publicação, não é o primeiro momento de testar. Começar a automatização do navegador na etapa 0. Evitar adicionar já gráficos, funcionalidades sociais, IA ou dezenas de filtros antes de validar o percurso principal.
 
@@ -120,3 +148,4 @@ Os testes acompanham **todas** as etapas; a etapa 5 completa a cobertura e o blo
 - A sessão móvel mostra uma ação principal de cada vez; detalhes e opções avançadas ficam disponíveis sem ocupar o percurso todo.
 - Um registo feito num dispositivo surge no outro, na mesma conta, sem escolha manual de versões; conflitos seguem uma política visível e recuperável. Contas diferentes nunca recebem os mesmos dados privados.
 - Passam os testes críticos da [matriz](TESTES-FLUXOS.md), incluindo erro/recuperação e edição a meio de uma sessão. Testar tarefas com pessoas iniciantes e experientes antes de considerar a UX validada; documentação dos concorrentes não substitui essa observação.
+- A geração especializada só fica disponível para módulos com regras e fontes identificadas e revisão documentada; quem pretende uma maratona consegue distinguir complemento de força de um plano completo de corrida. Testar também F31–F38 ao entregar estas extensões.

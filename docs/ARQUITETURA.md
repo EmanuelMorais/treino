@@ -50,6 +50,9 @@ Esta árvore é um destino, não uma reorganização feita nesta entrega. Primei
 | `WorkoutSession` | `sessionId`, versão de origem, início/data e ocorrências próprias | Começa como cópia da prescrição; edições só afetam esta sessão por defeito |
 | `PerformedSet` | variante, valores e unidades explícitas, instante/ordem, snapshot de apresentação | Não reinterpretar uma série por mudança posterior do catálogo/plano |
 | `ExerciseMedia` | ID, origem pública/pessoal, URL/ID validado, início/fim, estado de revisão | Exemplo pessoal privado pode sobrepor o exemplo do catálogo |
+| `AthleteContext` / calendário | Modalidade principal/secundárias, objetivo/evento, linha de base, sessões externas, disponibilidade e origem | Extensão planeada: distinguir tempo de força e da modalidade, sem somar ou duplicar sessões em silêncio |
+| `SportSessionPrescription` | Tipo de sessão, duração/distância/intensidade e unidades próprias, módulo e fase | Extensão planeada: corrida/bicicleta/jogo não são representados artificialmente como séries de musculação |
+| Registo de evidência/regras | Fontes, âmbito/população, `ruleId`, versão, pressupostos e revisão | Separar demonstração, fundamentação da prescrição e referência de UX; ver [geração e fontes](GERACAO-E-FONTES.md) |
 
 Definições pessoais têm IDs estáveis próprios; editar apenas o nome não cria um exercício novo. Mudar material, variante ou medida pode exigir outra identidade. Uma migração não deve juntar dois exercícios apenas por terem nomes parecidos. Quando não houver correspondência segura com o catálogo, manter uma definição legada privada e as suas unidades originais.
 
