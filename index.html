@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#183e32">
+<title>Treino — planos e evolução</title>
+<meta name="description" content="Treino de corpo inteiro pronto para seguir três vezes por semana em 30–45 minutos, mobilidade nos intervalos e registo de progresso.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="storage-error" hidden class="error-bar" role="alert"></div>
+<aside class="side"><div><div class="brand"><span class="brandmark" aria-hidden="true">//</span>treino<span style="color:#799665">.</span></div><p class="tagline">Planos e evolução</p></div><nav class="nav" aria-label="Navegação principal"><button data-view="plans" class="active"></button><button data-view="library"></button><button data-view="history"></button></nav><div class="side-bottom"><span class="local-dot"></span>Guardado neste navegador<br><a href="https://www.youtube.com/@bioforceman" target="_blank" rel="noopener">Vídeos de @bioforceman ↗</a></div></aside>
+<main class="main"><header class="top"><span class="eyebrow">Treino / planos e evolução</span><div class="backup-actions"><button id="account" class="btn">Entrar</button><button id="import" class="btn secondary">Importar</button><button id="export" class="btn secondary"></button></div></header><section id="sync-bar" class="sync-bar" aria-live="polite"><div class="sync-copy"><strong id="sync-title">Guardado neste navegador</strong><span id="sync-detail">Entra para sincronizar.</span></div><div class="sync-tools"><button id="sync-now" class="btn secondary" hidden>Sincronizar</button><button id="online-backups" class="btn secondary" hidden>Cópias online</button></div></section><div id="content"></div><footer class="footer"><span>Força baseada nos vídeos de <a href="https://www.youtube.com/@bioforceman" target="_blank" rel="noopener">Bioforceman ↗</a> · Catálogo recolhido a 09/11/2026</span><span>Planos e registos privados por conta · Exporta cópias regularmente.</span></footer></main>
+<input type="file" id="import-file" class="import-input" accept="application/json,.json" aria-label="Importar cópia de segurança">
+<dialog id="modal"><div class="dialog-head"><h2 id="dialog-title"></h2><button class="close" aria-label="Fechar janela">×</button></div><div class="dialog-body" id="dialog-content"></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="sync-core.js"></script>
+<script src="cloud.js"></script>
+</body></html>

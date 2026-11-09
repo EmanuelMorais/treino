@@ -1,0 +1,31 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs');
+const {PGlite}=require('@electric-sql/pglite');
+test('database enforces private ownership, detects stale saves and retains 20 recoverable versions',async()=>{
+ const db=new PGlite();
+ const a='11111111-1111-4111-8111-111111111111',b='22222222-2222-4222-8222-222222222222';
+ try{
+  await db.exec(`create role anon; create role authenticated; create schema auth;
+   create table auth.users(id uuid primary key);
+   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+   grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;
+   insert into auth.users values('${a}'),('${b}');`);
+  const file=fs.readdirSync('supabase/migrations').find(x=>x.endsWith('_training_sync.sql'));
+  await db.exec(fs.readFileSync('supabase/migrations/'+file,'utf8'));
+  await db.exec(`set role authenticated; set request.jwt.claim.sub='${a}';`);
+  const payload=JSON.stringify({version:1,plans:[],history:[],drafts:{},favorites:[]});
+  const save=(id,rev)=>db.query('select public.save_training_document($1,$2::jsonb,$3) as result',[id,payload,rev]);
+  assert.equal((await save(a,0)).rows[0].result.revision,1);
+  await assert.rejects(save(a,0),e=>e.code==='PT409');
+  await assert.rejects(save(b,0),e=>e.code==='42501');
+  for(let rev=1;rev<=23;rev++)await save(a,rev);
+  assert.equal((await db.query('select count(*)::int as n from public.training_backups')).rows[0].n,20);
+  await assert.rejects(db.query('update public.training_documents set user_id=$1 where user_id=$2',[b,a]),e=>e.code==='42501');
+  await db.exec(`set request.jwt.claim.sub='${b}';`);
+  assert.equal((await db.query('select * from public.training_documents')).rows.length,0);
+  assert.equal((await db.query('select * from public.training_backups')).rows.length,0);
+  assert.equal((await save(b,0)).rows[0].result.revision,1);
+  await db.exec('set role anon');
+  await assert.rejects(db.query('select * from public.training_documents'),e=>e.code==='42501');
+  await assert.rejects(save(a,24),e=>e.code==='42501');
+ }finally{await db.close()}
+});
