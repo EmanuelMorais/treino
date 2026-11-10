@@ -10,3 +10,4 @@ supabase/.temp/
 graft/
 .playwright-cli/
 output/playwright/
+dist/

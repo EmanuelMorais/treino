@@ -8,7 +8,9 @@
     "test": "node --test tests/*.test.cjs",
     "test:browser": "node scripts/test-workout-browser.cjs",
     "catalog:coverage": "node scripts/catalog-coverage.cjs",
-    "dev": "python3 -m http.server 8775"
+    "dev": "python3 -m http.server 8775",
+    "test:sync-browser": "node scripts/test-sync-browser.cjs",
+    "package:site": "node scripts/package-site.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.119.0"

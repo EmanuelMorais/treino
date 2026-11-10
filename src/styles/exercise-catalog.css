@@ -46,3 +46,14 @@
 @media(max-width:540px){.proposal-exercise-actions .btn{white-space:normal;text-align:left;justify-content:flex-start;max-width:100%}}
 
 .proposal-exercise-actions .btn{overflow-wrap:anywhere;min-width:0}
+.workout-nav{margin-bottom:18px}
+.workout-overview{max-width:900px}
+.workout-prescription{padding-left:22px;margin:20px 0}
+.workout-prescription li{margin:14px 0}
+.workout-prescription li span{display:block;color:var(--muted)}
+.session-exercise-options summary,.session-technique summary{cursor:pointer;padding:8px 0;min-height:44px;color:var(--muted);font-size:12px}
+.session-exercise-options .mini{display:block;min-height:44px}
+.session-layout .exercise:first-child{border-top:0}
+.session-layout .privacy{margin-top:16px}
+.session-layout #finish{min-height:48px;margin:16px 0}
+@media(max-width:650px){.session-layout .exercise-top{flex-wrap:wrap}.session-layout .exercise-tools{margin-left:auto}}

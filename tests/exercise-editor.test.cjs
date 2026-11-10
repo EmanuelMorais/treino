@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 function editor(rows){
  const exercise={id:'exercise',name:'Remada',video:'',sets:2,unit:'reps',target:'8',start:0,note:'',loadReference:'per_dumbbell',exerciseKey:'catalog:db-row'},plan={id:'plan',exercises:[exercise]},draft={rows:{exercise:rows}},controls=new Map();let saved=0;
  const $=id=>{if(!controls.has(id))controls.set(id,{value:'',textContent:'',focus(){}});return controls.get(id)};
- const ctx=vm.createContext({window:{TreinoRecords:records},getPlan:()=>plan,getDraft:()=>draft,$,modal(){},esc:String,parseVideo:raw=>raw?engine.videoId(raw):'',persist(){saved++},closeModal(){},renderPlans(){},toast(){},blankRow:()=>({kg:'',reps:'',done:false})});
+ const ctx=vm.createContext({window:{TreinoRecords:records},accountAccess:true,activeStorageKey:'test',getPlan:()=>plan,getDraft:()=>draft,$,modal(){},esc:String,parseVideo:raw=>raw?engine.videoId(raw):'',persist(){saved++},closeModal(){},renderPlans(){},toast(){},blankRow:()=>({kg:'',reps:'',done:false})});
  vm.runInContext(fs.readFileSync('src/ui/exercise-editor.js','utf8'),ctx);ctx.exercise=exercise;vm.runInContext('exerciseForm(exercise)',ctx);
  for(const[id,value]of Object.entries({'#e-name':'Remada','#e-video':'','#e-sets':'2','#e-unit':'reps','#e-load-reference':'per_dumbbell','#e-target':'8','#e-start':'0','#e-note':''}))$(id).value=value;
  return {$,exercise,draft,submit(){ $('#exercise-form').onsubmit({preventDefault(){}})},get saved(){return saved}};

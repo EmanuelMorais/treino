@@ -15,7 +15,7 @@ Branch `codex/catalogo-editor-treino`, 10 de novembro de 2026. Implementação l
 
 O documento continua a usar o envelope v1, enriquecido com `minClientBuild: 8`, identidades e snapshots. Um cliente antigo não pode regravar estes dados como se os compreendesse.
 
-A migração **`20261110001347_require_compatible_training_client.sql` está apenas no repositório**, testada em PGlite isolado. Mantém a autorização por JWT, RLS, CAS/revisões e 20 cópias; exige versão de escritor compatível através de `x-client-info` e responde PT426 quando for necessário atualizar. O header é um controlo de compatibilidade, não uma credencial nem uma fronteira de autorização.
+Na data desta segunda entrega, a migração **`20261110085319_require_compatible_training_client.sql` (ficheiro originalmente criado com o timestamp `20261110001347`, alinhado posteriormente com a aplicação remota) está apenas no repositório**, testada em PGlite isolado. Mantém a autorização por JWT, RLS, CAS/revisões e 20 cópias; exige versão de escritor compatível através de `x-client-info` e responde PT426 quando for necessário atualizar. O header é um controlo de compatibilidade, não uma credencial nem uma fronteira de autorização.
 
 A nova aplicação confirma `client_protocol` numa leitura autenticada antes de desbloquear escrita. Se a migração faltar ou os dados exigirem uma versão mais recente, bloqueia a edição com mensagem recuperável e conserva o cache original. Não testar esta branch com dados reais antes da preparação do servidor.
 
