@@ -112,3 +112,5 @@ Provocar também gravação recusada, resposta lenta/fora de ordem, pesquisa vaz
 ## Atualização de implementação — 10 de novembro de 2026
 
 A [segunda entrega](ENTREGA-SUBSTITUICOES.md) regista 103 testes Node e o percurso ampliado em Chrome. WebKit está bloqueado por uma falha de interação reproduzida também sem a aplicação; não considerar o novo percurso aprovado neste motor. A matriz acima continua a definir a aceitação integral, incluindo sincronização real, equipamento físico e usabilidade, ainda pendentes.
+
+A [terceira entrega](ENTREGA-GERADOR-CATALOGO.md) eleva a suite a 111 testes e acrescenta geração sobre o catálogo partilhado e o percurso real de questionário/proposta/ativação em Chrome. Inclui partes de F03/F04 e F39–F43, sem substituir os critérios integrais, revisão de conteúdo, outros motores ou dispositivos reais.

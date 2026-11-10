@@ -1,8 +1,8 @@
 /* Original editorial metadata. Demonstrations use explicit YouTube searches.
- * These additions are available for manual selection, not automatic prescription.
+ * Selection preferences and prescription are defined separately in program-engine.js.
  */
 (function (root) {
-  const base = typeof module !== 'undefined' && module.exports ? require('../../program-engine.js') : root.TreinoPrograms;
+  const base = typeof module !== 'undefined' && module.exports ? require('./base-exercises.js') : root.TreinoBaseExercises;
   const EQUIPMENT = {
     dumbbells: 'Halteres', barbell: 'Barra e discos', bench: 'Banco plano', incline_bench: 'Banco inclinável',
     rack: 'Suporte / rack', bands: 'Elásticos', band_anchor: 'Ancoragem para elástico', chair: 'Cadeira estável',
@@ -107,6 +107,7 @@
     ...e, pattern: ['db-fly','pec-deck'].includes(e.id) ? 'accessory' : e.pattern,
     direction: ['db-fly','pec-deck'].includes(e.id) ? 'adução' : DIRECTIONS[e.pattern] || 'acessório',
     loadReference: e.equipment.includes('dumbbells') ? 'per_dumbbell' : e.equipment.includes('barbell') ? 'barbell_total' : e.equipment.some(x => x.startsWith('machine_') || x.startsWith('cable_')) ? 'machine_stack' : e.equipment.includes('bands') || e.equipment.includes('ab_wheel') ? 'unspecified' : 'bodyweight',
+    posture: e.id === 'seated-press' || e.id === 'machine-overhead' ? 'seated' : e.id === 'kneeling-press' ? 'kneeling' : 'other',
     contentStatus: 'editorial', provenance: 'treino-catalogue-1', video: ''
   }));
   const api = { VERSION: 1, EQUIPMENT, exercises };

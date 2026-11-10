@@ -12,9 +12,13 @@
     bands_anchor: { name: 'Elásticos + ancoragem', equipment: ['bands','band_anchor'] }
   };
 
+  function spaceCompatible(exercise, conditions = {}) {
+    const clearance=conditions.lowCeiling?'none':conditions.overheadClearance||'standing';
+    return !(exercise.overhead&&(clearance==='none'||clearance==='lowered'&&!['seated','kneeling'].includes(exercise.posture)))&&!(conditions.walkingSpace===false&&exercise.walking);
+  }
   function compatibleWith(exercise, equipment, conditions = {}) {
     return exercise.equipmentKnown !== false && exercise.equipment.every(key => equipment.includes(key)) &&
-      !(conditions.lowCeiling && exercise.overhead) && !(conditions.walkingSpace === false && exercise.walking);
+      spaceCompatible(exercise,conditions);
   }
 
   function defaultContext(equipment) {
@@ -25,16 +29,17 @@
     }) || 'all';
   }
 
-  function search({ query = '', muscle = '', context = 'all', favorites = [], onlyFavorites = false, recents = [], extra = [], conditions = {} } = {}) {
-    const terms = normalize(query).split(' ').filter(Boolean), permitted = CONTEXTS[context]?.equipment;
-    if (!Object.hasOwn(CONTEXTS, context) && !context.startsWith('machine:')) return [];
+  function search({ query = '', muscle = '', context = 'all', favorites = [], onlyFavorites = false, recents = [], extra = [], conditions = {}, inventory = null } = {}) {
+    const terms = normalize(query).split(' ').filter(Boolean), permitted = context === 'profile' ? inventory : CONTEXTS[context]?.equipment;
+    if(context==='profile'&&!Array.isArray(inventory))return [];
+    if (!Object.hasOwn(CONTEXTS, context) && context!=='profile' && !context.startsWith('machine:')) return [];
     const machine = context.startsWith('machine:') ? context.slice(8) : '';
     const items = [...data.exercises, ...extra].filter(e => {
       if (muscle && !e.muscles.includes(muscle)) return false;
       if (onlyFavorites && !favorites.includes(e.id)) return false;
       if (permitted && !compatibleWith(e, permitted, conditions)) return false;
       if (machine && !e.equipment.includes(machine)) return false;
-      if (conditions.lowCeiling && e.overhead || conditions.walkingSpace === false && e.walking) return false;
+      if (!spaceCompatible(e,conditions)) return false;
       const text = normalize([e.name, ...(e.aliases || []), ...e.muscles].join(' '));
       return terms.every(term => text.includes(term));
     });

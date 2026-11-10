@@ -1,10 +1,11 @@
 function openExercisePicker({onChoose = null, replacing = null} = {}) {
   if (!accountAccess) return;
-  const catalog = window.TreinoExerciseCatalog, plan = getPlan();
+  const catalog = window.TreinoExerciseCatalog, plan = getPlan(), answers=state.profile?.answers;
+  const inventory=answers?window.TreinoPrograms.availableEquipment(answers):null;
   const extra = catalog.personalExercises(state.plans), items = [...catalog.exercises, ...extra];
   const chosen = new Set();
-  const suggested = replacing && !state.profile?.answers?.limits && !state.profile?.answers?.avoided?.trim() ? window.TreinoReplacement.suggestions(replacing,state.profile?.answers?.equipment,state.profile?.answers||{}).map(e=>e.id) : [];
-  let query = '', muscle = '', context = catalog.defaultContext(state.profile?.answers?.equipment), onlyFavorites = false, allowRepeated = false, listScroll = 0;
+  const suggested = replacing && !state.profile?.answers?.limits && !state.profile?.answers?.avoided?.trim() ? window.TreinoReplacement.suggestions(replacing,state.profile?.answers?window.TreinoPrograms.availableEquipment(state.profile.answers):undefined,state.profile?.answers||{}).map(e=>e.id) : [];
+  let query = '', muscle = '', context = inventory ? 'profile' : 'all', onlyFavorites = false, allowRepeated = false, listScroll = 0;
   state.catalogFavorites ||= []; state.catalogRecents ||= [];
   const machineOptions = Object.entries(catalog.EQUIPMENT).filter(([key]) => key.startsWith('machine_') || key.startsWith('cable_'));
   const zones = [...new Set(items.flatMap(e => e.muscles))].sort((a,b) => a.localeCompare(b,'pt'));
@@ -13,7 +14,7 @@ function openExercisePicker({onChoose = null, replacing = null} = {}) {
   const duplicate = e => plan.exercises.some(current => current.exerciseKey === (e.exerciseKey || 'catalog:' + e.id));
 
   function results() {
-    const matches = catalog.search({ query, muscle, context, onlyFavorites, favorites: state.catalogFavorites, recents: state.catalogRecents, extra });
+    const matches = catalog.search({ query, muscle, context, onlyFavorites, favorites: state.catalogFavorites, recents: state.catalogRecents, extra, inventory, conditions:context==='profile'?answers:{} });
     if(replacing&&!query)matches.sort((a,b)=>Number(suggested.includes(b.id))-Number(suggested.includes(a.id)));
     $('#catalog-count').textContent = matches.length + (matches.length === 1 ? ' exercício' : ' exercícios');
     $('#catalog-results').innerHTML = matches.length ? matches.map(e => `<article class="catalog-item">
@@ -48,7 +49,7 @@ function openExercisePicker({onChoose = null, replacing = null} = {}) {
       ${replacing?`<p>Substituir <strong>${esc(replacing.name)}</strong>. Escolhe uma alternativa e revê onde será aplicada.</p>`:''}
       <label>Pesquisar exercício<input id="catalog-search" type="search" placeholder="Ex.: remada, supino, bíceps…" value="${esc(query)}" autocomplete="off"></label>
       <div class="catalog-filters"><label>Zona muscular<select id="catalog-muscle" aria-label="Zona muscular"><option value="">Todas as zonas</option>${zones.map(zone => `<option value="${esc(zone)}">${esc(zone)}</option>`).join('')}</select></label>
-      <label>Material / contexto<select id="catalog-context" aria-label="Material / contexto">${Object.entries(catalog.CONTEXTS).map(([key,value]) => `<option value="${key}">${esc(value.name)}</option>`).join('')}<optgroup label="Máquina específica">${machineOptions.map(([key,label]) => `<option value="machine:${key}">${esc(label)}</option>`).join('')}</optgroup></select></label></div>
+      <label>Material / contexto<select id="catalog-context" aria-label="Material / contexto">${inventory?'<option value="profile">Material e espaço do meu perfil</option>':''}${Object.entries(catalog.CONTEXTS).map(([key,value]) => `<option value="${key}">${esc(value.name)}</option>`).join('')}<optgroup label="Máquina específica">${machineOptions.map(([key,label]) => `<option value="machine:${key}">${esc(label)}</option>`).join('')}</optgroup></select></label></div>
       <div class="catalog-tools"><label class="choice"><input type="checkbox" id="catalog-only-favorites" ${onlyFavorites ? 'checked' : ''}> Favoritos</label><button class="mini" id="catalog-clear">Limpar filtros</button><span id="catalog-count" role="status"></span></div>
       <div id="catalog-results" class="catalog-results"></div>
       ${!onChoose?`<details class="catalog-options"><summary>Mais opções</summary><label class="choice"><input type="checkbox" id="catalog-repeated" ${allowRepeated ? 'checked' : ''}> Permitir repetir um exercício que já está neste treino</label><button class="btn secondary" id="catalog-custom">Criar exercício pessoal</button></details>`:''}

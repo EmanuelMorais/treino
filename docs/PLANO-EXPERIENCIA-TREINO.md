@@ -1,6 +1,6 @@
 # Plano: criar, adaptar e seguir treinos com facilidade
 
-Data: 9 de novembro de 2026. Plano de trabalho faseado. A [primeira entrega na branch `codex/catalogo-editor-treino`](ENTREGA-CATALOGO-EDITOR.md) implementa parte das bases e do catálogo/editor; não está integrada em `main` nem publicada. A [segunda entrega](ENTREGA-SUBSTITUICOES.md) acrescenta substituições e retomada de sessões; o documento respetivo regista a verificação e os limites. Os restantes fluxos continuam planeados. Este documento ordena as alterações de criação/edição previstas na [fase 2](FASE-2.md), sem dar essa fase como concluída.
+Data: 9 de novembro de 2026. Plano de trabalho faseado. A [primeira entrega na branch `codex/catalogo-editor-treino`](ENTREGA-CATALOGO-EDITOR.md) implementa parte das bases e do catálogo/editor; não está integrada em `main` nem publicada. A [segunda entrega](ENTREGA-SUBSTITUICOES.md) acrescenta substituições e retomada de sessões; o documento respetivo regista a verificação e os limites. A [terceira entrega](ENTREGA-GERADOR-CATALOGO.md) integra o catálogo no gerador e detalha material/altura. Os restantes fluxos continuam planeados. Este documento ordena as alterações de criação/edição previstas na [fase 2](FASE-2.md), sem dar essa fase como concluída.
 
 Objetivo: uma pessoa sem experiência consegue obter uma proposta compreensível e começar; uma pessoa experiente consegue construir e adaptar o plano, incluindo os gerados, sem perder o histórico. Durante a sessão, a interface concentra-se no exercício, na série e no próximo passo.
 
@@ -50,7 +50,7 @@ Um mapa corporal pode ajudar posteriormente, mas não é pré-requisito: lista a
 
 ### Cobertura do catálogo: requisito para disponibilizar o gerador
 
-Os 25 exercícios atuais são um catálogo inicial insuficiente para a variedade de contextos pretendida. Ampliar e rever o catálogo é trabalho próprio da etapa 2, em paralelo com a pesquisa/editor; melhorar a interface sem melhorar o conteúdo não satisfaz esta etapa.
+Os 25 exercícios de partida eram um catálogo inicial insuficiente para a variedade de contextos pretendida. Ampliar e rever o catálogo é trabalho próprio da etapa 2, em paralelo com a pesquisa/editor; melhorar a interface sem melhorar o conteúdo não satisfaz esta etapa.
 
 Avaliar a cobertura por **contexto de material × padrão/direção × nível × condições de execução**, além dos grupos musculares. Não definir sucesso apenas por um número total de exercícios ou inflacionar a contagem com aliases e mudanças de nome.
 

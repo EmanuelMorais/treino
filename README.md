@@ -6,7 +6,7 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 ## Próximas alterações
 
-**Nesta branch:** ver a [primeira entrega do catálogo/editor](docs/ENTREGA-CATALOGO-EDITOR.md): 93 exercícios para seleção manual, pesquisa/filtros, demonstrações e proteção dos registos. O gerador automático mantém as 25 entradas anteriores. As alterações da branch ainda não estão no site de produção.
+**Nesta branch:** [catálogo/editor](docs/ENTREGA-CATALOGO-EDITOR.md), [substituições e sessões recuperáveis](docs/ENTREGA-SUBSTITUICOES.md) e [gerador sobre o catálogo partilhado](docs/ENTREGA-GERADOR-CATALOGO.md). Há 93 definições para edição; as regras automáticas selecionam um subconjunto por contexto, com máquinas e condições de altura explícitas. **Ainda não está no site de produção.** A migração de compatibilidade desta branch também ainda não foi aplicada ao Supabase real.
 
 O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação é faseada; consultar o estado da entrega acima.
 
@@ -25,7 +25,7 @@ O plano inclui ainda preparação complementar por modalidade e, posteriormente,
 - Gravação local imediata de planos, rascunhos e sessões.
 - Login com email e palavra-passe, registo com confirmação de email e recuperação de palavra-passe. Contas que usavam links podem definir uma palavra-passe sem mudar de conta nem perder registos; o link de acesso continua disponível como alternativa.
 - Atualização automática entre dispositivos com a mesma conta: Realtime, recuperação ao regressar à página e verificação de revisão a cada 30 segundos enquanto a página está visível.
-- **Base de dados Supabase ligada e migrações aplicadas.** SMTP Brevo configurado para os emails de acesso, com limite de 30 envios por hora no Supabase. A entrega de email e o primeiro login por link já foram confirmados no projeto real.
+- **Base de dados Supabase ligada e migrações de produção aplicadas.** A migração nova desta branch está pendente. SMTP Brevo configurado para os emails de acesso, com limite de 30 envios por hora no Supabase. A entrega de email e o primeiro login por link já foram confirmados no projeto real.
 - [Plano da segunda fase: personalização por questionário](docs/FASE-2.md).
 
 ## Usar e migrar registos

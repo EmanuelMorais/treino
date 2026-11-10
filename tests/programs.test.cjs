@@ -17,9 +17,9 @@ test('three home sessions fit 30–45 minutes and use only declared equipment',(
  for(const s of result.sessions){assert.ok(s.estimatedMinutes<=35);for(const e of s.exercises)assert.ok(e.equipment.every(x=>p.equipment.includes(x)));}
  assert.ok(result.notes.some(n=>n.includes('Perder peso')));
 });
-test('two 20-minute bodyweight days produce complete, bounded sessions without inventing equipment',()=>{
+test('two 20-minute bodyweight days produce limited, bounded sessions without inventing equipment',()=>{
  const result=engine.generate(profile({days:2,minutes:20,equipment:[]}));assert.equal(result.errors,undefined);
- assert.equal(result.sessions.length,24);assert.ok(result.warnings.some(w=>w.includes('costas')));
+ assert.equal(result.sessions.length,24);assert.equal(result.status,'limited');assert.deepEqual(result.coverage.missing,['pull']);assert.ok(result.warnings.some(w=>w.includes('costas')));
  for(const s of result.sessions){assert.ok(s.estimatedMinutes<=20);assert.ok(s.exercises.every(e=>!e.equipment.length));}
 });
 test('four gym days alternate upper and lower sessions without assuming undeclared racks',()=>{
@@ -33,7 +33,7 @@ test('weight loss is selectable as the primary goal without requiring weight or 
 test('limits, exclusions and incomplete questionnaires cannot bypass proposal review',()=>{
  assert.equal(engine.generate(profile({limits:true})).reviewRequired,true);
  assert.equal(engine.generate(profile({avoided:'Squat'})).reviewRequired,true);
- for(const extra of [{adult:false},{consent:false},{goals:[]},{primaryGoal:'unknown'},{minutes:5},{equipment:['rack']},{preferredDays:[0,1,2]}])assert.ok(engine.generate(profile(extra)).errors);
+ for(const extra of [{adult:false},{consent:false},{goals:[]},{primaryGoal:'unknown'},{minutes:5},{equipment:['unknown-equipment']},{preferredDays:[0,1,2]}])assert.ok(engine.generate(profile(extra)).errors);
 });
 test('no overhead clearance excludes overhead pressing and progression is not forced by week',()=>{
  const result=engine.generate(profile({equipment:['dumbbells','bench'],lowCeiling:true}));assert.equal(result.errors,undefined);

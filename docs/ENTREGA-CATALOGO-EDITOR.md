@@ -1,5 +1,7 @@
 # Primeira entrega — catálogo e proteção dos registos
 
+Registo histórico da primeira entrega. Ver [substituições](ENTREGA-SUBSTITUICOES.md) e [integração do gerador](ENTREGA-GERADOR-CATALOGO.md) para alterações posteriores.
+
 Branch: `codex/catalogo-editor-treino`. Estado: implementado e verificado localmente; **não integrado em `main` nem publicado no site de produção**. Esta é uma entrega parcial do [plano faseado](PLANO-EXPERIENCIA-TREINO.md).
 
 ## Alterações

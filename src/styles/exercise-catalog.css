@@ -33,3 +33,6 @@
   .catalog-footer { grid-template-columns: 1fr; }
   .catalog-footer .btn { width: 100%; }
 }
+
+.proposal-help{margin:14px 0;border-top:1px solid var(--line)}
+.proposal-help summary{min-height:44px;padding:12px 0;cursor:pointer;font-weight:600}
