@@ -73,3 +73,10 @@
  .session-layout .set-row input{font-size:16px;min-height:44px}
  .session-layout .home-actions .btn{max-width:100%;white-space:normal}
 }
+@media(max-width:390px){
+ .side{padding-inline:12px;gap:8px}
+ .side .brand{font-size:0;gap:0;flex:0 0 30px}
+ .side .brandmark{font-size:22px}
+ .side .nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:1;min-width:0}
+ .side .nav button{min-width:0;min-height:44px;padding:9px 6px;white-space:normal;justify-content:center;text-align:center}
+}

@@ -49,11 +49,11 @@ Fixtures e capturas são sintéticas. Resultados de CI remoto, quando executado,
 
 ## Workflows preparados
 
-`.github/workflows/verify.yml` executa Node, build, verificação de artefactos gerados, Chrome, WebKit, integração de sincronização e empacotamento. No CI, os browsers recebem `TREINO_SITE_ROOT=dist` e exercitam os mesmos assets do artefacto, sob `/treino/`, com a configuração Auth substituída apenas pela fixture. As Actions estão fixadas por commit; Node 22 e dependências npm fixadas no lockfile.
+`.github/workflows/verify.yml` executa Node, build, verificação de artefactos gerados, Chrome, WebKit, integração de sincronização e empacotamento. No CI, os browsers recebem `TREINO_SITE_ROOT=dist` e exercitam os mesmos assets do artefacto, sob `/treino/`, com a configuração Auth substituída apenas pela fixture. As Actions estão fixadas por commit; Node 22 e dependências npm fixadas no lockfile. O runner usa uma imagem Playwright/Noble fixada por digest para fornecer bibliotecas do sistema; o CLI do lockfile instala os seus próprios browsers compatíveis.
 
-`.github/workflows/publish.yml` só permite execução manual em `main`, depende integralmente da verificação e publica o artefacto que passou os testes. Exige a variável de repositório `TREINO_SERVER_PROTOCOL=8`, a definir **depois de verificar a migração de compatibilidade no servidor**. Não pede nem usa uma chave administrativa Supabase no CI.
+`.github/workflows/publish.yml` só permite execução manual em `main`, depende integralmente da verificação e publica o artefacto que passou os testes. Exige a variável de repositório `TREINO_SERVER_PROTOCOL=8`, já definida depois da verificação da migração no servidor. Não pede nem usa uma chave administrativa Supabase no CI.
 
-**Não foi alterada a configuração GitHub Pages do repositório.** Enquanto Pages publicar por branch, o workflow de verificação não impede a publicação antiga por esse mecanismo. A condição final de publicação exige configurar Pages para GitHub Actions, preparar/verificar o servidor e só depois usar o workflow de publicação. Estes passos continuam pendentes; adicionar os ficheiros não os executa automaticamente.
+**GitHub Pages foi alterado para `build_type: workflow`**, confirmado pela API, e o endereço público continuou a responder HTTP 200. Uma alteração em `main` deixou de usar a publicação antiga por branch. O frontend desta entrega continua na branch/PR: depois da integração em `main`, a publicação exige executar o workflow manual, que repete os checks e publica o artefacto aprovado. Ainda não foi executada uma publicação da nova interface.
 
 ## Preparação do servidor Treino
 
