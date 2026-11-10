@@ -14,7 +14,7 @@ O gerador está em `program-engine.js`, na função `generate`. É **um motor de
 4. Atribui a dose por regras simples: em geral 8–12 repetições; 6–10 para prioridade de força com carga externa e experiência não inicial; doses próprias de mobilidade e posições em segundos, sem converter as unidades em repetições. Normalmente duas séries, três em certas sessões mais longas para pessoas não iniciantes. O descanso varia com essa decisão.
 5. Estima o tempo com aquecimento, execução, descanso, transições e lados. Reduz séries se necessário para encaixar no limite, ou devolve um erro explícito quando não consegue.
 6. Repete a estrutura pelas semanas, com volume reduzido em certas semanas. A progressão de carga é uma orientação escrita para a pessoa aplicar com base no desempenho/recuperação, não uma adaptação automática que analise os seus registos e prescreva novos kg.
-7. Mostra uma proposta para confirmar. A ativação em `profile-ui.js` cria as fichas privadas e regista a versão das regras; não distribui o programa pessoal de outra conta.
+7. Mostra uma proposta guardada, personalizável antes de confirmar, conforme a [quarta entrega](ENTREGA-PROPOSTAS-E-REVISAO.md). A ativação em `profile-ui.js` cria as fichas privadas e regista a versão das regras; não distribui o programa pessoal de outra conta.
 
 Nem todos os campos mudam a escolha: observações livres são guardadas com um aviso de que não são interpretadas; cargas máximas produzem uma orientação para respeitar o material, sem cálculo automático de pesos iniciais. Vários objetivos partilham a mesma estrutura de base. Portanto, «personalizado» nesta versão significa uma adaptação limitada por regras, não uma avaliação individual completa nem preparação desportiva especializada.
 

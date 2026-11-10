@@ -7,8 +7,8 @@ function questionnaire(extra={},options={}){
  const $=selector=>{if(!controls.has(selector))controls.set(selector,{hidden:true,textContent:'',innerHTML:'',focus(){this.focused=true},scrollIntoView(){this.scrolled=true}});return controls.get(selector)};
  class Data{get(name){if(name==='primaryGoal')return priority.value;return fields[name]??null}has(name){return fields[name]===true}getAll(name){return name==='goals'?goals.filter(g=>g.checked).map(g=>g.value):fields[name]||[]}}
  const programs=options.throwGenerate?{...engine,generate(){throw Error('fixture failure')}}:engine;
- const context=vm.createContext({window:{TreinoPrograms:programs},accountAccess:true,state,$,FormData:Data,heading:()=>'',esc:x=>String(x),persist(){saved++;return options.canPersist!==false},modal:(title,body)=>modals.push({title,body}),setView(){},newPlanForm(){},closeModal(){},uid:()=> 'test-id',toast(){}});
- vm.runInContext(fs.readFileSync('profile-ui.js','utf8'),context);vm.runInContext('renderProfile()',context);
+ const context=vm.createContext({window:{TreinoPrograms:programs,TreinoProposal:require('../src/domain/programme-proposal.js')},activeStorageKey:'test-account',document:{querySelectorAll:()=>[]},accountAccess:true,state,$,FormData:Data,heading:()=>'',esc:x=>String(x),persist(){saved++;return options.canPersist!==false},modal:(title,body)=>modals.push({title,body}),setView(){},newPlanForm(){},closeModal(){},uid:()=> 'test-id',toast(){}});
+ vm.runInContext(fs.readFileSync('profile-ui.js','utf8'),context);vm.runInContext(fs.readFileSync('src/ui/programme-proposal.js','utf8'),context);vm.runInContext('renderProfile()',context);
  return {state,fields,form,$,goals,priority,modals,submit(){form.onsubmit({preventDefault(){}})},get saved(){return saved}};
 }
 test('a valid questionnaire button opens the programme preview',()=>{
@@ -35,4 +35,10 @@ test('storage and generation failures never leave the review button without a vi
 });
 test('changed answers invalidate a previous proposal so new restrictions cannot leave an outdated preview available',()=>{
  const s=questionnaire({}, {initialProposal:{profile:{}}});s.fields.limits=true;s.form.onchange({target:{name:'limits'}});assert.equal(s.state.proposal,undefined);s.submit();assert.match(s.$('#profile-feedback').innerHTML,/A proposta precisa de revisão/);
+});
+
+test('changing answers archives a personalized proposal without leaving an outdated proposal activatable',()=>{
+ const proposal=require('../src/domain/programme-proposal.js').prepare(engine.generate({...engine.defaults(),name:'Example',adult:true,consent:true,goals:['muscle'],primaryGoal:'muscle'}));proposal.personalized=true;
+ const s=questionnaire({}, {initialProposal:proposal}),before=JSON.stringify(proposal);s.fields.minutes=45;s.form.onchange({target:{name:'minutes'}});
+ assert.equal(s.state.proposal,undefined);assert.equal(JSON.stringify(s.state.previousProposal),before);s.submit();assert.equal(s.state.proposal.profile.minutes,45);assert.equal(JSON.stringify(s.state.previousProposal),before);
 });

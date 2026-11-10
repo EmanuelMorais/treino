@@ -2,6 +2,7 @@
 (function(root){
   const records=typeof module!=='undefined'&&module.exports?require('./workout-records.js'):root.TreinoRecords;
   const programs=typeof module!=='undefined'&&module.exports?require('../../program-engine.js'):root.TreinoPrograms;
+  const proposals=typeof module!=='undefined'&&module.exports?require('./programme-proposal.js'):root.TreinoProposal;
   const text=(value,max=2000)=>typeof value==='string'&&value.length<=max;
   const safeId=value=>text(value,100)&&/^[A-Za-z0-9_-]+$/.test(value)&&!['__proto__','constructor','prototype'].includes(value);
   const num=(value,max=100000)=>value===''||(typeof value==='string'&&value.length<20&&Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<=max);
@@ -59,7 +60,7 @@
     }
     if(!doc.history.every(h=>h&&safeId(h.id)&&text(h.planName,100)&&date(h.date)&&text(h.note)&&Number.isFinite(h.savedAt)&&Array.isArray(h.exercises)&&h.exercises.length<=100&&h.exercises.every(logged)&&(!h.course||course(h.course))&&(h.complete===undefined||typeof h.complete==='boolean')&&(h.duration===undefined||num(h.duration,240))))return false;
     if(!doc.history.every(validSnapshot))return false;
-    return records.validMetadata(doc)&&programs.validExtras(doc);
+    return records.validMetadata(doc)&&programs.validExtras(doc)&&(!doc.proposal||proposals.valid(doc.proposal))&&(!doc.previousProposal||proposals.valid(doc.previousProposal))&&proposals.validVersions(doc.programVersions);
   }
 
   function valid(doc){try{return !!validate(doc);}catch{return false;}}

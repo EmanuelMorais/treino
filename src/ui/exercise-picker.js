@@ -1,7 +1,8 @@
-function openExercisePicker({onChoose = null, replacing = null} = {}) {
+function openExercisePicker({onChoose = null, replacing = null, sourceExercises = null, onCancel = null} = {}) {
   if (!accountAccess) return;
-  const catalog = window.TreinoExerciseCatalog, plan = getPlan(), answers=state.profile?.answers;
+  const catalog = window.TreinoExerciseCatalog, plan = sourceExercises?{id:'proposal',exercises:sourceExercises}:getPlan(), destinationKey=activeStorageKey, answers=state.profile?.answers;
   const inventory=answers?window.TreinoPrograms.availableEquipment(answers):null;
+  if(!plan)return;
   const extra = catalog.personalExercises(state.plans), items = [...catalog.exercises, ...extra];
   const chosen = new Set();
   const suggested = replacing && !state.profile?.answers?.limits && !state.profile?.answers?.avoided?.trim() ? window.TreinoReplacement.suggestions(replacing,state.profile?.answers?window.TreinoPrograms.availableEquipment(state.profile.answers):undefined,state.profile?.answers||{}).map(e=>e.id) : [];
@@ -53,7 +54,7 @@ function openExercisePicker({onChoose = null, replacing = null} = {}) {
       <div class="catalog-tools"><label class="choice"><input type="checkbox" id="catalog-only-favorites" ${onlyFavorites ? 'checked' : ''}> Favoritos</label><button class="mini" id="catalog-clear">Limpar filtros</button><span id="catalog-count" role="status"></span></div>
       <div id="catalog-results" class="catalog-results"></div>
       ${!onChoose?`<details class="catalog-options"><summary>Mais opções</summary><label class="choice"><input type="checkbox" id="catalog-repeated" ${allowRepeated ? 'checked' : ''}> Permitir repetir um exercício que já está neste treino</label><button class="btn secondary" id="catalog-custom">Criar exercício pessoal</button></details>`:''}
-      <div class="catalog-footer"><p class="dialog-note">Adiciona os exercícios e ajusta as séries e os objetivos na ficha.</p><button class="btn" id="catalog-add" disabled>Adicionar 0 exercícios</button></div>
+      <div class="catalog-footer">${onCancel?'<button class="btn secondary" id="catalog-cancel">Voltar à proposta</button>':''}<p class="dialog-note">Adiciona os exercícios e ajusta as séries e os objetivos na ficha.</p><button class="btn" id="catalog-add" disabled>Adicionar 0 exercícios</button></div>
     </section>`);
     $('#catalog-muscle').value = muscle; $('#catalog-context').value = context;
     $('#catalog-search').oninput = event => { query = event.target.value; results(); };
@@ -63,7 +64,7 @@ function openExercisePicker({onChoose = null, replacing = null} = {}) {
     if($('#catalog-repeated'))$('#catalog-repeated').onchange = event => { allowRepeated = event.target.checked; };
     $('#catalog-clear').onclick = () => { query = ''; muscle = ''; context = 'all'; onlyFavorites = false; renderPicker(); };
     if($('#catalog-custom'))$('#catalog-custom').onclick = () => exerciseForm();
-    $('#catalog-add').onclick = add;
+    $('#catalog-add').onclick = add;if(onCancel)$('#catalog-cancel').onclick=onCancel;
     results(); updateSelection(); $('#catalog-results').scrollTop = listScroll;
     $('#catalog-search').focus();
   }
@@ -78,7 +79,7 @@ function openExercisePicker({onChoose = null, replacing = null} = {}) {
   }
 
   function add() {
-    if (!accountAccess || getPlan()?.id !== plan.id) return;
+    if (!accountAccess || activeStorageKey!==destinationKey || !sourceExercises&&getPlan()?.id !== plan.id) return;
     const selected = [...chosen].map(id => items.find(e => e.id === id)).filter(Boolean);
     if(onChoose&&selected.length===1)return onChoose(selected[0]);
     const incoming = selected.filter(e => allowRepeated || !duplicate(e));

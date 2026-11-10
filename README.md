@@ -6,7 +6,7 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 ## Próximas alterações
 
-**Nesta branch:** [catálogo/editor](docs/ENTREGA-CATALOGO-EDITOR.md), [substituições e sessões recuperáveis](docs/ENTREGA-SUBSTITUICOES.md) e [gerador sobre o catálogo partilhado](docs/ENTREGA-GERADOR-CATALOGO.md). Há 93 definições para edição; as regras automáticas selecionam um subconjunto por contexto, com máquinas e condições de altura explícitas. **Ainda não está no site de produção.** A migração de compatibilidade desta branch também ainda não foi aplicada ao Supabase real.
+**Nesta branch:** [catálogo/editor](docs/ENTREGA-CATALOGO-EDITOR.md), [substituições e sessões recuperáveis](docs/ENTREGA-SUBSTITUICOES.md) e [gerador sobre o catálogo partilhado](docs/ENTREGA-GERADOR-CATALOGO.md) e [propostas editáveis/revisão de programas](docs/ENTREGA-PROPOSTAS-E-REVISAO.md). Há 93 definições para edição; as regras automáticas selecionam um subconjunto por contexto, com máquinas e condições de altura explícitas. **Ainda não está no site de produção.** A migração de compatibilidade desta branch também ainda não foi aplicada ao Supabase real.
 
 O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação é faseada; consultar o estado da entrega acima.
 

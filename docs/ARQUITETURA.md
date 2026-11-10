@@ -1,6 +1,6 @@
 # Estrutura do Treino: avaliação e decisões
 
-Data: 9 de novembro de 2026. Estado: avaliação concluída; estrutura alvo parcialmente iniciada em `src/domain`, `src/data`, `src/ui` e `src/styles`, conforme a [primeira entrega na branch](ENTREGA-CATALOGO-EDITOR.md). A separação integral continua planeada. Plano: [experiência de treino](PLANO-EXPERIENCIA-TREINO.md). Evidência: [testes e auditoria](TESTES-FLUXOS.md).
+Data: 9 de novembro de 2026. Estado: avaliação concluída; estrutura alvo parcialmente iniciada em `src/domain`, `src/data`, `src/ui` e `src/styles`, conforme a [primeira entrega na branch](ENTREGA-CATALOGO-EDITOR.md). A [quarta entrega](ENTREGA-PROPOSTAS-E-REVISAO.md) extrai também o domínio/UI da proposta e revisão de programas; a separação integral continua planeada. Plano: [experiência de treino](PLANO-EXPERIENCIA-TREINO.md). Evidência: [testes e auditoria](TESTES-FLUXOS.md).
 
 ## Decisão
 

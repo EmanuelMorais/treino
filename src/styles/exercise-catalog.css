@@ -36,3 +36,13 @@
 
 .proposal-help{margin:14px 0;border-top:1px solid var(--line)}
 .proposal-help summary{min-height:44px;padding:12px 0;cursor:pointer;font-weight:600}
+.proposal-exercises{display:grid;gap:12px;margin:18px 0}
+.proposal-exercise{padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff;min-width:0}
+.proposal-exercise-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.proposal-exercise-actions .mini{min-width:44px;min-height:44px}
+.proposal-exercise h3,.revision-diff p{overflow-wrap:anywhere}
+.revision-diff{padding:14px 0;border-bottom:1px solid var(--line)}
+.revision-diff p{margin-top:8px}
+@media(max-width:540px){.proposal-exercise-actions .btn{white-space:normal;text-align:left;justify-content:flex-start;max-width:100%}}
+
+.proposal-exercise-actions .btn{overflow-wrap:anywhere;min-width:0}
