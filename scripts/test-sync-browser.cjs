@@ -5,7 +5,7 @@ const names=['sync-pc-'+process.pid,'sync-mobile-'+process.pid],opened=[];
 async function command(session,args){const {stdout}=await run(cli,['-s='+session,...args],{cwd:root,maxBuffer:2*1024*1024});if(stdout.includes('### Error'))throw Error(stdout);return stdout;}
 const code=(session,body)=>command(session,['run-code',body]);
 async function main(){
- const fixture=await createServer(root),url=fixture.origin+'/treino/';fs.mkdirSync(path.join(root,'output/playwright'),{recursive:true});
+ const fixture=await createServer(root,{siteRoot:path.resolve(root,process.env.TREINO_SITE_ROOT||'.')}),url=fixture.origin+'/treino/';fs.mkdirSync(path.join(root,'output/playwright'),{recursive:true});
  try{
   for(let i=0;i<2;i++){
    const name=names[i];await command(name,['open','about:blank','--browser',i===0?'chrome':'webkit']);opened.push(name);await command(name,['snapshot']);

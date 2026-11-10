@@ -1,7 +1,7 @@
 /* Loopback integration fixture. Auth endpoints are simulated; SQL/RLS are real PGlite. */
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto');
 const {PGlite}=require('@electric-sql/pglite');
-async function createServer(root){
+async function createServer(root,{siteRoot=root}={}){
  const db=new PGlite(),users=['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222'].map((id,i)=>({id,email:'fixture-'+i+'@example.invalid',aud:'authenticated',role:'authenticated',app_metadata:{provider:'email'},user_metadata:{},created_at:new Date().toISOString()}));
  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;`);
  for(const user of users)await db.query('insert into auth.users values($1)',[user.id]);
@@ -12,7 +12,7 @@ async function createServer(root){
  };
  const secret=crypto.randomBytes(32),tokens=new Map();
  const session=user=>{const enc=value=>Buffer.from(JSON.stringify(value)).toString('base64url'),unsigned=enc({alg:'HS256',typ:'JWT'})+'.'+enc({sub:user.id,role:'authenticated',aud:'authenticated',exp:Math.floor(Date.now()/1000)+3600});const token=unsigned+'.'+crypto.createHmac('sha256',secret).update(unsigned).digest('base64url');tokens.set(token,user);return {access_token:token,token_type:'bearer',expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,refresh_token:'fixture-refresh-'+user.id,user};};
- const original=fs.readFileSync(path.join(root,'index.html'),'utf8'),allowed=new Set([...original.matchAll(/(?:src|href)="([^"?]+)(?:\?[^" ]*)?"/g)].map(m=>m[1]));
+ const original=fs.readFileSync(path.join(siteRoot,'index.html'),'utf8'),allowed=new Set([...original.matchAll(/(?:src|href)="([^"?]+)(?:\?[^" ]*)?"/g)].map(m=>m[1]));
  const json=(response,status,value)=>{response.writeHead(status,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS'});response.end(JSON.stringify(value));};
  const metrics={reads:0,writes:0,ownerErrors:0,clientHeaders:new Set()};
  const server=http.createServer(async(request,response)=>{
@@ -45,7 +45,7 @@ async function createServer(root){
    const asset=url.pathname.replace(/^\/treino\//,'');
    if(asset==='config.js'){response.writeHead(200,{'Content-Type':'text/javascript'});response.end('window.TREINO_CONFIG='+JSON.stringify({supabaseUrl:'https://treino-integration.supabase.co',supabasePublishableKey:'sb_publishable_fixture_only_12345'})+';');return;}
    if(!allowed.has(asset)){response.writeHead(404);response.end();return;}
-   response.writeHead(200,{'Content-Type':asset.endsWith('.css')?'text/css':'text/javascript'});response.end(fs.readFileSync(path.join(root,asset)));
+   response.writeHead(200,{'Content-Type':asset.endsWith('.css')?'text/css':'text/javascript'});response.end(fs.readFileSync(path.join(siteRoot,asset)));
   }catch(error){if(error.code==='42501')metrics.ownerErrors++;json(response,error.code==='PT409'?409:error.code==='PT426'?426:error.code==='42501'?403:400,{code:error.code||'FIXTURE_ERROR',message:error.message});}
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));

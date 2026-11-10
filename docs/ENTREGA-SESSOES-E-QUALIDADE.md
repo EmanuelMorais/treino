@@ -49,7 +49,7 @@ Fixtures e capturas são sintéticas. Resultados de CI remoto, quando executado,
 
 ## Workflows preparados
 
-`.github/workflows/verify.yml` executa Node, build, verificação de artefactos gerados, Chrome, WebKit, integração de sincronização e empacotamento. As Actions estão fixadas por commit; Node 22 e dependências npm fixadas no lockfile.
+`.github/workflows/verify.yml` executa Node, build, verificação de artefactos gerados, Chrome, WebKit, integração de sincronização e empacotamento. No CI, os browsers recebem `TREINO_SITE_ROOT=dist` e exercitam os mesmos assets do artefacto, sob `/treino/`, com a configuração Auth substituída apenas pela fixture. As Actions estão fixadas por commit; Node 22 e dependências npm fixadas no lockfile.
 
 `.github/workflows/publish.yml` só permite execução manual em `main`, depende integralmente da verificação e publica o artefacto que passou os testes. Exige a variável de repositório `TREINO_SERVER_PROTOCOL=8`, a definir **depois de verificar a migração de compatibilidade no servidor**. Não pede nem usa uma chave administrativa Supabase no CI.
 

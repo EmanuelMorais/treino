@@ -13,6 +13,8 @@ jobs:
   checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      TREINO_SITE_ROOT: dist
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -23,6 +25,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: git diff --exit-code -- cloud.js vendor/supabase.js
+      - run: npm run package:site
       - run: node_modules/.bin/playwright-cli install-browser chrome --with-deps
       - run: node_modules/.bin/playwright-cli install-browser webkit --with-deps
       - run: npm run test:browser
@@ -30,7 +33,6 @@ jobs:
         env:
           TREINO_TEST_BROWSER: webkit
       - run: npm run test:sync-browser
-      - run: npm run package:site
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: treino-public-site

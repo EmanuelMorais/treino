@@ -5,7 +5,8 @@ const run = promisify(execFile), root = path.resolve(__dirname, '..');
 const cli = path.join(root, 'node_modules/.bin/playwright-cli');
 const browser = process.env.TREINO_TEST_BROWSER || 'chrome';
 const session = 'treino-check-' + process.pid, storageKey = 'treino-browser-fixture';
-const original = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const siteRoot=path.resolve(root,process.env.TREINO_SITE_ROOT||'.');
+const original = fs.readFileSync(path.join(siteRoot, 'index.html'), 'utf8');
 const fixture = original.replace('<head>', '<head><base href="/"><link rel="icon" href="data:,">')
   .replace(/<script src="(?:config\.js|vendor\/supabase\.js|cloud\.js(?:\?[^"]*)?)"><\/script>/g, '')
   .replace('</body>', `<script>
@@ -22,7 +23,7 @@ const server = http.createServer((request, response) => {
   if (pathname === '__test__/workout') { response.writeHead(200, {'Content-Type':'text/html; charset=utf-8'}); return response.end(fixture); }
   if (!allowed.has(pathname)) { response.writeHead(404); return response.end(); }
   response.writeHead(200, {'Content-Type': pathname.endsWith('.css') ? 'text/css' : 'text/javascript'});
-  response.end(fs.readFileSync(path.join(root, pathname)));
+  response.end(fs.readFileSync(path.join(siteRoot, pathname)));
 });
 async function command(args) {
   let stdout;
