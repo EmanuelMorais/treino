@@ -2,6 +2,12 @@
 
 Data: 9 de novembro de 2026. [Plano](PLANO-EXPERIENCIA-TREINO.md) · [Arquitetura](ARQUITETURA.md).
 
+## Execução na branch
+
+A [primeira entrega](ENTREGA-CATALOGO-EDITOR.md) acrescenta testes de contratos/catálogo/editor e um percurso real de browser com fixture local. Resultado: **80 testes Node, build, Chrome e WebKit**, com larguras de 320 a 1440 px. Não testa contas reais nem certifica Safari/iPhone físico. Esta evidência substitui apenas os pontos cobertos; a auditoria inicial abaixo fica como histórico.
+
+Há cobertura parcial dos critérios F05–F11, F17–F20, F22, F28 e F39–F43. F42, em particular, tem apenas um relatório de lacunas do catálogo: o gerador ainda não consome o novo relatório. F24 tem contratos aditivos e fixtures sintéticas, não a migração integral planeada. Substituições com âmbito, fluxos desportivos, acesso/sincronização real no browser, acessibilidade completa e o resto da matriz continuam pendentes. Não marcar estes IDs como integralmente aprovados.
+
 ## Evidência desta entrega
 
 | Verificação | Resultado | Alcance real |
@@ -102,3 +108,13 @@ Provocar também gravação recusada, resposta lenta/fora de ordem, pesquisa vaz
 - Guardar resultados/versionamento e evidência sem dados pessoais. Não prometer ausência total de erros.
 - Configurar Pages por workflow dependente dos checks; um workflow paralelo à publicação por branch não impede publicar com falhas.
 - Repetir um percurso curto no artefacto publicado. Nesta entrega, os novos fluxos e a matriz permanecem por implementar/executar.
+
+## Atualização de implementação — 10 de novembro de 2026
+
+A [segunda entrega](ENTREGA-SUBSTITUICOES.md) regista 103 testes Node e o percurso ampliado em Chrome. WebKit está bloqueado por uma falha de interação reproduzida também sem a aplicação; não considerar o novo percurso aprovado neste motor. A matriz acima continua a definir a aceitação integral, incluindo sincronização real, equipamento físico e usabilidade, ainda pendentes.
+
+A [terceira entrega](ENTREGA-GERADOR-CATALOGO.md) eleva a suite a 111 testes e acrescenta geração sobre o catálogo partilhado e o percurso real de questionário/proposta/ativação em Chrome. Inclui partes de F03/F04 e F39–F43, sem substituir os critérios integrais, revisão de conteúdo, outros motores ou dispositivos reais.
+
+A [quarta entrega](ENTREGA-PROPOSTAS-E-REVISAO.md) regista 128 testes Node e o percurso ampliado em Chrome **e WebKit**, incluindo edição persistente da proposta, recuperação após corrigir respostas e revisão de programas. O bloqueio WebKit anterior não se reproduziu nesta execução. Continuam pendentes sincronização real, dispositivos físicos, acessibilidade completa, usabilidade observada e os restantes critérios da matriz.
+
+A [quinta entrega](ENTREGA-SESSOES-E-QUALIDADE.md) acrescenta isolamento de execução/edição, metadados pessoais, questionário por passos, 136 testes Node e integração de dois browsers com HTTP/SDK/SQL/RLS isolados, incluindo propagação sem botão ou reload e separação de contas. Auth/HTTP são fixtures: não equiparar a sincronização Supabase alojada nem a um iPhone físico. A migração de compatibilidade foi aplicada ao Treino sem alterar documentos e Pages foi configurado para Actions. O CI Linux aprovou o artefacto anterior ao questionário por passos em Chrome/WebKit e na integração de dois browsers; a execução do commit exato fica no PR. A publicação do frontend e os restantes percursos continuam pendentes.

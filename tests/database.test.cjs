@@ -12,9 +12,14 @@ test('database enforces private ownership, detects stale saves and retains 20 re
   const file=fs.readdirSync('supabase/migrations').find(x=>x.endsWith('_training_sync.sql'));
   await db.exec(fs.readFileSync('supabase/migrations/'+file,'utf8'));
   await db.exec(`set role authenticated; set request.jwt.claim.sub='${a}';`);
-  const payload=JSON.stringify({version:1,plans:[],history:[],drafts:{},favorites:[]});
+  const catalog=require('../src/domain/exercise-catalog.js'),replacement=require('../src/domain/exercise-replacement.js');
+  const exercise=catalog.instantiate(catalog.exercises.find(e=>e.id==='db-rdl'),'exercise');
+  const document={version:1,plans:[{id:'plan',name:'Fixture',note:'',exercises:[exercise]}],history:[],drafts:{plan:{date:'2026-11-10',note:'',rows:{exercise:[{kg:'10',reps:'8',done:true},{kg:'',reps:'',done:false}]}}},favorites:[]};
+  let serial=0;const adjusted=replacement.replace(document,{planId:'plan',exerciseId:'exercise',scope:'today',definition:catalog.exercises.find(e=>e.id==='db-bridge'),uid:()=> 'fixture-'+(++serial),date:'2026-11-10'}).document;
+  const payload=JSON.stringify(adjusted);
   const save=(id,rev)=>db.query('select public.save_training_document($1,$2::jsonb,$3) as result',[id,payload,rev]);
   assert.equal((await save(a,0)).rows[0].result.revision,1);
+  assert.deepEqual((await db.query('select payload from public.training_documents where user_id=$1',[a])).rows[0].payload,adjusted);
   await assert.rejects(save(a,0),e=>e.code==='PT409');
   await assert.rejects(save(b,0),e=>e.code==='42501');
   for(let rev=1;rev<=23;rev++)await save(a,rev);
@@ -27,5 +32,23 @@ test('database enforces private ownership, detects stale saves and retains 20 re
   await db.exec('set role anon');
   await assert.rejects(db.query('select * from public.training_documents'),e=>e.code==='42501');
   await assert.rejects(save(a,24),e=>e.code==='42501');
+  // Apply only to this isolated database; production is unchanged.
+  await db.exec('reset role');
+  const protocol=fs.readdirSync('supabase/migrations').find(x=>x.endsWith('_require_compatible_training_client.sql'));
+  await db.exec(fs.readFileSync('supabase/migrations/'+protocol,'utf8'));
+  await db.exec(`set role authenticated; set request.jwt.claim.sub='${a}'; set request.headers='{}';`);
+  await assert.rejects(save(a,24),e=>e.code==='PT426');
+  assert.equal((await db.query('select revision,client_protocol from public.training_documents where user_id=$1',[a])).rows[0].client_protocol,8);
+  await db.exec(`set request.headers='{"x-client-info":"treino/8"}';`);
+  assert.equal((await save(a,24)).rows[0].result.revision,25);
+  const legacy=JSON.stringify({version:1,plans:[],history:[],drafts:{},favorites:[]});
+  await db.exec(`set request.headers='{}';`);
+  await assert.rejects(db.query('select public.save_training_document($1,$2::jsonb,$3)',[a,legacy,25]),e=>e.code==='PT426');
+  assert.deepEqual((await db.query('select payload from public.training_documents where user_id=$1',[a])).rows[0].payload,adjusted);
+  assert.equal((await db.query('select count(*)::int as n from public.training_backups')).rows[0].n,20);
+  await assert.rejects(save(b,1),e=>e.code==='42501');
+  await db.exec(`reset role; insert into auth.users values('33333333-3333-4333-8333-333333333333');set role authenticated;set request.jwt.claim.sub='33333333-3333-4333-8333-333333333333';`);
+  assert.equal((await db.query('select public.save_training_document($1,$2::jsonb,$3) as result',['33333333-3333-4333-8333-333333333333',legacy,0])).rows[0].result.revision,1);
+  await assert.rejects(db.query('select public.save_training_document($1,$2::jsonb,$3)',['33333333-3333-4333-8333-333333333333',payload,1]),e=>e.code==='PT426');
  }finally{await db.close()}
 });

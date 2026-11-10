@@ -3,9 +3,10 @@
  'use strict';
  const cfg=window.TREINO_CONFIG||{},rules=window.TreinoSyncRules;
  const configured=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(cfg.supabaseUrl||'')&&typeof cfg.supabasePublishableKey==='string'&&cfg.supabasePublishableKey.length>20;
- const client=configured?window.TreinoSupabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+ const clientBuild=window.TreinoRecords?.CLIENT_BUILD||8;
+ const client=configured?window.TreinoSupabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{global:{headers:{'X-Client-Info':'treino/'+clientBuild}},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
  const dataRequests=client?window.TreinoAuthData.create(client.auth):null;
- let authNeeded=false;
+ let authNeeded=false,accountVerified=false,clientUpgradeNeeded=false;
  let user=null,baseRevision=0,dirty=false,sequence=0,loading=false,saving=false,conflict=false,timer,retryTimer,accountEpoch=0;
  let liveChannel=null,pollTimer,autoTimer,autoPending=false,reading=null;
  let passwordRecovery=false;
@@ -18,7 +19,7 @@
   $('#sync-title').textContent=title;$('#sync-detail').textContent=detail;$('#sync-bar').dataset.status=status;
   $('#account').textContent=authNeeded?'Renovar acesso':user?'A minha conta':'Entrar';$('#sync-now').hidden=!user;$('#online-backups').hidden=!user;
  }
- function needAuth(){authNeeded=true;clearTimeout(timer);clearTimeout(retryTimer);stopAutoSync();setAccountAccess(false,'A sessão terminou. Entra novamente para continuar; os dados locais foram preservados.');showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
+ function needAuth(){authNeeded=true;accountVerified=false;clearTimeout(timer);clearTimeout(retryTimer);stopAutoSync();setAccountAccess(false,'A sessão terminou. Entra novamente para continuar; os dados locais foram preservados.');showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
  function writeMeta(){if(!user)return;try{localStorage.setItem(metaKey(user.id),JSON.stringify({revision:baseRevision,dirty,updatedAt:Date.now()}))}catch{showStatus('Cópia local sem espaço','Exporta uma cópia; a sincronização online será tentada.','error')}}
  function cacheCurrent(){try{localStorage.setItem(activeStorageKey,JSON.stringify(state));return true}catch{return false}}
  function recoveryCopy(){if(!user)return;try{localStorage.setItem(cacheKey(user.id)+'-recovery',JSON.stringify({date:new Date().toISOString(),payload:snapshot()}));return true}catch{return false}}
@@ -31,7 +32,10 @@
   clearTimeout(timer);timer=setTimeout(flush,1300);
  }
  async function remoteDocument(id,revisionOnly=false){
-  const {data,error}=await dataRequests.run(id,token=>client.from('training_documents').select(revisionOnly?'revision':'payload,revision,updated_at').eq('user_id',id).maybeSingle().setHeader('Authorization','Bearer '+token));if(error)throw error;
+  const {data,error}=await dataRequests.run(id,token=>client.from('training_documents').select(revisionOnly?'revision':'payload,revision,updated_at,client_protocol').eq('user_id',id).maybeSingle().setHeader('Authorization','Bearer '+token));
+  if(error){if(['42703','PGRST204'].includes(error.code)&&String(error.message).includes('client_protocol'))throw Error('O servidor precisa da atualização de compatibilidade antes de usar esta versão. Os dados existentes não foram alterados.');throw error;}
+  if(data&&!revisionOnly&&!(data.client_protocol>=clientBuild))throw Error('O servidor ainda não suporta esta versão do Treino. Os registos foram preservados.');
+  if(data&&!revisionOnly&&data.payload?.minClientBuild>clientBuild)throw Object.assign(Error('Este documento foi atualizado por uma versão mais recente. Atualiza a página para continuar; os registos locais foram preservados.'),{code:'CLIENT_UPGRADE_REQUIRED'});
   if(data&&!revisionOnly&&!validState(data.payload))throw Error('A cópia online tem um formato inválido. Exporta a cópia local antes de continuar.');return data;
  }
  function usePayload(payload,preserveView=false){loadAccountState(JSON.parse(JSON.stringify(payload)),cacheKey(user.id),{preserveView});cacheCurrent()}
@@ -66,26 +70,30 @@
   }catch(error){if(epoch===accountEpoch&&error.code==='AUTH_REQUIRED')needAuth();} // Polling covers a failed socket setup.
  }
  async function enterAccount(session){
-  const next=session?.user||null;if(next?.id===user?.id&&!authNeeded)return;
+  const next=session?.user||null;if(next?.id===user?.id&&!authNeeded&&accountVerified)return;
   const epoch=++accountEpoch;stopAutoSync();clearTimeout(timer);clearTimeout(retryTimer);loading=true;$('#content').inert=true;conflict=false;saving=false;
-  setAccountAccess(false,'A validar o acesso à tua conta…');let verified=false;
+  setAccountAccess(false,'A validar o acesso à tua conta…');let verified=false,accessError='';accountVerified=false;clientUpgradeNeeded=false;
   user=next;sequence=0;authNeeded=false;
   if(!user){dirty=false;baseRevision=0;loadAccountState(fresh(),KEY);loading=false;$('#content').inert=false;setAccountAccess(false);showStatus('Sessão terminada','Os dados da conta ficaram guardados; entra para os voltar a consultar.');return}
   const local=readJSON(cacheKey(user.id)),localExists=!!local&&validState(local),meta=readJSON(metaKey(user.id));
   baseRevision=Number.isSafeInteger(meta?.revision)?meta.revision:0;dirty=localExists&&(meta?.dirty!==false);
-  loadAccountState(localExists?local:fresh(),cacheKey(user.id));cacheCurrent();
+  if(local?.minClientBuild>clientBuild){
+   clientUpgradeNeeded=true;loading=false;$('#content').inert=false;loadAccountState(fresh(),KEY);$('#gate-login').textContent='Atualizar aplicação';
+   setAccountAccess(false,'Os dados locais pertencem a uma versão mais recente. Atualiza a página; a cópia local foi preservada.');showStatus('Atualizar aplicação','Os dados locais pertencem a uma versão mais recente. Não foram substituídos.','error');return;
+  }
+  loadAccountState(localExists?local:fresh(),cacheKey(user.id));
   showStatus('A carregar a conta','A comparar a cópia local com os dados online.');
   try{
    const remote=await remoteDocument(user.id);if(epoch!==accountEpoch)return;verified=true;
    const decision=rules.decide({localExists,dirty,baseRevision,remote});
    if(decision==='pull'){adoptRemote(remote,false);}
-   else {dirty=true;showStatus('Conta pronta','A guardar os planos e registos.');}
+   else {cacheCurrent();dirty=true;showStatus('Conta pronta','A guardar os planos e registos.');}
    writeMeta();
-  }catch(error){if(epoch!==accountEpoch)return;dirty=dirty||!localExists;if(error.code==='AUTH_REQUIRED')needAuth();else showStatus('Não foi possível ligar à conta',error.message||'A cópia local está disponível. Tenta sincronizar novamente.','error');writeMeta()}
-  finally{if(epoch===accountEpoch){loading=false;$('#content').inert=false;setAccountAccess(verified&&!authNeeded,authNeeded?'Entra novamente para continuar.':'Não foi possível validar a sessão. Verifica a ligação e tenta entrar novamente.');startAutoSync();if(verified&&dirty&&!conflict&&!authNeeded)flush();}}
+  }catch(error){if(epoch!==accountEpoch)return;accessError=error.message||'';clientUpgradeNeeded=error.code==='CLIENT_UPGRADE_REQUIRED';if(error.code==='AUTH_REQUIRED')needAuth();else showStatus('Não foi possível ligar à conta',error.message||'A cópia local está disponível. Tenta sincronizar novamente.','error');writeMeta()}
+  finally{if(epoch===accountEpoch){loading=false;$('#content').inert=false;accountVerified=verified&&!authNeeded;$('#gate-login').textContent=clientUpgradeNeeded?'Atualizar aplicação':user&&!authNeeded&&!accountVerified?'Tentar novamente':'Entrar ou criar conta';setAccountAccess(accountVerified,authNeeded?'Entra novamente para continuar.':accessError||'Não foi possível validar a sessão. Verifica a ligação e tenta entrar novamente.');if(accountVerified)startAutoSync();else stopAutoSync();if(verified&&dirty&&!conflict&&!authNeeded)flush();}}
  }
  async function flush(){
-  if(!user||!client||loading||saving||conflict||authNeeded||!dirty)return;
+  if(!user||!client||!accountVerified||loading||saving||conflict||authNeeded||!dirty)return;
   if(!navigator.onLine){showStatus('Sem ligação · cópia local','Os dados serão enviados quando a ligação regressar.');return}
   const target=user.id,epoch=accountEpoch,sentSequence=sequence,payload=snapshot();let saved=false;saving=true;
   showStatus('A guardar online','Mantém esta página aberta até aparecer a confirmação.');
@@ -104,7 +112,7 @@
   }finally{if(epoch===accountEpoch){saving=false;if(dirty&&!conflict&&!authNeeded) {clearTimeout(timer);timer=setTimeout(flush,saved?1300:30000)}if(autoPending)queueAutoSync();}}
  }
  async function syncNow(automatic=false){
-  if(!user||authNeeded){if(!automatic)return authDialog(true);return;}
+  if(!user||authNeeded||!accountVerified){if(!automatic)return authDialog(true);return;}
   if(loading||saving||reading||(automatic&&($('#modal').open||document.visibilityState==='hidden'))){if(automatic)autoPending=true;else toast('A sincronização ainda está a decorrer.');return;}
   if(!navigator.onLine)return;
   const epoch=accountEpoch,id=user.id;
@@ -136,7 +144,7 @@
  }
  function authDialog(force=false){
   if(!configured){modal('Ligação online por configurar','<p>O site já guarda planos e registos neste navegador e permite exportar uma cópia. O login e a sincronização ainda aguardam a configuração do novo projeto Supabase.</p><p class="auth-note">Quando essa ligação estiver ativa, poderás entrar na mesma conta no computador e no telemóvel. Os registos locais existentes mantêm-se disponíveis.</p>');return}
-  if(user&&!force&&!authNeeded){modal('A minha conta',`<p class="account-name">${esc(user.email||'Conta pessoal')}</p><p class="auth-note">Os planos, rascunhos e registos pertencem a esta conta. Para outra pessoa, termina a sessão e usa outro email.</p><div class="home-actions"><button class="btn" id="account-password">Definir / alterar palavra-passe</button><button class="btn secondary" id="account-sync">Sincronizar agora</button><button class="btn secondary" id="account-export">Exportar cópia</button><button class="btn secondary" id="account-signout">Terminar sessão</button></div>`);$('#account-password').onclick=()=>authUI.open({mode:'password',email:user.email||'',accountId:user.id});$('#account-export').onclick=downloadBackup;$('#account-sync').onclick=()=>{closeModal();syncNow()};$('#account-signout').onclick=async()=>{
+  if(user&&!force&&!authNeeded&&accountVerified){modal('A minha conta',`<p class="account-name">${esc(user.email||'Conta pessoal')}</p><p class="auth-note">Os planos, rascunhos e registos pertencem a esta conta. Para outra pessoa, termina a sessão e usa outro email.</p><div class="home-actions"><button class="btn" id="account-password">Definir / alterar palavra-passe</button><button class="btn secondary" id="account-sync">Sincronizar agora</button><button class="btn secondary" id="account-export">Exportar cópia</button><button class="btn secondary" id="account-signout">Terminar sessão</button></div>`);$('#account-password').onclick=()=>authUI.open({mode:'password',email:user.email||'',accountId:user.id});$('#account-export').onclick=downloadBackup;$('#account-sync').onclick=()=>{closeModal();syncNow()};$('#account-signout').onclick=async()=>{
     if(saving)return toast('Espera pela confirmação de gravação antes de sair.');if(dirty){await flush();if(dirty)return toast('Há registos por sincronizar. Exporta uma cópia e resolve a sincronização antes de sair.');}
     const {error}=await client.auth.signOut({scope:'local'});if(error)return toast(error.message);closeModal();await enterAccount(null);
    };return}
@@ -160,7 +168,7 @@
   showStatus(dirty?'Alterações por sincronizar':'Tudo guardado online','Cópias de segurança disponíveis.');
  }
  window.TreinoCloud={changed,syncNow};
- $('#gate-login').onclick=()=>authDialog(true);
+ $('#gate-login').onclick=()=>clientUpgradeNeeded?location.reload():user&&!authNeeded&&!accountVerified?enterAccount({user}):authDialog(true);
  $('#account').onclick=()=>authDialog();$('#sync-now').onclick=()=>syncNow();$('#online-backups').onclick=backupsDialog;
  window.addEventListener('online',queueAutoSync);
  window.addEventListener('offline',()=>{if(user&&!conflict)showStatus('Sem ligação · cópia local',dirty?'Os dados serão enviados quando a ligação regressar.':'A última versão confirmada continua disponível neste navegador.')});

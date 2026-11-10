@@ -1,0 +1,61 @@
+name: Verify Treino
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    container:
+      # Noble system libraries; the pinned CLI installs its own matching browser builds.
+      image: mcr.microsoft.com/playwright@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f # v1.64.1-noble
+      options: --ipc=host
+    timeout-minutes: 20
+    env:
+      TREINO_SITE_ROOT: dist
+      # This isolated CI container runs as root and visits only synthetic fixtures.
+      PLAYWRIGHT_MCP_SANDBOX: 'false'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Verify generated files against the checked-out revision
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git rev-parse --show-toplevel
+          git diff --exit-code HEAD -- cloud.js vendor/supabase.js
+      - run: npm run package:site
+      - run: node_modules/.bin/playwright-cli install-browser chrome
+      - run: node_modules/.bin/playwright-cli install-browser webkit
+      - name: Browser flows - Chrome
+        run: npm run test:browser
+      - name: Browser flows - WebKit
+        run: npm run test:browser
+        env:
+          TREINO_TEST_BROWSER: webkit
+      - name: Two-browser HTTP and SQL integration
+        run: npm run test:sync-browser
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: treino-public-site
+          path: dist/
+          retention-days: 7
+
+      - name: Preserve synthetic failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: treino-test-diagnostics
+          path: output/playwright/
+          retention-days: 3

@@ -9,11 +9,12 @@ test('published browser SDK sends the signed-in JWT for reads and saves',async()
  const enc=x=>Buffer.from(JSON.stringify(x)).toString('base64url');
  const token=enc({alg:'HS256',typ:'JWT'})+'.'+enc({sub:id,role:'authenticated',aud:'authenticated',exp:Math.floor(Date.now()/1000)+3600})+'.test-signature';
  const requests=[];
- const fetcher=async(url,init)=>{const headers=new Headers(init.headers);requests.push({path:new URL(url).pathname,jwt:headers.get('authorization')==='Bearer '+token});return new Response(JSON.stringify(String(url).includes('/auth/v1/user')?user:String(url).includes('/rpc/')?{revision:1}:[]),{status:200,headers:{'content-type':'application/json'}})};
- const client=namespace.TreinoSupabase.createClient('https://auth-test.supabase.co','sb_publishable_test',{global:{fetch:fetcher},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ const fetcher=async(url,init)=>{const headers=new Headers(init.headers);requests.push({path:new URL(url).pathname,jwt:headers.get('authorization')==='Bearer '+token,clientInfo:headers.get('x-client-info')});return new Response(JSON.stringify(String(url).includes('/auth/v1/user')?user:String(url).includes('/rpc/')?{revision:1}:[]),{status:200,headers:{'content-type':'application/json'}})};
+ const client=namespace.TreinoSupabase.createClient('https://auth-test.supabase.co','sb_publishable_test',{global:{fetch:fetcher,headers:{'X-Client-Info':'treino/8'}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
  assert.equal((await client.auth.setSession({access_token:token,refresh_token:'test-refresh'})).error,null);
  const transport=create(client.auth);
  await transport.run(id,jwt=>client.from('training_documents').select('revision').setHeader('Authorization','Bearer '+jwt));
  await transport.run(id,jwt=>client.rpc('save_training_document',{p_user_id:id,p_payload:{version:1},p_expected_revision:0}).setHeader('Authorization','Bearer '+jwt));
  assert.ok(requests.some(r=>r.path.includes('/rpc/')));assert.ok(requests.every(r=>r.jwt));
+ assert.ok(requests.every(r=>r.clientInfo==='treino/8'));
 });
