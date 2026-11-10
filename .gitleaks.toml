@@ -1,0 +1,16 @@
+title = "Treino — default detectors and project-specific server credentials"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "treino-supabase-secret"
+description = "Supabase server secret — never a browser publishable key"
+regex = '''sb_secret_[A-Za-z0-9_-]{16,}'''
+keywords = ["sb_secret_"]
+
+[[rules]]
+id = "treino-brevo-smtp"
+description = "Brevo API or SMTP credential"
+regex = '''(?:xsmtpsib|xkeysib)-[A-Za-z0-9_-]{16,}'''
+keywords = ["xsmtpsib-", "xkeysib-"]

@@ -14,7 +14,7 @@ async function main(){
     await page.routeWebSocket('wss://treino-integration.supabase.co/**',ws=>ws.close());
     await page.route('https://treino-integration.supabase.co/**',async route=>{const original=new URL(route.request().url());const response=await route.fetch({url:${JSON.stringify(fixture.origin)}+'/__api__'+original.pathname+original.search});await route.fulfill({response});});
     await page.goto(${JSON.stringify(url)});await page.getByRole('button',{name:'Entrar ou criar conta',exact:true}).click();
-    await page.locator('#auth-email').fill('fixture-0@example.invalid');await page.locator('#auth-password').fill('Fixture-only-123!');await page.locator('#auth-submit').click();
+    await page.locator('#auth-email').fill('fixture-0@example.invalid');await page.locator('#auth-password').fill(${JSON.stringify(fixture.password)});await page.locator('#auth-submit').click();
     await page.waitForFunction(()=>document.body.dataset.auth==='ready');await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
    }`);
   }
@@ -40,7 +40,7 @@ async function main(){
    await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
    await page.getByRole('button',{name:'A minha conta',exact:true}).click();await page.getByRole('button',{name:'Terminar sessão',exact:true}).click();
    await page.waitForFunction(()=>document.body.dataset.auth==='locked');if(await page.locator('#content').innerText())throw Error('Private cached data remained in the signed-out DOM');
-   await page.getByRole('button',{name:'Entrar ou criar conta',exact:true}).click();await page.locator('#auth-email').fill('fixture-1@example.invalid');await page.locator('#auth-password').fill('Fixture-only-123!');await page.locator('#auth-submit').click();
+   await page.getByRole('button',{name:'Entrar ou criar conta',exact:true}).click();await page.locator('#auth-email').fill('fixture-1@example.invalid');await page.locator('#auth-password').fill(${JSON.stringify(fixture.password)});await page.locator('#auth-submit').click();
    await page.waitForFunction(()=>document.body.dataset.auth==='ready');await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
    if(await page.locator('[data-home-plan]').count())throw Error('A second account received the first account plans');
    await page.screenshot({path:'output/playwright/sync-private-account.png'});

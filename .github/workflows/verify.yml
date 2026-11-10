@@ -23,10 +23,16 @@ jobs:
       PLAYWRIGHT_MCP_SANDBOX: 'false'
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: 22
           cache: npm
+      - name: Install checksum-pinned secret scanner
+        run: npm run security:install
+      - name: Reject secrets in tracked files and Git history
+        run: npm run security:scan
       - run: npm ci
       - run: npm test
       - run: npm run build
