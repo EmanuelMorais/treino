@@ -67,3 +67,9 @@
  .guide-controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px}
  .guide-controls .btn{min-width:0;min-height:44px;white-space:normal}
 }
+.session-layout .tick,.session-layout .add-set,.session-layout .mini,.session-layout .variant-button,.session-layout .btn,.session-layout .timer-choices button,.proposal-exercise-actions .btn{min-height:44px}
+@media(max-width:540px){
+ .session-layout .set-grid{grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) 44px}
+ .session-layout .set-row input{font-size:16px;min-height:44px}
+ .session-layout .home-actions .btn{max-width:100%;white-space:normal}
+}
