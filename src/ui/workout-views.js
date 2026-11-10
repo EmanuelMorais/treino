@@ -7,11 +7,11 @@ function adoptWorkoutCommand(command,mode){
  selectedPlan=command.selectedPlanId;workoutView={key:activeStorageKey,id:selectedPlan,mode};closeModal();renderPlans();
 }
 function startWorkoutSession(){
- if(!accountAccess)return;try{adoptWorkoutCommand(window.TreinoSessions.start(state,{planId:getPlan().id,uid,date:today()}),'session');}catch(error){toast(error.message);}
+ if(!accountAccess)return;try{adoptWorkoutCommand(window.TreinoSessions.start(state,{planId:getPlan().id,uid,date:today(),week:courseWeek(getPlan())}),'session');}catch(error){toast(error.message);}
 }
 function openWorkoutEditor(){
  if(!accountAccess)return;const p=getPlan(),id=p.executionSourceId||p.id;
- try{adoptWorkoutCommand(window.TreinoSessions.prepareEditor(state,{planId:id,uid,date:today()}),'edit');}catch(error){toast(error.message);}
+ try{adoptWorkoutCommand(window.TreinoSessions.prepareEditor(state,{planId:id,uid,date:today(),week:courseWeek(getPlan())}),'edit');}catch(error){toast(error.message);}
 }
 function renderPlans(){
  if(!accountAccess)return;const p=getPlan();if(!p)return renderHome();selectedPlan=p.id;

@@ -145,7 +145,7 @@ function finishSession(){
  if($('#session-duration')&&!$('#session-duration').checkValidity()){$('#session-duration').reportValidity();return}
  const oldIndex=d.editHistoryId?state.history.findIndex(h=>h.id===d.editHistoryId):-1;
  if(d.editHistoryId&&oldIndex<0)return toast('O registo original já não está disponível. O rascunho foi preservado; não foi criada uma sessão duplicada.');
- const record=window.TreinoRecords.sessionRecord(p,d,oldIndex>=0?state.history[oldIndex]:null,{id:uid(),now:Date.now(),week:courseWeek(p)});
+ const record=window.TreinoRecords.sessionRecord(p,d,oldIndex>=0?state.history[oldIndex]:null,{id:uid(),now:Date.now(),week:d.courseWeek||courseWeek(p)});
  if(!record.exercises.length)return toast('Conclui pelo menos uma série para guardar a sessão.');
  const complete=record.complete;if(oldIndex>=0)state.history[oldIndex]=record;else state.history.unshift(record);
  clearReplacementUndo();delete state.drafts[p.id];if(p.sessionOnly){state.plans=state.plans.filter(x=>x.id!==p.id);selectedPlan=p.executionSourceId||'';}persist();toast(storageOK?(complete?'Sessão completa guardada.':'Sessão parcial guardada; os registos ficam no histórico.'):'Sessão registada em memória. Exporta uma cópia antes de fechar.');setView('history');

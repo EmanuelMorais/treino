@@ -26,3 +26,10 @@ test('conflicting source drafts and capacity errors never discard existing work'
  const before=JSON.stringify(started.document);assert.throws(()=>sessions.start(started.document,options),/duas sessões/);assert.equal(JSON.stringify(started.document),before);
  const full=fixture();for(let i=1;i<256;i++)full.plans.push({...full.plans[0],id:'plan-'+i});assert.throws(()=>sessions.start(full,options),/Limite/);
 });
+
+test('a reusable mobility fiche keeps the programme week captured when execution starts',()=>{
+ const doc=fixture();doc.plans[0].course={version:1,week:1,phase:0,session:'M'};
+ const result=sessions.start(doc,{...options,week:4}),plan=result.document.plans.find(p=>p.sessionOnly),draft=result.document.drafts[plan.id];
+ assert.equal(draft.courseWeek,4);draft.rows['db-rdl'][0]={kg:'10',reps:'8',done:true};
+ const saved=records.sessionRecord(plan,draft,null,{id:'record',now:1,week:draft.courseWeek});assert.equal(saved.course.week,4);assert.equal(contract.valid({...result.document,history:[saved]}),true);
+});
