@@ -35,7 +35,7 @@ test('malformed and future proposals cannot bypass validation or activate restri
   const p=proposal();alter(p);assert.equal(domain.valid(p),false);assert.throws(()=>domain.prepare(p));
  }
  const blocked=proposal();blocked.profile.limits=true;assert.throws(()=>domain.activate(empty(),blocked,{uid}),/revisão/);
- const blank=proposal();blank.sessions[0].exercises[0].target='';assert.throws(()=>domain.activate(empty(),blank,{uid}),/objetivos/);
+ const blank=proposal();blank.sessions[0].exercises[0].target='';assert.throws(()=>domain.activate(empty(),blank,{uid}),/objetivo/);
  const p=domain.prepare(proposal()),before=JSON.stringify(p);
  assert.throws(()=>domain.change(p,{type:'dose',day:0,slot:p.sessions[0].exercises[0].proposalSlot,dose:dose({sets:0})}));assert.equal(JSON.stringify(p),before);
 });

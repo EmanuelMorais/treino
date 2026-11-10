@@ -40,6 +40,8 @@ test('database enforces private ownership, detects stale saves and retains 20 re
   await assert.rejects(save(a,24),e=>e.code==='PT426');
   assert.equal((await db.query('select revision,client_protocol from public.training_documents where user_id=$1',[a])).rows[0].client_protocol,8);
   await db.exec(`set request.headers='{"x-client-info":"treino/8"}';`);
+  await assert.rejects(save(a,24),e=>e.code==='PT426');
+  await db.exec(`set request.headers='{"x-client-info":"treino/9"}';`);
   assert.equal((await save(a,24)).rows[0].result.revision,25);
   const legacy=JSON.stringify({version:1,plans:[],history:[],drafts:{},favorites:[]});
   await db.exec(`set request.headers='{}';`);

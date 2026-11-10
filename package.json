@@ -10,7 +10,9 @@
     "catalog:coverage": "node scripts/catalog-coverage.cjs",
     "dev": "python3 -m http.server 8775",
     "test:sync-browser": "node scripts/test-sync-browser.cjs",
-    "package:site": "node scripts/package-site.mjs"
+    "package:site": "node scripts/package-site.mjs",
+    "security:install": "node scripts/install-gitleaks.mjs",
+    "security:scan": "node scripts/check-secrets.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.119.0"

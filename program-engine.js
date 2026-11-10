@@ -1,6 +1,7 @@
 /* Deterministic general programme rules. Editorial catalogue; no private plans. */
 (function(root){
  const VERSION=2;
+ const athlete=typeof module==='object'&&module.exports?require('./src/domain/athlete-context.js'):root.TreinoAthleteContext;
  const evidence=typeof module==='object'&&module.exports?require('./src/data/program-rules.js'):root.TreinoRuleEvidence;
  const GOALS={weight_loss:'Perder peso',strength:'Ganhar força',muscle:'Ganhar massa muscular',mobility:'Melhorar mobilidade',fitness:'Melhorar condição física'};
  const catalogue=typeof module==='object'&&module.exports?require('./src/data/exercise-catalog.js'):root.TreinoCatalogData;
@@ -40,9 +41,11 @@
   for(const k of ['weight','height','dumbbellMax','barbellMax'])if(typeof p[k]!=='string'||p[k].length>10||(p[k]!==''&&(!Number.isFinite(Number(p[k]))||Number(p[k])<=0||Number(p[k])>1000)))errors.push('Medições inválidas.');
   if(complete&&!p.adult)errors.push('O gerador desta versão destina-se a adultos.');
   if(complete&&!p.consent)errors.push('Confirma a gravação privada das respostas para continuar.');
+  errors.push(...athlete.errors(p.athlete,{complete}));
   return [...new Set(errors)];
  }
- const defaults=()=>({name:'',goals:[],primaryGoal:'',experience:'beginner',days:3,minutes:35,weeks:12,location:'home',equipment:[],machineInventory:[],overheadClearance:'standing',preferredDays:[],time:'evening',intervals:'mobility',adult:false,limits:false,lowCeiling:false,walkingSpace:false,consent:false,notes:'',avoided:'',weight:'',height:'',dumbbellMax:'',barbellMax:''});
+ const defaults=()=>({name:'',goals:[],primaryGoal:'',experience:'beginner',days:3,minutes:35,weeks:12,location:'home',equipment:[],machineInventory:[],overheadClearance:'standing',preferredDays:[],time:'evening',intervals:'mobility',adult:false,limits:false,lowCeiling:false,walkingSpace:false,consent:false,notes:'',avoided:'',weight:'',height:'',dumbbellMax:'',barbellMax:'',athlete:athlete.defaults()});
+ const scheduleDays=profile=>profile.preferredDays.length?[...profile.preferredDays]:[...({1:[2],2:[0,3],3:[0,2,4],4:[0,1,3,4]}[profile.days])];
  function availableEquipment(profile){
   const inventory=[...(profile.equipment||[]).filter(key=>key!=='machines'),...(profile.machineInventory||[])];
   if(inventory.includes('incline_bench'))inventory.push('bench');
@@ -56,6 +59,7 @@
  function generate(profile){
   const errors=profileErrors(profile);if(errors.length)return {errors};
   if(profile.limits||profile.avoided.trim())return {errors:['As limitações ou exercícios a evitar precisam de revisão antes de gerar. Guarda o questionário e cria ou importa uma ficha ajustada com apoio profissional.'],reviewRequired:true};
+  const support=athlete.support(profile.athlete);if(!support.available)return {errors:[support.message],reviewRequired:true,reason:'sport-module-unavailable'};
   const beginner=profile.experience==='beginner',inventory=availableEquipment(profile);
   const weighted=inventory.some(key=>key==='dumbbells'||key==='barbell'||/^machine_|^cable_/.test(key));
   const clearance=profile.lowCeiling?'none':profile.overheadClearance||'standing';
@@ -76,10 +80,13 @@
   const triceps=pick(['cable-triceps','band-triceps','lying-db-triceps']);
   const patterns=profile.days===4?[[push[0],pull[0],shoulders,accessory,cores[0]],[squat[0],hinge[0],lunge,calf,cores[1]],[pull[1]||pull[0],push[1],shoulders,triceps||accessory,cores[2]],[hinge[1],squat[2],lunge,calf,cores[0]]]:
    [[squat[0],push[0],pull[0],hinge[0],cores[0],...(profile.days===1?[shoulders]:[])],[hinge[1],pull[1]||pull[0],push[1],squat[1],shoulders,cores[1]],[squat[2],pull[2],push[0],hinge[2],shoulders,cores[2]]];
-  const schedule=profile.preferredDays.length?profile.preferredDays:[...( {1:[2],2:[0,3],3:[0,2,4],4:[0,1,3,4]}[profile.days])];
+  const schedule=scheduleDays(profile),calendar=athlete.week(profile.athlete,schedule.map(weekday=>({weekday,estimatedMinutes:profile.minutes})));
+  if(calendar.conflicts.length&&!calendar.allowSameDay)return {errors:['Os dias de força coincidem com atividades já declaradas: '+calendar.conflicts.map(day=>DAYS[day]).join(', ')+'. Revê os dias preferidos ou confirma explicitamente a combinação no calendário.']};
   if(profile.days<4&&profile.days>1&&schedule.some(d=>schedule.includes((d+1)%7)))return {errors:['Para sessões de corpo inteiro, escolhe dias com intervalo ou usa quatro dias com divisão superior/inferior.']};
   const used=patterns.slice(0,profile.days),coverage=coverageReport(used.flat().filter(Boolean));
   const warnings=[];
+  if(calendar.externalSessions)warnings.push('O calendário inclui '+calendar.externalSessions+' atividades fora deste programa ('+calendar.externalMinutes+' min/semana declarados). Estas atividades não foram prescritas nem substituídas pelo gerador.');
+  if(calendar.conflicts.length)warnings.push('Confirmaste força e outras atividades no mesmo dia: '+calendar.conflicts.map(day=>DAYS[day]).join(', ')+'. Revê a semana completa e a recuperação; não foi calculada uma dose desportiva adicional.');
   if(coverage.missing.length)warnings.push('Proposta limitada: sem material para puxar com resistência, o trabalho de costas é insuficiente para um programa equilibrado. Uma elevação em W não substitui uma remada. Revê o material ou adapta a ficha.');
   if(profile.equipment.includes('machines')&&!(profile.machineInventory||[]).length&&!profile.equipment.some(key=>MACHINE_EQUIPMENT[key]))warnings.push('As máquinas não foram identificadas. A seleção usa apenas o restante material declarado; escolhe as máquinas concretas no questionário.');
   if(clearance==='none')warnings.push('A proposta evita press acima da cabeça por falta de altura. Só adicionar sentado ou ajoelhado depois de confirmar a altura livre.');
@@ -121,6 +128,6 @@
   if(d.activeProgramWeek!==undefined&&(!Number.isInteger(d.activeProgramWeek)||d.activeProgramWeek<1||d.activeProgramWeek>12))return false;
   return true;
  }
- const api={VERSION,GOALS,EQUIPMENT,QUESTIONNAIRE_EQUIPMENT,MACHINE_EQUIPMENT,MUSCLES,DAYS,library,evidence,availableEquipment,coverageReport,defaults,profileErrors,reconcileGoals,generate,videoId,validExample,validExtras};
+ const api={athlete,VERSION,GOALS,EQUIPMENT,QUESTIONNAIRE_EQUIPMENT,MACHINE_EQUIPMENT,MUSCLES,DAYS,library,evidence,availableEquipment,coverageReport,defaults,profileErrors,reconcileGoals,scheduleDays,generate,videoId,validExample,validExtras};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.TreinoPrograms=api;
 })(typeof window!=='undefined'?window:this);

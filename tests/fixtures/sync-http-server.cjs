@@ -10,7 +10,7 @@ async function createServer(root,{siteRoot=root}={}){
  const asUser=(user,headers,operation)=>{
   const task=serial.then(async()=>{await db.exec('begin');try{await db.exec('set local role authenticated');await db.query("select set_config('request.jwt.claim.sub',$1,true),set_config('request.headers',$2,true)",[user.id,JSON.stringify(headers)]);const result=await operation(db);await db.exec('commit');return result;}catch(error){await db.exec('rollback');throw error;}});serial=task.catch(()=>{});return task;
  };
- const secret=crypto.randomBytes(32),tokens=new Map();
+ const secret=crypto.randomBytes(32),password=crypto.randomBytes(24).toString('base64url'),tokens=new Map();
  const session=user=>{const enc=value=>Buffer.from(JSON.stringify(value)).toString('base64url'),unsigned=enc({alg:'HS256',typ:'JWT'})+'.'+enc({sub:user.id,role:'authenticated',aud:'authenticated',exp:Math.floor(Date.now()/1000)+3600});const token=unsigned+'.'+crypto.createHmac('sha256',secret).update(unsigned).digest('base64url');tokens.set(token,user);return {access_token:token,token_type:'bearer',expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,refresh_token:'fixture-refresh-'+user.id,user};};
  const original=fs.readFileSync(path.join(siteRoot,'index.html'),'utf8'),allowed=new Set([...original.matchAll(/(?:src|href)="([^"?]+)(?:\?[^" ]*)?"/g)].map(m=>m[1]));
  const json=(response,status,value)=>{response.writeHead(status,{'Content-Type':'application/json','Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS'});response.end(JSON.stringify(value));};
@@ -23,7 +23,7 @@ async function createServer(root,{siteRoot=root}={}){
     let raw='';for await(const chunk of request){raw+=chunk;if(raw.length>16*1024*1024)throw Error('Fixture request too large');}const body=raw?JSON.parse(raw):{};
     const route=url.pathname.slice('/__api__'.length),token=String(request.headers.authorization||'').replace(/^Bearer /,''),user=tokens.get(token);
     if(route==='/auth/v1/token'){
-     const found=url.searchParams.get('grant_type')==='refresh_token'?users.find(u=>body.refresh_token==='fixture-refresh-'+u.id):users.find(u=>u.email===body.email&&body.password==='Fixture-only-123!');
+     const found=url.searchParams.get('grant_type')==='refresh_token'?users.find(u=>body.refresh_token==='fixture-refresh-'+u.id):users.find(u=>u.email===body.email&&body.password===password);
      json(response,found?200:400,found?session(found):{code:'invalid_credentials',message:'Invalid fixture credentials'});return;
     }
     if(!user){json(response,401,{code:'PGRST301',message:'Fixture authentication required'});return;}
@@ -49,6 +49,6 @@ async function createServer(root,{siteRoot=root}={}){
   }catch(error){if(error.code==='42501')metrics.ownerErrors++;json(response,error.code==='PT409'?409:error.code==='PT426'?426:error.code==='42501'?403:400,{code:error.code||'FIXTURE_ERROR',message:error.message});}
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- return {origin:'http://127.0.0.1:'+server.address().port,users,session,metrics,async close(){await new Promise(resolve=>server.close(resolve));await serial;await db.close();}};
+ return {origin:'http://127.0.0.1:'+server.address().port,users,session,metrics,password,async close(){await new Promise(resolve=>server.close(resolve));await serial;await db.close();}};
 }
 module.exports={createServer};

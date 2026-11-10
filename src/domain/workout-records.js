@@ -1,6 +1,7 @@
 /* Additive contracts for v1 documents. No exercise is identified by its name. */
 (function (root) {
-  const CLIENT_BUILD = 8;
+  const CLIENT_BUILD = 9;
+  const programs=typeof module==='object'&&module.exports?require('../../program-engine.js'):root.TreinoPrograms;
   const LOAD_REFERENCES = ['per_dumbbell', 'barbell_total', 'machine_stack', 'bodyweight', 'external_total', 'unspecified'];
   const copy = value => JSON.parse(JSON.stringify(value));
 
@@ -37,6 +38,14 @@
     const next = copy(document);
     next.minClientBuild = CLIENT_BUILD;
     for (const plan of next.plans) {
+      if(plan.program&&plan.program.weekday===undefined){
+        const version=next.programVersions?.find(item=>item.id===plan.program.id);
+        const answers=next.questionnaireVersions?.find(item=>item.id===version?.questionnaireId)?.answers;
+        if(answers&&[1,2,3,4].includes(answers.days)&&Array.isArray(answers.preferredDays)){
+          const weekday=programs.scheduleDays(answers)[plan.program.day];
+          if(Number.isInteger(weekday)&&weekday>=0&&weekday<=6)plan.program.weekday=weekday;
+        }
+      }
       for (const exercise of plan.exercises) {
         exercise.exerciseKey = exerciseKey(exercise, plan.id);
         exercise.loadReference = loadReference(exercise);

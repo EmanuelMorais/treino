@@ -14,6 +14,8 @@ A [avaliação da arquitetura](docs/ARQUITETURA.md) separa catálogo, prescriç�
 
 O plano inclui ainda preparação complementar por modalidade e, posteriormente, módulos completos para provas/corrida/ciclismo, com calendário e fontes específicos. [Como funciona o gerador atual e quais são as fontes](docs/GERACAO-E-FONTES.md): regras locais, sem IA nem consulta automática de vídeos; a preparação desportiva especializada ainda não existe.
 
+A [entrega de segurança e contexto desportivo](docs/ENTREGA-SEGURANCA-E-CALENDARIO.md) acrescenta análise automática de credenciais e modalidade/prova/calendário privado. Está em validação no PR #2; a geração desportiva especializada continua indisponível. [Política de credenciais e comandos](SECURITY.md).
+
 ## Estado
 
 - Aplicação privada: sessão validada antes de abrir treinos, biblioteca e histórico. Contas novas começam sem planos.
