@@ -29,6 +29,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Trust the checked-out workspace inside the root container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install checksum-pinned secret scanner
         run: npm run security:install
       - name: Reject secrets in tracked files and Git history
@@ -38,7 +40,6 @@ jobs:
       - run: npm run build
       - name: Verify generated files against the checked-out revision
         run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git rev-parse --show-toplevel
           git diff --exit-code HEAD -- cloud.js vendor/supabase.js
       - run: npm run package:site
