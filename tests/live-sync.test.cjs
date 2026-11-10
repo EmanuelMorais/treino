@@ -16,10 +16,10 @@ async function device(db,id='owner-a',cached={}){
  const client={auth:{onAuthStateChange:fn=>authEvent=fn,getSession:async()=>({data:{session}}),refreshSession:async()=>({data:{session}})},realtime:{setAuth:async()=>{}},
   channel(){const channel={removed:false,on(type,filter,change){assert.equal(type,'postgres_changes');assert.equal(filter.table,'training_documents');this.id=filter.filter.slice('user_id=eq.'.length);this.change=change;return this},subscribe(status){this.status=status;db.channels.push(this);queueMicrotask(()=>status('SUBSCRIBED'));return this}};return channel},
   removeChannel:async ch=>{ch.removed=true},
-  from(table){assert.equal(table,'training_documents');let columns,target;return {select(value){columns=value;return this},eq(key,value){assert.equal(key,'user_id');target=value;return this},maybeSingle(){return this},async setHeader(){assert.equal(target,session.user.id);db.reads.push({id:target,columns});if(db.readError)return db.readError;const result=clone(db.documents.get(target)||null);if(db.readGate)await db.readGate;return {data:columns==='revision'&&result?{revision:result.revision}:result}}}},
+  from(table){assert.equal(table,'training_documents');let columns,target;return {select(value){columns=value;return this},eq(key,value){assert.equal(key,'user_id');target=value;return this},maybeSingle(){return this},async setHeader(){assert.equal(target,session.user.id);db.reads.push({id:target,columns});if(db.readError)return db.readError;const result=clone(db.documents.get(target)||null);if(result)result.client_protocol=8;if(db.readGate)await db.readGate;return {data:columns==='revision'&&result?{revision:result.revision}:result}}}},
   rpc(name,args){assert.equal(name,'save_training_document');return {async setHeader(){assert.equal(args.p_user_id,session.user.id);db.writes.push(clone(args));const current=db.documents.get(args.p_user_id);if(current.revision!==args.p_expected_revision)return {error:{code:'PT409'}};const revision=db.commit(args.p_user_id,args.p_payload);if(db.saveGate)await db.saveGate;return {data:{revision}}}}},
  };
- const window={TREINO_CONFIG:{supabaseUrl:'https://test.supabase.co',supabasePublishableKey:'sb_publishable_test_key_valid_length'},TreinoSupabase:{createClient:()=>client},addEventListener:(name,fn)=>windowEvents[name]=fn};
+ const window={TREINO_CONFIG:{supabaseUrl:'https://test.supabase.co',supabasePublishableKey:'sb_publishable_test_key_valid_length'},TreinoSupabase:{createClient:(url,key,options)=>{assert.equal(options.global.headers['X-Client-Info'],'treino/8');return client}},addEventListener:(name,fn)=>windowEvents[name]=fn};
  const context=vm.createContext({window,document:{addEventListener:(name,fn)=>events[name]=fn,visibilityState:'visible'},navigator:{onLine:true},localStorage:{getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)},state:payload('guest'),KEY:'guest',activeStorageKey:'guest',$,validState:()=>true,loadAccountState:(next,key,options)=>{context.state=next;context.activeStorageKey=key;loads.push({next:clone(next),options})},fresh:()=>payload('guest'),startApp(){},setAccountAccess(value){access.push(value)},modal:(title)=>modals.push(title),closeModal:()=>{$('#modal').open=false;events['#modal:close']?.()},toast(){},downloadBackup(){},esc:x=>x,setTimeout:(fn,ms)=>{const timer=++counter;timers.set(timer,{fn,ms});return timer},clearTimeout:timer=>timers.delete(timer),console});
  const loads=[],modals=[],access=[];
  vm.runInContext(fs.readFileSync('sync-core.js','utf8'),context);
@@ -37,6 +37,23 @@ test('cached account data does not unlock the application before an authenticate
 });
 test('a rejected session keeps the application locked even when cached plans exist',async()=>{
  const db=server();db.readError={status:401,error:{code:'bad_jwt'}};const pc=await device(db);assert.equal(pc.access.includes(true),false);assert.equal(pc.$('#account').textContent,'Renovar acesso');
+});
+test('an unprepared server cannot unlock the new editor or receive upgraded documents',async()=>{
+ const db=server();db.readError={error:{code:'42703',message:'column training_documents.client_protocol does not exist'}};
+ const pc=await device(db);assert.equal(pc.access.includes(true),false);assert.equal(db.writes.length,0);
+ assert.match(pc.$('#sync-detail').textContent,/atualização de compatibilidade/);
+ db.readError=null;pc.$('#gate-login').onclick();await settle();await pc.run(200);assert.equal(pc.access.at(-1),true);
+});
+test('a document requiring a newer client is not silently downgraded or opened for editing',async()=>{
+ const db=server();db.documents.get('owner-a').payload.minClientBuild=9;
+ const pc=await device(db,'owner-a',{payload:payload('cached version')});assert.equal(pc.access.includes(true),false);assert.equal(db.writes.length,0);
+ assert.match(pc.$('#sync-detail').textContent,/versão mais recente/);
+});
+test('an unreadable newer local cache is preserved before any server request or rewrite',async()=>{
+ const db=server(),future={...payload('unsent newer changes'),minClientBuild:9};
+ const pc=await device(db,'owner-a',{payload:future,dirty:true});
+ assert.equal(pc.access.includes(true),false);assert.equal(db.reads.length,0);assert.equal(db.writes.length,0);
+ assert.deepEqual(JSON.parse(pc.values.get('treino-account-owner-a')),future);
 });
 test('edits propagate both ways between two open devices without a click or reload; own echoes do not render',async()=>{
  const db=server(),phone=await device(db),pc=await device(db);

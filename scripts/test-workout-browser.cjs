@@ -13,6 +13,8 @@ const fixture = original.replace('<head>', '<head><base href="/"><link rel="icon
     const stored=localStorage.getItem(fixtureKey);
     const fixture=stored?JSON.parse(stored):{version:1,plans:[{id:'fixture-plan',name:'Treino fictício',note:'Teste local',exercises:[]}],history:[],drafts:{},favorites:[]};
     loadAccountState(fixture,fixtureKey);setAccountAccess(true);
+    document.querySelector('#account').textContent='Conta de teste';document.querySelector('#account').disabled=true;
+    document.querySelector('#sync-title').textContent='Demonstração local';document.querySelector('#sync-detail').textContent='Dados fictícios · sem ligação a contas reais';
   </script></body>`);
 const allowed = new Set([...original.matchAll(/(?:src|href)="([^"?]+)(?:\?[^" ]*)?"/g)].map(match => match[1]));
 const server = http.createServer((request, response) => {
@@ -41,6 +43,7 @@ async function main() {
     await command(['snapshot']);
     await command(['run-code', `async page => {
       page.setDefaultTimeout(5000);
+      await page.setViewportSize({width:1440,height:900});
       const errors=[];page.on('pageerror',e=>errors.push(e.message));
       const check=(condition,message)=>{if(!condition)throw Error(message)};
       await page.route('https://www.youtube-nocookie.com/**',route=>route.fulfill({contentType:'text/html',body:'<html><body>Test player</body></html>'}));
@@ -107,12 +110,80 @@ async function main() {
       check(await page.locator('[data-catalog-select]').count()===1,'Machine inventory filter is wrong');
       await page.getByRole('checkbox',{name:/^Leg press/}).check();
       await page.getByRole('button',{name:'Adicionar 1 exercício',exact:true}).click();
+      // A live substitution must preserve the entered block and isolate today.
+      await page.getByRole('button',{name:'Ver todos os exercícios',exact:true}).isVisible().then(visible=>visible?page.getByRole('button',{name:'Ver todos os exercícios',exact:true}).click():undefined);
+      await page.getByLabel('Carga, Peso morto romeno com halteres, série 1',{exact:true}).fill('11');
+      await page.getByLabel('Repetições, Peso morto romeno com halteres, série 1',{exact:true}).fill('8');
+      await page.getByRole('button',{name:'Concluir série 1 de Peso morto romeno com halteres',exact:true}).click();
+      await first.getByRole('button',{name:'Trocar',exact:true}).click();
+      await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Ponte de glúteos com haltere');
+      await page.getByRole('checkbox',{name:/^Ponte de glúteos com haltere/}).check();
+      await page.getByRole('button',{name:'Continuar com a seleção',exact:true}).click();
+      await page.getByRole('button',{name:'Aplicar substituição',exact:true}).click();
+      let changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      const execution=changed.plans.find(p=>p.sessionOnly);
+      check(!!execution,'Today swap did not isolate an execution');
+      check(changed.plans.find(p=>p.id==='fixture-plan').exercises[0].libraryId==='db-rdl','Today swap changed the source plan');
+      check(execution.exercises[0].beforeReplacement,'Entered block was relabelled');
+      check(changed.drafts[execution.id].rows[execution.exercises[0].id][0].kg==='11','Entered weight was lost');
+      check(changed.drafts[execution.id].rows[execution.exercises[1].id][0].kg==='','Replacement inherited another exercise weight');
+      check(await page.evaluate(key=>validState(JSON.parse(localStorage.getItem(key))),${JSON.stringify(storageKey)}),'Replacement document failed validation');
+      await page.getByRole('button',{name:'Desfazer última troca',exact:true}).click();
+      changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      check(!changed.plans.some(p=>p.sessionOnly)&&Object.values(changed.drafts['fixture-plan'].rows).some(rows=>rows.some(r=>r.kg==='11')),'Undo lost the pre-existing session');
+      await first.getByRole('button',{name:'Trocar',exact:true}).click();
+      await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Ponte de glúteos com haltere');
+      await page.getByRole('checkbox',{name:/^Ponte de glúteos com haltere/}).check();
+      await page.getByRole('button',{name:'Continuar com a seleção',exact:true}).click();
+      await page.getByRole('button',{name:'Aplicar substituição',exact:true}).click();
+      await page.getByLabel('Repetições, Ponte de glúteos com haltere, série 1',{exact:true}).fill('1');
+      await page.getByRole('button',{name:'Desfazer última troca',exact:true}).click();
+      check((await page.locator('#toast').innerText()).includes('alterações posteriores'),'Undo discarded later entered values');
+      await page.getByRole('button',{name:/Guardar sessão no histórico/}).click();
+      changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      check(!changed.plans.some(p=>p.sessionOnly),'Completed execution copy was not cleaned');
+      const recordId=changed.history[0].id,recordCount=changed.history.length;
+      await page.locator('.history-item summary').first().click();
+      await page.locator('.history-item').first().getByRole('button',{name:'Retomar sessão parcial',exact:true}).click();
+      check(await page.getByLabel('Repetições, Ponte de glúteos com haltere, série 1',{exact:true}).inputValue()==='1','Partial resume lost an unfinished entered value');
+      await page.getByLabel('Repetições, Peso morto romeno com halteres, série 1',{exact:true}).fill('9');
+      await page.getByRole('button',{name:/Guardar alterações ao registo/}).click();
+      changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      check(changed.history.length===recordCount&&changed.history[0].id===recordId,'Correcting a swapped session duplicated history');
+      check(changed.history[0].exercises[0].rows[0].reps==='9','Historical correction was lost');
+      check(changed.history[0].complete===false,'Correcting recorded sets marked an unfinished session complete');
+      await page.locator('.history-item summary').first().click();
+      await page.locator('.history-item').first().getByRole('button',{name:'Retomar sessão parcial',exact:true}).click();
+      check(await page.getByRole('heading',{name:'Ponte de glúteos com haltere',exact:true}).isVisible(),'Partial resume lost an unperformed replacement');
+      for(const input of await page.locator('[data-field="reps"]').all())if(!(await input.inputValue()))await input.fill('8');
+      while(await page.locator('[data-tick][aria-pressed="false"]').count())await page.locator('[data-tick][aria-pressed="false"]').first().click();
+      await page.getByRole('button',{name:/Guardar alterações ao registo/}).click();
+      changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      check(changed.history[0].complete===true&&changed.history.length===recordCount,'Resuming remaining work did not complete the same session');
+      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('button',{name:/^Treino fictício/}).click();
+      await page.getByRole('button',{name:'Trocar',exact:true}).first().click();
+      await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Ponte de glúteos com haltere');
+      await page.getByRole('checkbox',{name:/^Ponte de glúteos com haltere/}).check();
+      await page.getByRole('button',{name:'Continuar com a seleção',exact:true}).click();
+      await page.getByLabel('Aplicar alteração',{exact:true}).selectOption('future_day');
+      await page.getByRole('checkbox',{name:'Aplicar também nesta sessão',exact:true}).uncheck();
+      await page.getByRole('button',{name:'Aplicar substituição',exact:true}).click();
+      changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      check(changed.plans.find(p=>p.id==='fixture-plan').exercises[0].libraryId==='db-bridge','Future-only swap did not update the template');
+      check(changed.plans.find(p=>p.sessionOnly).exercises[0].libraryId==='db-rdl','Future-only swap relabelled today');
+      await page.getByRole('button',{name:'Descartar ajustes desta sessão',exact:true}).click();
+      await page.getByRole('button',{name:'Descartar ajustes',exact:true}).click();
+      changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
+      check(!changed.plans.some(p=>p.sessionOnly),'Discard left an orphan execution');
+      check(changed.history[0].exercises[0].name==='Peso morto romeno com halteres','Future swap rewrote a historical movement');
       check(errors.length===0,errors.join('; '));
     }`]);
-    console.log('PASS ['+browser+']: search, equipment/machine filters, selection/details, favorite, partial session, protected edits/removal, dose isolation, same-day history, local reload, personal demo/player cleanup, empty state and 320–1440 px layouts.');
+    console.log('PASS ['+browser+']: catalogue, 320–1440 px layouts, partial sessions, protected edits, demos, today/mid-session and future-only replacements, historical correction and execution cleanup.');
     console.log('Fixture only: no live authentication, Supabase sync or physical-device audio/keyboard verification.');
   } catch (error) {
     if (opened) try { fs.writeFileSync(path.join(root, 'output/playwright/failure-' + browser + '.txt'), await command(['snapshot'])); } catch {}
+    if(opened)try{await command(['run-code',`async page => {await page.screenshot({path:'output/playwright/failure-'+${JSON.stringify(browser)}+'.png'});}`]);}catch{}
     throw error;
   } finally {
     try { if (opened) await command(['close']); } catch {} finally { server.close(); }

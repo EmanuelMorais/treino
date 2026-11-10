@@ -108,3 +108,7 @@ Provocar também gravação recusada, resposta lenta/fora de ordem, pesquisa vaz
 - Guardar resultados/versionamento e evidência sem dados pessoais. Não prometer ausência total de erros.
 - Configurar Pages por workflow dependente dos checks; um workflow paralelo à publicação por branch não impede publicar com falhas.
 - Repetir um percurso curto no artefacto publicado. Nesta entrega, os novos fluxos e a matriz permanecem por implementar/executar.
+
+## Atualização de implementação — 10 de novembro de 2026
+
+A [segunda entrega](ENTREGA-SUBSTITUICOES.md) regista 103 testes Node e o percurso ampliado em Chrome. WebKit está bloqueado por uma falha de interação reproduzida também sem a aplicação; não considerar o novo percurso aprovado neste motor. A matriz acima continua a definir a aceitação integral, incluindo sincronização real, equipamento físico e usabilidade, ainda pendentes.

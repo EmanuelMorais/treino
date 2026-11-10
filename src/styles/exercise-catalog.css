@@ -13,6 +13,8 @@
 .catalog-item-actions { display: flex; align-items: center; }
 .catalog-item-actions button { min-width: 44px; min-height: 44px; }
 .catalog-star { font-size: 1.45rem; }
+#replacement-current-wrap[hidden], #replacement-target-wrap[hidden] { display: none !important; }
+.exercise-tools button { min-height: 44px; }
 .catalog-options { margin: 14px 0; }
 .catalog-options summary { padding-block: 10px; cursor: pointer; }
 .catalog-options .choice { margin: 12px 0; }
@@ -20,6 +22,9 @@
 .catalog-footer p { margin: 0; }
 .catalog-picker input:focus-visible, .catalog-picker button:focus-visible, .catalog-picker select:focus-visible { outline: 3px solid #527448; outline-offset: 3px; }
 @media (max-width: 540px) {
+  .exercise-top { flex-wrap: wrap; }
+  .exercise-title { min-width: 0; width: 100%; }
+  .exercise-tools { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
   .catalog-filters { grid-template-columns: 1fr; gap: 0; }
   .catalog-results { max-height: 34vh; max-height: 34dvh; }
   .catalog-picker input[type="search"], .catalog-picker select, #exercise-form input, #exercise-form select, #exercise-form textarea { font-size: 16px; }
