@@ -48,6 +48,7 @@ function renderProfile(){
  form.oninput=event=>{save(event);$('#profile-feedback').hidden=true;};form.onchange=form.oninput;
  athleteUI=setupAthleteContext(form,{initial:p.athlete,onChange:()=>form.oninput({target:{name:'athlete'}})});
  journey=setupProfileSteps(form,{validate});
+ if(athleteUI.pending())form.querySelector('[data-profile-step="1"]').click();
  form.onsubmit=event=>{
   event.preventDefault();alignGoals();$('#profile-feedback').hidden=true;
   if(journey?.advanceIfNeeded?.())return;

@@ -390,6 +390,9 @@ async function main() {
        await page.getByLabel('Nome da atividade',{exact:true}).fill(name);await page.getByLabel('Duração da atividade · minutos',{exact:true}).fill(String(minutes));await page.getByRole('combobox',{name:'Dia da atividade',exact:true}).selectOption(String(weekday));await page.getByRole('combobox',{name:'Modalidade da atividade',exact:true}).selectOption(sport);await page.getByRole('combobox',{name:'Tipo de atividade',exact:true}).selectOption(kind);
       };
       await addActivity('Corrida longa fictícia',90,0,'running','long');
+      await page.reload();await page.getByRole('button',{name:'Rever calendário',exact:true}).click();
+      check(await page.getByLabel('Nome da atividade',{exact:true}).inputValue()==='Corrida longa fictícia','Reload lost the unfinished activity');
+      check(await page.getByLabel('Duração da atividade · minutos',{exact:true}).inputValue()==='90','Reload lost the unfinished activity duration');
       await page.getByRole('button',{name:'Continuar →',exact:true}).click();
       check((await page.locator('#profile-feedback').innerText()).includes('Guarda ou cancela'),'Pending calendar edit silently advanced');
       await page.getByRole('button',{name:'Guardar atividade',exact:true}).click();

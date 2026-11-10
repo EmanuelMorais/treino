@@ -125,4 +125,4 @@ A [entrega e publicação](ENTREGA-PUBLICACAO.md) regista a revisão integrada, 
 
 ## Segurança e contexto desportivo — PR #2
 
-A [nova entrega](ENTREGA-SEGURANCA-E-CALENDARIO.md) regista 151 testes Node, prevenção de segredos e os percursos locais em Chrome/WebKit para contexto/calendário. Acrescenta partes de F31/F35/F38 e da integração F25–F27; geração especializada, testes alojados/físicos e aceitação integral continuam pendentes.
+A [nova entrega](ENTREGA-SEGURANCA-E-CALENDARIO.md) regista 152 testes Node, prevenção de segredos e os percursos locais em Chrome/WebKit para contexto/calendário. Acrescenta partes de F31/F35/F38 e da integração F25–F27; geração especializada, testes alojados/físicos e aceitação integral continuam pendentes.

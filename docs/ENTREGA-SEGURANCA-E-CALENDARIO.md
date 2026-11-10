@@ -23,7 +23,7 @@ A configuração contém uma chave **publicável** Supabase, adequada ao código
 
 O questionário distingue condição geral, complemento desportivo e preparação de prova. Os campos específicos só aparecem no percurso relevante: modalidade, experiência, prova/data/distância/objetivo e linha de base opcional. Valores desconhecidos ficam vazios; não são inventados ritmos, watts, FTP, volumes ou tempos. As respostas mantêm-se ao mudar de percurso e são privadas por conta.
 
-É possível adicionar, editar, cancelar e remover atividades externas, com dia, minutos, modalidade e tipo. O calendário descreve uma semana habitual; não cria registos realizados nem sessões prescritas. Treinos/jogos existentes não são substituídos pelo gerador. A proposta geral e a página inicial mostram força e atividades declaradas juntas, distinguindo minutos estimados de minutos declarados. Não há uma pontuação de carga ou validação automática da recuperação.
+É possível adicionar, editar, cancelar e remover atividades externas, com dia, minutos, modalidade e tipo. Uma atividade por concluir tem rascunho privado quando a gravação está autorizada: é recuperável ao regressar/recarregar, mas não entra nos totais nem permite ativar uma proposta antes de guardar ou cancelar. O calendário descreve uma semana habitual; não cria registos realizados nem sessões prescritas. Treinos/jogos existentes não são substituídos pelo gerador. A proposta geral e a página inicial mostram força e atividades declaradas juntas, distinguindo minutos estimados de minutos declarados. Não há uma pontuação de carga ou validação automática da recuperação.
 
 Se força e atividades externas coincidirem num dia, a geração geral pede rever os dias ou uma confirmação explícita da combinação. A confirmação produz avisos e o resumo semanal; não valida uma dose especializada. Importar/alterar uma proposta não contorna o bloqueio: a ativação também verifica coincidências não confirmadas.
 
@@ -37,7 +37,7 @@ Programas novos guardam o dia da semana na ficha. Ao ler programas antigos, o di
 
 ## Verificação
 
-- **151 testes Node aprovados**: oito regressões do scanner, sete de contexto/calendário, contratos/importação, compatibilidade e restantes regressões.
+- **152 testes Node aprovados**: oito regressões do scanner, oito de contexto/calendário, contratos/importação, compatibilidade e restantes regressões.
 - Chrome e WebKit locais, com o artefacto `dist/`, incluindo contexto de prova, CRUD/cancelamento/reload do calendário, recusa explícita de geração indisponível, escolha de dias sem coincidências e preservação dos planos/histórico. Layout a 320 px.
 - Integração com SDK e SQL/RLS isolados: calendário criado no segundo browser aparece automaticamente no PC, juntamente com planos/registos; outra conta permanece vazia. Credenciais de fixture geradas em memória.
 - Build e empacotamento: **30 ficheiros públicos**; segredos, scripts de desenvolvimento e documentos não entram no artefacto. Git diff e links locais da documentação verificados.

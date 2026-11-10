@@ -54,3 +54,11 @@ test('legacy weekday migration uses the archived questionnaire and survives its 
  delete next.questionnaireVersions;
  assert.deepEqual(records.upgrade(next).plans.slice(0,3).map(plan=>plan.program.weekday),[1,3,5]);
 });
+test('incomplete calendar input roundtrips privately without being counted or activated',()=>{
+ const c={...athlete.defaults(),calendar:[activity()],calendarDraft:{id:'',name:'Unfinished synthetic ride',sport:'cycling',weekday:2,minutes:'',kind:'easy'}};
+ const p=profile({athlete:c}),doc=records.upgrade({version:1,plans:[],history:[],drafts:{},favorites:[],profile:{answers:p}});
+ assert.equal(contract.valid(doc),true);assert.deepEqual(backup.decode(clone(doc)).value.profile.answers.athlete.calendarDraft,c.calendarDraft);
+ assert.equal(athlete.week(c).externalSessions,1);assert.equal(athlete.week(c).externalMinutes,45);
+ assert.match(engine.generate(p).errors.join(' '),/atividade por concluir/);
+ const invalid=clone(doc);invalid.profile.answers.athlete.calendarDraft.id='missing-activity';assert.equal(contract.valid(invalid),false);
+});

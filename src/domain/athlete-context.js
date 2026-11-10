@@ -3,7 +3,7 @@
  const INTENTS={general:'Condição física geral',complement:'Complementar o meu desporto',event:'Preparar uma prova / competição'};
  const SPORTS={running:'Corrida',cycling:'Ciclismo',padel:'Padel',other:'Outra modalidade'};
  const KINDS={easy:'Leve / recuperação',hard:'Intenso',long:'Longo',match:'Jogo / competição',technique:'Técnica / habitual'};
- const defaults=()=>({version:1,intent:'general',sport:'',sportName:'',experience:'new',eventName:'',eventDate:'',distanceKm:'',eventGoal:'',targetTime:'',weeklyMinutes:'',weeklyKm:'',sessionsPerWeek:'',longestMinutes:'',externalPlan:false,externalNote:'',allowSameDay:false,calendar:[]});
+ const defaults=()=>({version:1,intent:'general',sport:'',sportName:'',experience:'new',eventName:'',eventDate:'',distanceKm:'',eventGoal:'',targetTime:'',weeklyMinutes:'',weeklyKm:'',sessionsPerWeek:'',longestMinutes:'',externalPlan:false,externalNote:'',allowSameDay:false,calendar:[],calendarDraft:null});
  const text=(value,max)=>typeof value==='string'&&value.length<=max;
  const number=(value,max)=>text(value,12)&&(value===''||Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<=max);
  const date=value=>value===''||/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value+'T12:00:00Z'))&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;
@@ -18,12 +18,15 @@
    if(!item||!text(item.id,100)||!/^[\w-]+$/.test(item.id)||['__proto__','constructor','prototype'].includes(item.id)||ids.has(item.id)||!Object.hasOwn(SPORTS,item.sport)||!Object.hasOwn(KINDS,item.kind)||!text(item.name,100)||!item.name.trim()||!Number.isInteger(item.weekday)||item.weekday<0||item.weekday>6||!Number.isInteger(item.minutes)||item.minutes<5||item.minutes>600)return false;
    ids.add(item.id);
   }
+  const draft=context.calendarDraft;
+  if(draft!==undefined&&draft!==null&&(!draft||!text(draft.id,100)||draft.id!==''&&!ids.has(draft.id)||!text(draft.name,100)||!Object.hasOwn(SPORTS,draft.sport)||!Number.isInteger(draft.weekday)||draft.weekday<0||draft.weekday>6||!text(draft.minutes,12)||draft.minutes!==''&&(!Number.isFinite(Number(draft.minutes))||Number(draft.minutes)<0||Number(draft.minutes)>10000)||!Object.hasOwn(KINDS,draft.kind)))return false;
   return true;
  }
  function errors(context,{complete=false}={}){
   if(!valid(context))return ['Revê os dados da modalidade e do calendário.'];
   if(!context||!complete)return [];
   const errors=[];
+  if(context.calendarDraft)errors.push('Guarda ou cancela a atividade por concluir no calendário.');
   if(context.intent!=='general'&&!context.sport)errors.push('Escolhe a modalidade principal.');
   if(context.sport==='other'&&!context.sportName.trim())errors.push('Indica a modalidade.');
   if(context.intent==='event'&&!context.eventDate)errors.push('Indica a data da prova / competição.');
