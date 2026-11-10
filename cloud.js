@@ -84,7 +84,9 @@
  'use strict';
  const cfg=window.TREINO_CONFIG||{},rules=window.TreinoSyncRules;
  const configured=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(cfg.supabaseUrl||'')&&typeof cfg.supabasePublishableKey==='string'&&cfg.supabasePublishableKey.length>20;
- const clientBuild=window.TreinoRecords?.CLIENT_BUILD||8;
+ const clientBuild=window.TreinoRecords?.CLIENT_BUILD||9;
+ // Server protocol 8 already enforces arbitrary minClientBuild values (including 9).
+ const serverProtocol=8;
  const client=configured?window.TreinoSupabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{global:{headers:{'X-Client-Info':'treino/'+clientBuild}},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
  const dataRequests=client?window.TreinoAuthData.create(client.auth):null;
  let authNeeded=false,accountVerified=false,clientUpgradeNeeded=false;
@@ -115,7 +117,7 @@
  async function remoteDocument(id,revisionOnly=false){
   const {data,error}=await dataRequests.run(id,token=>client.from('training_documents').select(revisionOnly?'revision':'payload,revision,updated_at,client_protocol').eq('user_id',id).maybeSingle().setHeader('Authorization','Bearer '+token));
   if(error){if(['42703','PGRST204'].includes(error.code)&&String(error.message).includes('client_protocol'))throw Error('O servidor precisa da atualização de compatibilidade antes de usar esta versão. Os dados existentes não foram alterados.');throw error;}
-  if(data&&!revisionOnly&&!(data.client_protocol>=clientBuild))throw Error('O servidor ainda não suporta esta versão do Treino. Os registos foram preservados.');
+  if(data&&!revisionOnly&&!(data.client_protocol>=serverProtocol))throw Error('O servidor ainda não suporta esta versão do Treino. Os registos foram preservados.');
   if(data&&!revisionOnly&&data.payload?.minClientBuild>clientBuild)throw Object.assign(Error('Este documento foi atualizado por uma versão mais recente. Atualiza a página para continuar; os registos locais foram preservados.'),{code:'CLIENT_UPGRADE_REQUIRED'});
   if(data&&!revisionOnly&&!validState(data.payload))throw Error('A cópia online tem um formato inválido. Exporta a cópia local antes de continuar.');return data;
  }

@@ -121,7 +121,7 @@ Nesta fase, «vídeo próprio» significa ligação para um vídeo YouTube, incl
 
 ## Preparação por modalidade e para provas
 
-Extensão pedida em 9 de novembro de 2026: apoiar também pessoas que treinam para uma modalidade ou um evento, como uma maratona, ciclismo ou padel. **Ainda não implementada.** Não tratar esta opção como um simples filtro de músculos nem dar um nome desportivo a uma rotina genérica.
+Extensão pedida em 9 de novembro de 2026: apoiar também pessoas que treinam para uma modalidade ou um evento, como uma maratona, ciclismo ou padel. **Contexto/prova e calendário declarados implementados no PR #2; geração especializada ainda indisponível.** Ver [evidência e limites](ENTREGA-SEGURANCA-E-CALENDARIO.md). Não tratar esta opção como um simples filtro de músculos nem dar um nome desportivo a uma rotina genérica.
 
 Na entrada guiada, distinguir **condição física geral**, **preparação complementar para o meu desporto** e **preparar uma prova**. Só abrir perguntas da modalidade quando esta for escolhida; manter o percurso geral curto. Permitir conciliar objetivos, mas definir a prioridade e mostrar incompatibilidades antes de gerar.
 

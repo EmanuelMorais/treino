@@ -13,8 +13,9 @@ function scanRepository({root=process.cwd(),staged=false,binary=process.env.GITL
  const forbidden=files.filter(privatePath);
  if(forbidden.length)throw Error('Ficheiros privados versionados: '+forbidden.join(', '));
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'treino-public-scan-'));
- function detect(args){
-  const result=spawnSync(binary,[...args,'--config',config,'--redact=100','--no-banner','--log-level','error'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024});
+ const ignoreFile=path.join(directory,'scanner-empty-ignore');fs.writeFileSync(ignoreFile,'');
+ function detect(args,input){
+  const result=spawnSync(binary,[...args,'--config',config,'--redact=100','--ignore-gitleaks-allow','--gitleaks-ignore-path',ignoreFile,'--no-banner','--log-level','error'],{cwd:root,encoding:'utf8',input,maxBuffer:1024*1024});
   if(result.error)throw Error('Não foi possível executar o scanner.');
   if(result.status!==0)throw Error('Verificação de segredos recusada. Não publiques; revê os ficheiros localmente com saída redigida.');
  }
@@ -27,6 +28,11 @@ function scanRepository({root=process.cwd(),staged=false,binary=process.env.GITL
   }
   detect(['dir',directory]);
   detect(['git',...(staged?['--staged']:['--log-opts=--all --full-history']),root]);
+  if(!staged){
+   const historical=git(root,['log','--all','--format=','--name-only','-z']).split('\0').map(name=>name.replace(/^\n+/,''));
+   if(historical.some(privatePath))throw Error('Há um ficheiro privado no histórico Git. Revê o histórico localmente antes de publicar.');
+   detect(['stdin'],git(root,['log','--all','--format=%B']));
+  }
   return {trackedFiles:files.length,scope:staged?'working tree and staged changes':'working tree and all available Git refs'};
  }finally{fs.rmSync(directory,{recursive:true,force:true});}
 }

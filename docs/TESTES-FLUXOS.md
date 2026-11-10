@@ -122,3 +122,7 @@ A [quinta entrega](ENTREGA-SESSOES-E-QUALIDADE.md) acrescenta isolamento de exec
 ## Publicação — 10 de novembro de 2026
 
 A [entrega e publicação](ENTREGA-PUBLICACAO.md) regista a revisão integrada, o workflow aprovado, os 28 assets comparados com o artefacto e o gate anónimo no endereço público. Inclui os limites por grupo de IDs e a decisão de publicação do núcleo geral. Não substitui a aceitação integral F01–F43 nem os testes alojados/físicos ainda pendentes.
+
+## Segurança e contexto desportivo — PR #2
+
+A [nova entrega](ENTREGA-SEGURANCA-E-CALENDARIO.md) regista 151 testes Node, prevenção de segredos e os percursos locais em Chrome/WebKit para contexto/calendário. Acrescenta partes de F31/F35/F38 e da integração F25–F27; geração especializada, testes alojados/físicos e aceitação integral continuam pendentes.

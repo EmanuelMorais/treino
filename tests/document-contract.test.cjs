@@ -12,7 +12,7 @@ test('legacy documents and snapshots with unfinished values satisfy the actual a
  assert.equal(contract.valid(result.document),true);
 });
 test('invalid histories and snapshots return false without throwing or partially accepting entered values',()=>{
- for(const change of [doc=>doc.history=[null],doc=>doc.history[0].planSnapshot=null,doc=>doc.history[0].planSnapshot.pending=[null],doc=>doc.history[0].planSnapshot.pending[0].done=true,doc=>doc.history[0].planSnapshot.pending[0].setIndex=0,doc=>doc.history[0].planSnapshot.exercises[0].unit='unknown',doc=>doc.history[0].planSnapshot.exercises=[],doc=>doc.history[0].planSnapshot.exercises[0].name='Outro movimento',doc=>doc.history[0].exercises[0].exerciseKey='catalog:another',doc=>doc.minClientBuild=9]){
+ for(const change of [doc=>doc.history=[null],doc=>doc.history[0].planSnapshot=null,doc=>doc.history[0].planSnapshot.pending=[null],doc=>doc.history[0].planSnapshot.pending[0].done=true,doc=>doc.history[0].planSnapshot.pending[0].setIndex=0,doc=>doc.history[0].planSnapshot.exercises[0].unit='unknown',doc=>doc.history[0].planSnapshot.exercises=[],doc=>doc.history[0].planSnapshot.exercises[0].name='Outro movimento',doc=>doc.history[0].exercises[0].exerciseKey='catalog:another',doc=>doc.minClientBuild=10]){
   const doc=fixture();change(doc);assert.doesNotThrow(()=>contract.valid(doc));assert.equal(contract.valid(doc),false);
  }
 });

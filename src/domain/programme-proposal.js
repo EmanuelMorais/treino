@@ -19,7 +19,7 @@
  }
  function valid(proposal){
   try{
-   if(!proposal||programs.profileErrors(proposal.profile).length||!Number.isInteger(proposal.ruleVersion)||proposal.ruleVersion<1||proposal.ruleVersion>programs.VERSION||!Array.isArray(proposal.sessions)||proposal.sessions.length!==proposal.profile.days*proposal.profile.weeks)return false;
+   if(!proposal||programs.profileErrors(proposal.profile).length||!programs.athlete.support(proposal.profile.athlete).available||!Number.isInteger(proposal.ruleVersion)||proposal.ruleVersion<1||proposal.ruleVersion>programs.VERSION||!Array.isArray(proposal.sessions)||proposal.sessions.length!==proposal.profile.days*proposal.profile.weeks)return false;
    if(!Array.isArray(proposal.notes)||proposal.notes.length>30||!proposal.notes.every(x=>text(x,2000))||!Array.isArray(proposal.warnings)||proposal.warnings.length>50||!proposal.warnings.every(x=>text(x,2000))||!Array.isArray(proposal.sources)||proposal.sources.length>20||!proposal.sources.every(x=>text(x,2000)))return false;
    if(proposal.generatedSessions!==undefined&&!Array.isArray(proposal.generatedSessions))return false;
    for(const sessions of [proposal.sessions,...(proposal.generatedSessions?[proposal.generatedSessions]:[])]){
@@ -52,6 +52,8 @@
    }
   }
   const coverage=programs.coverageReport(p.sessions.filter(s=>s.week===1).flatMap(s=>s.exercises).map(e=>catalog.exercises.find(definition=>definition.id===(e.libraryId||e.id))||e));
+  const calendar=programs.athlete.week(p.profile.athlete,p.sessions.filter(s=>s.week===1));
+  if(calendar.conflicts.length&&!calendar.allowSameDay)issues.push({message:'Os dias de força coincidem com atividades do calendário. Revê os dias ou confirma essa combinação no questionário.',blocking:true});
   if(coverage.missing.length)issues.push({message:'Faltam funções gerais no plano: '+coverage.missing.map(key=>({squat:'pernas',hinge:'anca',push:'empurrar',pull:'puxar',core:'controlo do tronco'})[key]).join(', ')+'. Revê os exercícios antes de treinar.'});
   p.adjustmentWarnings=[...new Set(issues.map(issue=>issue.message))];
   p.coverage=coverage;p.status=coverage.missing.length?'limited':'general';
@@ -96,11 +98,11 @@
  function ready(proposal){
   const result=summary(proposal);
   if(result.proposal.profile.limits||result.proposal.profile.avoided.trim())throw Error('As limitações declaradas precisam de revisão antes de ativar uma proposta automática.');
-  if(result.issues.some(i=>i.blocking))throw Error('Define os objetivos das séries antes de ativar o programa.');
+  if(result.issues.some(i=>i.blocking))throw Error([...new Set(result.issues.filter(issue=>issue.blocking).map(issue=>issue.message))].join(' '));
   return result;
  }
  function createPlans(proposal,programId,uid){
-  return proposal.sessions.map(s=>({id:uid(),name:`Semana ${s.week} · ${String.fromCharCode(65+s.day)} — ${programs.GOALS[proposal.profile.primaryGoal]}`,note:proposal.notes.join('\n\n'),kind:'Programa pessoal',duration:s.estimatedMinutes+' min estimados',warmup:'4 minutos: marcha leve e ensaio dos movimentos sem carga.',description:programs.DAYS[s.weekday]+(s.light?' · semana de volume reduzido':''),program:{id:programId,week:s.week,day:s.day,ruleVersion:proposal.ruleVersion},exercises:s.exercises.map(e=>({...copy(e),id:uid(),libraryId:e.libraryId||(catalog.exercises.some(x=>x.id===e.id)?e.id:undefined)}))}));
+  return proposal.sessions.map(s=>({id:uid(),name:`Semana ${s.week} · ${String.fromCharCode(65+s.day)} — ${programs.GOALS[proposal.profile.primaryGoal]}`,note:proposal.notes.join('\n\n'),kind:'Programa pessoal',duration:s.estimatedMinutes+' min estimados',warmup:'4 minutos: marcha leve e ensaio dos movimentos sem carga.',description:programs.DAYS[s.weekday]+(s.light?' · semana de volume reduzido':''),program:{id:programId,week:s.week,day:s.day,weekday:s.weekday,ruleVersion:proposal.ruleVersion},exercises:s.exercises.map(e=>({...copy(e),id:uid(),libraryId:e.libraryId||(catalog.exercises.some(x=>x.id===e.id)?e.id:undefined)}))}));
  }
  const evidence=p=>({ruleVersion:p.ruleVersion,catalogVersion:p.catalogVersion,ruleIds:p.ruleIds||[],sources:p.sources||[],reviewStatus:p.reviewStatus||'editorial_not_independently_reviewed',coverage:p.coverage,warnings:[...new Set([...(p.warnings||[]),...(p.adjustmentWarnings||[])])]});
  function activate(document,proposal,{uid,now=Date.now()}={}){

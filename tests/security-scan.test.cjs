@@ -31,3 +31,15 @@ test('scanner refuses symlinks so it cannot read an ignored private file through
  write('private.txt','synthetic-private-content');fs.symlinkSync(path.join(root,'private.txt'),path.join(root,'link.txt'));git(['add','link.txt']);
  assert.throws(()=>scanRepository({root,binary,staged:true}),/ligações simbólicas/);
 }));
+test('commit messages are scanned even when file contents are clean',()=>fixture(({root,git,write})=>{
+ const token=['sb','secret','synthetic'.repeat(5)].join('_');write('clean.txt','public fixture');git(['add','clean.txt']);git(['commit','-qm',token]);
+ assert.throws(()=>scanRepository({root,binary}),error=>/recusada/.test(error.message)&&!error.message.includes(token));
+}));
+test('a private environment file removed from the latest tree still blocks publication',()=>fixture(({root,git,write})=>{
+ write('.env.production','# no value required');git(['add','-f','.env.production']);git(['commit','-qm','synthetic private path fixture']);git(['rm','-q','.env.production']);git(['commit','-qm','remove private path']);
+ assert.throws(()=>scanRepository({root,binary}),/ficheiro privado no histórico/);
+}));
+test('an inline allow comment cannot silence a staged credential',()=>fixture(({root,git,write})=>{
+ const token=['sb','secret','synthetic'.repeat(5)].join('_');write('config.js',token+' // gitleaks:allow');git(['add','config.js']);
+ assert.throws(()=>scanRepository({root,binary,staged:true}),/recusada/);
+}));

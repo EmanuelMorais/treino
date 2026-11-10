@@ -79,3 +79,7 @@ A publicação atual a partir do branch não fica protegida apenas por acrescent
 Criado em `.agents/skills/treino-product-workflow/`: regras de identidade, âmbito de edição, unidades, vídeo e seleção dos testes. Não criar skills separados para cada ecrã, para Supabase ou para ferramentas de navegador que já têm orientação própria. `AGENTS.md` indica fontes, comandos e documentos; o skill contém as invariantes específicas do produto.
 
 O âmbito do skill é este repositório, versionado com o código. A localização `.agents/skills` é suportada para descoberta de skills locais pelo Codex. [Documentação oficial](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills).
+
+## Contexto e calendário — PR #2
+
+`src/domain/athlete-context.js` valida o contexto e calcula uma semana declarada; `src/ui/athlete-context.js` apresenta campos opcionais, edição de atividades e resumo semanal. Não é um motor de prescrição desportiva. Perfil/calendário mantêm o documento privado, versões e cópias existentes. Build de dados 9 usa o protocolo de servidor 8, que já impede escritores antigos de substituir documentos com `minClientBuild` superior. Ver [entrega e verificação](ENTREGA-SEGURANCA-E-CALENDARIO.md).
