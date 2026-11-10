@@ -1,6 +1,6 @@
 # Quinta entrega — ficha, sessão e preparação da publicação
 
-Branch `codex/catalogo-editor-treino`, 10 de novembro de 2026. Sem merge/publicação do frontend. A migração de compatibilidade foi aplicada ao projeto Treino; não foram alterados planos ou registos. Continua a [entrega de propostas e revisão](ENTREGA-PROPOSTAS-E-REVISAO.md).
+Branch `codex/catalogo-editor-treino`, 10 de novembro de 2026. Integrado em `main` pelo PR #1 e publicado; ver [evidência final e limites](ENTREGA-PUBLICACAO.md). A migração de compatibilidade foi aplicada ao projeto Treino; não foram alterados planos ou registos. Continua a [entrega de propostas e revisão](ENTREGA-PROPOSTAS-E-REVISAO.md).
 
 ## Ficha e execução separadas
 
@@ -63,7 +63,7 @@ O container de CI corre como root: apenas nesse job, a sandbox Chromium é desat
 
 `.github/workflows/publish.yml` só permite execução manual em `main`, depende integralmente da verificação e publica o artefacto que passou os testes. Exige a variável de repositório `TREINO_SERVER_PROTOCOL=8`, já definida depois da verificação da migração no servidor. Não pede nem usa uma chave administrativa Supabase no CI.
 
-**GitHub Pages foi alterado para `build_type: workflow`**, confirmado pela API, e o endereço público continuou a responder HTTP 200. Uma alteração em `main` deixou de usar a publicação antiga por branch. O frontend desta entrega continua na branch/PR: depois da integração em `main`, a publicação exige executar o workflow manual, que repete os checks e publica o artefacto aprovado. Ainda não foi executada uma publicação da nova interface.
+**GitHub Pages usa `build_type: workflow`**, confirmado pela API. O frontend foi integrado e publicado pelo workflow manual, que repetiu os checks e publicou o artefacto aprovado. O [relatório de publicação](ENTREGA-PUBLICACAO.md) identifica revisão, execução e teste posterior no endereço público. Um push em `main` não ativa por si só uma publicação.
 
 ## Preparação do servidor Treino
 
@@ -75,7 +75,7 @@ Advisors de segurança antes/depois: sem novos avisos de tabelas/permissões; pe
 
 ## O que falta
 
-- Verificar Auth, Realtime e dois clientes contra Supabase alojado num ambiente de teste separado; coordenar a publicação e o teste sob `/treino/`. A preparação do esquema do projeto Treino descrita acima está concluída.
+- Verificar Auth, Realtime e dois clientes contra Supabase alojado num ambiente de teste separado; completar o teste autenticado sob `/treino/`. A publicação e o gate anónimo já foram verificados. A preparação do esquema do projeto Treino descrita acima está concluída.
 - iPhone físico, acessibilidade completa e observação com pessoas iniciantes/experientes.
 - Observação do questionário por passos e revisão de conteúdo/fontes/cobertura. As regras editoriais não passaram a revisão profissional por ter mais testes.
 - Modalidades e provas continuam no plano, sem geração desportiva especializada ativa.

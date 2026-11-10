@@ -1,6 +1,6 @@
 # Fase 2 — programas personalizados por questionário
 
-> Atualização de 9 de novembro de 2026: o [novo plano de experiência de treino](PLANO-EXPERIENCIA-TREINO.md) passa a ordenar as próximas alterações de criação/edição, catálogo, substituições, vídeos e execução. Consultar também a [arquitetura](ARQUITETURA.md) e a [matriz de testes](TESTES-FLUXOS.md). Estes novos fluxos ainda não estão implementados.
+> Atualização de 9 de novembro de 2026: o [novo plano de experiência de treino](PLANO-EXPERIENCIA-TREINO.md) passa a ordenar as próximas alterações de criação/edição, catálogo, substituições, vídeos e execução. Consultar também a [arquitetura](ARQUITETURA.md) e a [matriz de testes](TESTES-FLUXOS.md). O estado atual destes fluxos, incluindo catálogo, propostas editáveis, ficha/sessão e questionário por passos, está na [entrega publicada de 10 de novembro](ENTREGA-PUBLICACAO.md). Os módulos desportivos e outras expansões continuam planeados.
 
 ## Objetivo
 

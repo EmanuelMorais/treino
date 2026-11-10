@@ -4,9 +4,9 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 **Endereço:** https://emanuelmorais.github.io/treino/
 
-## Próximas alterações
+## Novidades e plano
 
-**Nesta branch:** [catálogo/editor](docs/ENTREGA-CATALOGO-EDITOR.md), [substituições e sessões recuperáveis](docs/ENTREGA-SUBSTITUICOES.md) e [gerador sobre o catálogo partilhado](docs/ENTREGA-GERADOR-CATALOGO.md) e [propostas editáveis/revisão de programas](docs/ENTREGA-PROPOSTAS-E-REVISAO.md) e [separação ficha/sessão, integração e workflows](docs/ENTREGA-SESSOES-E-QUALIDADE.md). Há 93 definições para edição; as regras automáticas selecionam um subconjunto por contexto, com máquinas e condições de altura explícitas. **Ainda não está no site de produção.** A migração de compatibilidade já foi aplicada e verificada no projeto Treino; o frontend continua na branch. O Pages já usa GitHub Actions para a futura publicação verificada.
+**Publicado em 10 de novembro de 2026:** catálogo/editor, substituições, propostas personalizáveis e revisão de programas, ficha separada da sessão e questionário em quatro passos. Há 93 definições para edição; as regras automáticas selecionam um subconjunto por material e condições de execução. A [entrega e publicação](docs/ENTREGA-PUBLICACAO.md) reúne versão, verificações, limites e próximas prioridades. A migração de compatibilidade está aplicada; Pages publica apenas o artefacto aprovado pelos testes.
 
 O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação é faseada; consultar o estado da entrega acima.
 
@@ -25,7 +25,7 @@ O plano inclui ainda preparação complementar por modalidade e, posteriormente,
 - Gravação local imediata de planos, rascunhos e sessões.
 - Login com email e palavra-passe, registo com confirmação de email e recuperação de palavra-passe. Contas que usavam links podem definir uma palavra-passe sem mudar de conta nem perder registos; o link de acesso continua disponível como alternativa.
 - Atualização automática entre dispositivos com a mesma conta: Realtime, recuperação ao regressar à página e verificação de revisão a cada 30 segundos enquanto a página está visível.
-- **Base de dados Supabase ligada e migrações de produção aplicadas.** A migração de compatibilidade desta branch também foi aplicada, sem alterar planos ou registos. SMTP Brevo configurado para os emails de acesso, com limite de 30 envios por hora no Supabase. A entrega de email e o primeiro login por link já foram confirmados no projeto real.
+- **Base de dados Supabase ligada e migrações de produção aplicadas.** A migração de compatibilidade de protocolo 8 também foi aplicada, sem alterar planos ou registos. SMTP Brevo configurado para os emails de acesso, com limite de 30 envios por hora no Supabase. A entrega de email e o primeiro login por link já foram confirmados no projeto real.
 - [Plano da segunda fase: personalização por questionário](docs/FASE-2.md).
 
 ## Usar e migrar registos
@@ -36,7 +36,7 @@ O plano inclui ainda preparação complementar por modalidade e, posteriormente,
 4. Esperar pelo estado **Tudo guardado online** antes de trocar de dispositivo.
 5. Noutra pessoa/dispositivo, entrar com o email correspondente. Os dados de contas diferentes são privados e separados.
 
-A opção **Exportar só este plano**, em “Notas e ajustes pessoais” da ficha, exporta apenas essa ficha, sem histórico ou séries realizadas. Pode ser importada por outra pessoa sem substituir os seus registos.
+A opção **Exportar só este plano**, em **Editar ficha → Notas, cópia e exportação**, exporta apenas essa ficha, sem histórico ou séries realizadas. Pode ser importada por outra pessoa sem substituir os seus registos.
 
 A opção global **Exportar cópia** inclui fichas, rascunhos e histórico. Guardá-la fora do repositório; nunca fazer commit de dados pessoais.
 
@@ -80,12 +80,14 @@ npm test
 npm run dev
 ```
 
-Abrir `http://localhost:8775`. O bundle Supabase fica em `vendor/supabase.js`. O código em `auth-data.js`, `auth-ui.js` e `src/cloud-app.js` gera `cloud.js` no mesmo build, reunindo validação de sessão, formulários de conta e sincronização. O Pages serve os ficheiros estáticos sem compilação remota.
+Abrir `http://localhost:8775`. O bundle Supabase fica em `vendor/supabase.js`. O código em `auth-data.js`, `auth-ui.js` e `src/cloud-app.js` gera `cloud.js` no mesmo build, reunindo validação de sessão, formulários de conta e sincronização. O workflow compila, testa e empacota os assets públicos em `dist/`; Pages serve esse artefacto estático.
 
 Os testes incluem isolamento entre duas contas, bloqueio a visitantes sem login, conflito de revisão e retenção das últimas 20 cópias, usando Postgres local em memória. A sincronização tem testes de atualização nos dois sentidos, perda de ligação, reconexão, formulários abertos, alterações durante pedidos e troca de conta. A entrega Realtime e o isolamento foram também verificados no Supabase real com contas temporárias; a interface foi verificada em duas sessões independentes, incluindo registo de séries e atualização do histórico sem recarregar. Estes testes não substituem a verificação de login/email.
 
 ## Publicação
 
-O GitHub Pages publica a raiz do ramo `main`. Alterações enviadas com `git push` atualizam o mesmo endereço. Não é necessário comprar um domínio.
+Pages usa GitHub Actions. Depois de integrar em `main`, executar manualmente **Publish verified Treino** (ou `gh workflow run publish.yml --ref main`). O workflow repete os testes, exige `TREINO_SERVER_PROTOCOL=8` e publica só `dist/`. Um `git push` não publica por si só. Não é necessário comprar um domínio.
+
+Para verificar localmente o artefacto: `npm run build`, `npm test`, `npm run package:site`, `TREINO_SITE_ROOT=dist npm run test:browser`, `TREINO_SITE_ROOT=dist TREINO_TEST_BROWSER=webkit npm run test:browser` e `TREINO_SITE_ROOT=dist npm run test:sync-browser`. Os testes de browser requerem os browsers do Playwright CLI instalados.
 
 Código e modelos são públicos. Dados preenchidos pelo utilizador não são enviados ao GitHub; ficam no navegador e, depois de configurado, no Supabase da conta autenticada. Não incluir segredos ou cópias pessoais neste repositório.
