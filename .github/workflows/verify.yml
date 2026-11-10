@@ -36,3 +36,11 @@ jobs:
           name: treino-public-site
           path: dist/
           retention-days: 7
+
+      - name: Preserve synthetic failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: treino-test-diagnostics
+          path: output/playwright/
+          retention-days: 3

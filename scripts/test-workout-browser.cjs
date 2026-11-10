@@ -116,7 +116,8 @@ async function main() {
       await addExercise();
       for(const width of [320,390,768,1440]){
         await page.setViewportSize({width,height:900});
-        check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Horizontal overflow at '+width);
+        const overflow=await page.evaluate(()=>({viewport:innerWidth,width:document.documentElement.scrollWidth,nodes:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).slice(0,12).map(el=>({tag:el.tagName,id:el.id,cls:el.getAttribute('class'),right:el.getBoundingClientRect().right,text:el.textContent.slice(0,70)}))}));
+        check(overflow.width<=overflow.viewport+1,'Horizontal overflow at '+width+': '+JSON.stringify(overflow));
         await page.screenshot({path:'output/playwright/catalog-'+${JSON.stringify(browser)}+'-'+width+'.png'});
       }
       await page.getByLabel('Pesquisar exercício',{exact:true}).fill('does not exist');
