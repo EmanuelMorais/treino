@@ -28,15 +28,22 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: git diff --exit-code -- cloud.js vendor/supabase.js
+      - name: Verify generated files against the checked-out revision
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git rev-parse --show-toplevel
+          git diff --exit-code HEAD -- cloud.js vendor/supabase.js
       - run: npm run package:site
       - run: node_modules/.bin/playwright-cli install-browser chrome
       - run: node_modules/.bin/playwright-cli install-browser webkit
-      - run: npm run test:browser
-      - run: npm run test:browser
+      - name: Browser flows - Chrome
+        run: npm run test:browser
+      - name: Browser flows - WebKit
+        run: npm run test:browser
         env:
           TREINO_TEST_BROWSER: webkit
-      - run: npm run test:sync-browser
+      - name: Two-browser HTTP and SQL integration
+        run: npm run test:sync-browser
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: treino-public-site
