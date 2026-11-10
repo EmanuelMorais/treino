@@ -1,7 +1,7 @@
 name: Verify Treino
 on:
   push:
-    branches: [main, 'codex/**']
+    branches: [main]
   pull_request:
   workflow_call:
 concurrency:

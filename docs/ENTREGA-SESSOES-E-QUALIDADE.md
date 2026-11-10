@@ -18,6 +18,14 @@ O formulário permite indicar zona principal, material concreto e descanso. Dist
 
 Trocar um exercício no editor só é aplicado depois de guardar o formulário de revisão. Cancelar não substitui a ficha. A opção na sessão continua a permitir o âmbito só hoje/futuro com as proteções anteriores.
 
+## Questionário por passos
+
+O questionário passa a mostrar apenas uma das quatro secções: objetivos, tempo/local, material e preferências. A navegação permite recuar e rever diretamente uma secção; os campos mantêm-se no mesmo formulário e não perdem respostas. Enter avança o passo atual, sem saltar diretamente para uma proposta. Consentimento visível desde o início: sem autorização, as respostas ficam apenas no formulário aberto; com autorização e respostas parciais válidas, o rascunho mantém a gravação/sincronização existente.
+
+Continuar valida a secção atual. Ao rever a proposta, um valor inválido numa secção oculta reabre essa secção e as medições opcionais, mostra uma mensagem e dá-lhe foco. Preferências de dias incompatíveis com a frequência também são indicadas. Limitações/exclusões declaradas continuam a exigir revisão; o novo percurso não altera as regras de prescrição.
+
+O percurso real em Chrome/WebKit verifica primeira secção incompleta, minutos inválidos, Enter, recuar sem perder material/duração, medição inválida oculta, correção, proposta e revisão do programa. Inclui o layout do questionário a 320 px. Não substitui observação com utilizadores nem iPhone físico.
+
 ## Sincronização: evidência adicional
 
 `scripts/test-sync-browser.cjs` abre dois processos independentes: Chrome desktop e WebKit a 390 px, com armazenamento separado. Usa o **SDK publicado, `cloud.js` e a UI normais**, sob `/treino/`, com pedidos HTTP para uma fixture em loopback e PGlite a aplicar as migrações/RLS/CAS reais.
@@ -43,7 +51,7 @@ npm run package:site
 - Build e `git diff --check` aprovados.
 - Chrome e WebKit: percurso ampliado do editor/proposta/histórico, incluindo editar uma ficha sem alterar a execução preenchida e criar um exercício pessoal com zona/material/descanso.
 - Integração HTTP com os dois browsers e SQL/RLS isolado: percurso descrito acima.
-- `dist/` gerado com os 27 assets referidos pelo HTML. Não copia o repositório inteiro, testes, documentos, migrações ou `.env.smtp.local`. A configuração é reconstruída só com URL e chave pública/anon; chaves secretas/service role são rejeitadas. Um diretório `dist` alheio não é removido/reutilizado como artefacto. `dist/` fica ignorado no Git.
+- `dist/` gerado com os 28 assets referidos pelo HTML. Não copia o repositório inteiro, testes, documentos, migrações ou `.env.smtp.local`. A configuração é reconstruída só com URL e chave pública/anon; chaves secretas/service role são rejeitadas. Um diretório `dist` alheio não é removido/reutilizado como artefacto. `dist/` fica ignorado no Git.
 
 Fixtures e capturas são sintéticas. Resultados de CI remoto, quando executado, devem ser consultados no workflow do commit; testes locais não provam por si só a execução em Linux/GitHub.
 
@@ -69,7 +77,7 @@ Advisors de segurança antes/depois: sem novos avisos de tabelas/permissões; pe
 
 - Verificar Auth, Realtime e dois clientes contra Supabase alojado num ambiente de teste separado; coordenar a publicação e o teste sob `/treino/`. A preparação do esquema do projeto Treino descrita acima está concluída.
 - iPhone físico, acessibilidade completa e observação com pessoas iniciantes/experientes.
-- Simplificação adicional do questionário e revisão de conteúdo/fontes/cobertura. As regras editoriais não passaram a revisão profissional por ter mais testes.
+- Observação do questionário por passos e revisão de conteúdo/fontes/cobertura. As regras editoriais não passaram a revisão profissional por ter mais testes.
 - Modalidades e provas continuam no plano, sem geração desportiva especializada ativa.
 
 A matriz [F01–F43](TESTES-FLUXOS.md) mantém estes níveis e pendências; não considerar o conjunto integralmente concluído.
