@@ -3,13 +3,16 @@
   const records=typeof module!=='undefined'&&module.exports?require('./workout-records.js'):root.TreinoRecords;
   const programs=typeof module!=='undefined'&&module.exports?require('../../program-engine.js'):root.TreinoPrograms;
   const proposals=typeof module!=='undefined'&&module.exports?require('./programme-proposal.js'):root.TreinoProposal;
+  const courses=typeof module!=='undefined'&&module.exports?require('./course-progress.js'):root.TreinoCourse;
+  const watches=typeof module!=='undefined'&&module.exports?require('./watch-import.js'):root.TreinoWatch;
+  const SESSIONS=['A','B','C','D','M'];
   const text=(value,max=2000)=>typeof value==='string'&&value.length<=max;
   const safeId=value=>text(value,100)&&/^[A-Za-z0-9_-]+$/.test(value)&&!['__proto__','constructor','prototype'].includes(value);
   const num=(value,max=100000)=>value===''||(typeof value==='string'&&value.length<20&&Number.isFinite(Number(value))&&Number(value)>=0&&Number(value)<=max);
   const video=value=>text(value,11)&&(!value||/^[\w-]{11}$/.test(value));
   const date=value=>text(value,10)&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&!Number.isNaN(Date.parse(value+'T12:00:00'));
   const row=value=>value&&num(value.kg)&&num(value.reps)&&typeof value.done==='boolean';
-  const course=value=>value&&typeof value==='object'&&!Array.isArray(value)&&Number.isInteger(value.week)&&value.week>=1&&value.week<=12&&['A','B','C','M'].includes(value.session)&&Number.isInteger(value.phase)&&value.phase>=0&&value.phase<=3;
+  const course=value=>value&&typeof value==='object'&&!Array.isArray(value)&&Number.isInteger(value.week)&&value.week>=1&&value.week<=12&&SESSIONS.includes(value.session)&&Number.isInteger(value.phase)&&value.phase>=0&&value.phase<=3;
   const exercise=value=>value&&safeId(value.id)&&text(value.name,200)&&value.name.trim()&&video(value.video)&&Number.isInteger(value.sets)&&value.sets>=1&&value.sets<=30&&text(value.target,60)&&['reps','s','steps'].includes(value.unit)&&Number.isInteger(value.start)&&value.start>=0&&value.start<=86400&&text(value.note);
   const logged=value=>value&&safeId(value.id)&&text(value.name,200)&&['reps','s','steps'].includes(value.unit)&&Array.isArray(value.rows)&&value.rows.length<=30&&value.rows.every(row);
 
@@ -49,16 +52,17 @@
   function validate(doc){
     if(!safeKeys(doc)||!doc||doc.version!==1||!Array.isArray(doc.plans)||doc.plans.length>256||!Array.isArray(doc.history)||doc.history.length>10000||!Array.isArray(doc.favorites)||doc.favorites.length>1000||!doc.drafts||typeof doc.drafts!=='object'||Array.isArray(doc.drafts))return false;
     if(doc.courseWeek!==undefined&&(!Number.isInteger(doc.courseWeek)||doc.courseWeek<1||doc.courseWeek>12))return false;
-    if(doc.courseSession!==undefined&&!['A','B','C','M'].includes(doc.courseSession))return false;
+    if(doc.courseSession!==undefined&&!SESSIONS.includes(doc.courseSession))return false;
     if(!doc.favorites.every(value=>/^[\w-]{11}$/.test(value)))return false;
     if(!doc.plans.every(plan=>plan&&safeId(plan.id)&&text(plan.name,100)&&plan.name.trim()&&text(plan.note)&&Array.isArray(plan.exercises)&&plan.exercises.length<=100&&plan.exercises.every(exercise)&&(!plan.course||course(plan.course))))return false;
     if(new Set(doc.plans.map(plan=>plan.id)).size!==doc.plans.length||doc.plans.some(plan=>new Set(plan.exercises.map(e=>e.id)).size!==plan.exercises.length))return false;
     for(const draft of Object.values(doc.drafts)){
       if(draft?.editHistoryId!==undefined&&!safeId(draft.editHistoryId))return false;
       if(!draft||!date(draft.date)||!text(draft.note)||!draft.rows||typeof draft.rows!=='object'||Array.isArray(draft.rows)||Object.keys(draft.rows).length>100)return false;
+      if(!courses.validClock(draft)||!watches.valid(draft.watch))return false;
       if(!Object.values(draft.rows).every(rows=>Array.isArray(rows)&&rows.length<=30&&rows.every(row)))return false;
     }
-    if(!doc.history.every(h=>h&&safeId(h.id)&&text(h.planName,100)&&date(h.date)&&text(h.note)&&Number.isFinite(h.savedAt)&&Array.isArray(h.exercises)&&h.exercises.length<=100&&h.exercises.every(logged)&&(!h.course||course(h.course))&&(h.complete===undefined||typeof h.complete==='boolean')&&(h.duration===undefined||num(h.duration,240))))return false;
+    if(!doc.history.every(h=>h&&safeId(h.id)&&text(h.planName,100)&&date(h.date)&&text(h.note)&&Number.isFinite(h.savedAt)&&Array.isArray(h.exercises)&&h.exercises.length<=100&&h.exercises.every(logged)&&(!h.course||course(h.course))&&(h.complete===undefined||typeof h.complete==='boolean')&&(h.duration===undefined||num(h.duration,240))&&watches.valid(h.watch)))return false;
     if(!doc.history.every(validSnapshot))return false;
     return records.validMetadata(doc)&&programs.validExtras(doc)&&(!doc.proposal||proposals.valid(doc.proposal))&&(!doc.previousProposal||proposals.valid(doc.previousProposal))&&proposals.validVersions(doc.programVersions);
   }

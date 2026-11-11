@@ -41,7 +41,7 @@ test('activation and programme snapshots preserve context; import cannot bypass 
  const doc={version:1,plans:[],history:[],drafts:{},favorites:[],profile:{answers:p}};let serial=0;
  const activated=proposal.activate(doc,generated,{uid:()=> 'fixture-'+(++serial),now:1}).document;
  assert.deepEqual(activated.questionnaireVersions[0].answers.athlete,c);assert.deepEqual(activated.plans.slice(0,3).map(p=>p.program.weekday),[0,2,4]);
- const migrated=records.upgrade(activated);assert.equal(migrated.minClientBuild,9);assert.equal(contract.valid(migrated),true);assert.deepEqual(backup.decode(clone(migrated)).value.profile.answers.athlete,c);
+ const migrated=records.upgrade(activated);assert.equal(migrated.minClientBuild,records.CLIENT_BUILD);assert.equal(contract.valid(migrated),true);assert.deepEqual(backup.decode(clone(migrated)).value.profile.answers.athlete,c);
  const shared=backup.planEnvelope(migrated.plans[0]);assert.equal(JSON.stringify(shared).includes('Synthetic run'),false);assert.equal(shared.profile,undefined);
  generated.profile.athlete.allowSameDay=false;assert.ok(proposal.summary(generated).issues.some(issue=>issue.blocking));assert.throws(()=>proposal.activate(doc,generated,{uid:()=> 'unused'}),/calendário/);
 });

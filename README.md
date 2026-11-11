@@ -6,6 +6,8 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 ## Novidades e plano
 
+**Em preparação (PR desta entrega):** «Continuar» abre o próximo treino da sequência (uma sessão parcial conta), com «Próximo» depois de guardar; cronómetro da sessão que preenche a duração e avisa quando o núcleo acaba; programas de 4 sessões semanais (A–D); e associação do resumo do Apple Watch através de um Atalho do iPhone ([como configurar](docs/APPLE-WATCH-ATALHO.md)). Compilação 10 do cliente: documentos atualizados deixam de abrir em compilações anteriores.
+
 **Publicado em 10 de novembro de 2026:** catálogo/editor, substituições, propostas personalizáveis e revisão de programas, ficha separada da sessão e questionário em quatro passos. Há 93 definições para edição; as regras automáticas selecionam um subconjunto por material e condições de execução. A [entrega e publicação](docs/ENTREGA-PUBLICACAO.md) reúne versão, verificações, limites e próximas prioridades. A migração de compatibilidade está aplicada; Pages publica apenas o artefacto aprovado pelos testes.
 
 O [novo plano de experiência de treino](docs/PLANO-EXPERIENCIA-TREINO.md) define pesquisa de exercícios, filtros, edição e substituições em planos manuais/gerados, demonstrações e uma sessão com menos informação. Inclui referências oficiais a Hevy, Fitbod, Boostcamp e Strong. A implementação é faseada; consultar o estado da entrega acima.
