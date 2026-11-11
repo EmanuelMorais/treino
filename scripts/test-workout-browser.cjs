@@ -213,7 +213,7 @@ async function main() {
       await page.getByLabel('Nome de apresentação',{exact:true}).press('Enter');
       check((await page.locator('#profile-step-status').innerText()).includes('Passo 2'),'Enter bypassed the questionnaire steps');
       await page.getByRole('combobox',{name:'Duração do programa',exact:true}).selectOption('4');
-      await page.getByLabel('Minutos por sessão',{exact:true}).fill('61');
+      await page.getByLabel('Minutos por sessão',{exact:true}).fill('91');
       await page.getByRole('button',{name:'Continuar →',exact:true}).click();
       check((await page.locator('#profile-step-status').innerText()).includes('Passo 2'),'Invalid session length advanced to material');
       await page.getByLabel('Minutos por sessão',{exact:true}).fill('35');
@@ -310,7 +310,7 @@ async function main() {
       const generated=changed.plans.filter(p=>p.program?.id===changed.activeProgram);
       check(generated.flatMap(p=>p.exercises).some(e=>e.libraryId==='staggered-rdl'),'Generator still uses only the legacy catalogue');
       check(generated.flatMap(p=>p.exercises).every(e=>e.equipment.every(key=>['dumbbells','bench','machine_chest_press'].includes(key))),'Generator invented equipment');
-      check(changed.programVersions.at(-1).ruleVersion===2,'Versioned generation evidence was not saved');
+      check(changed.programVersions.at(-1).ruleVersion===3,'Versioned generation evidence was not saved');
       check(await page.evaluate(key=>validState(JSON.parse(localStorage.getItem(key))),${JSON.stringify(storageKey)}),'Activated document failed validation');
       await page.reload();
       check(await page.getByRole('button',{name:'Ver proposta guardada',exact:true}).count()===0,'Activated proposal was retained');
