@@ -53,3 +53,41 @@ test('activation ingredients do not mutate the profile or publish another person
  const p=profile({minutes:30,equipment:['barbell'],barbellMax:'30'}),before=JSON.stringify(p);const result=engine.generate(p);assert.equal(result.errors,undefined);assert.equal(JSON.stringify(p),before);
  assert.ok(result.sessions.every(s=>s.exercises.every(e=>!e.equipment.includes('bench'))));assert.ok(result.sessions.every(s=>s.estimatedMinutes<=30));
 });
+const names=result=>result.sessions.filter(s=>s.week===1).map(s=>s.label);
+const gym={location:'gym',equipment:['dumbbells','bench','barbell','bands','band_anchor','machines'],machineInventory:['machine_lat','machine_leg_press','machine_leg_curl','machine_leg_extension','machine_row','machine_chest_press','cable_high','cable_low'],experience:'experienced',minutes:60};
+test('common splits are generated for the weekly frequencies they support, each day with its own focus',()=>{
+ const ppl=engine.generate(profile({...gym,split:'ppl',days:6,goals:['muscle'],primaryGoal:'muscle'}));assert.equal(ppl.errors,undefined);
+ assert.equal(ppl.sessions.length,72);assert.match(names(ppl)[0],/^Push/);assert.match(names(ppl)[1],/^Pull/);assert.match(names(ppl)[2],/^Legs/);
+ const week=ppl.sessions.filter(s=>s.week===1);
+ assert.ok(week[0].exercises.every(e=>!['squat','hinge','pull','vertical_pull'].includes(e.pattern)));
+ assert.ok(week[1].exercises.every(e=>!['squat','hinge','push'].includes(e.pattern)));
+ assert.ok(week[2].exercises.filter(e=>['squat','hinge'].includes(e.pattern)).length>=2);
+ const bro=engine.generate(profile({...gym,split:'bro',days:5,goals:['muscle'],primaryGoal:'muscle'}));assert.equal(bro.errors,undefined);
+ assert.deepEqual(names(bro),['Peito','Costas','Pernas','Ombros','Braços e core']);assert.ok(bro.warnings.some(w=>w.includes('uma vez por semana')));
+ const upper=engine.generate(profile({...gym,split:'upper_lower',days:4}));assert.deepEqual(names(upper),['Tronco A','Pernas A','Tronco B','Pernas B']);
+ assert.equal(engine.generate(profile({...gym,days:5})).split,'hybrid');assert.equal(engine.generate(profile({...gym,days:6})).split,'ppl');
+ for(const result of [ppl,bro,upper])assert.ok(result.sessions.every(s=>s.estimatedMinutes<=60&&s.exercises.length>=3&&s.exercises.every(e=>e.how&&e.name)));
+});
+test('a split that does not fit the chosen days is refused with the supported frequencies',()=>{
+ assert.match(engine.generate(profile({...gym,split:'ppl',days:4})).errors.join(' '),/3 ou 6 dias/);
+ assert.ok(engine.generate(profile({split:'unknown'})).errors);assert.ok(engine.generate(profile({emphasis:'unknown'})).errors);
+ const old=profile();delete old.split;delete old.emphasis;assert.equal(engine.generate(old).errors,undefined);
+});
+test('the main goal changes repetitions, sets and rest rather than only the label',()=>{
+ const dose=(goal,extra={})=>engine.generate(profile({...gym,days:3,goals:[goal],primaryGoal:goal,...extra})).sessions[0].exercises[0];
+ const strength=dose('strength'),muscle=dose('muscle'),tone=dose('tone');
+ assert.equal(strength.target,'4–6');assert.equal(strength.restSeconds,150);assert.ok(strength.sets>=3);
+ assert.equal(muscle.target,'8–12');assert.equal(muscle.restSeconds,90);
+ assert.equal(tone.target,'12–15');assert.equal(tone.restSeconds,45);
+ assert.equal(dose('strength',{experience:'beginner'}).target,'6–10','beginners do not get heavy low-repetition work');
+});
+test('lower-body emphasis keeps upper-body work but gives it fewer sets',()=>{
+ const result=engine.generate(profile({...gym,experience:'regular',days:3,goals:['tone'],primaryGoal:'tone',emphasis:'lower'}));assert.equal(result.errors,undefined);
+ const week=result.sessions.filter(s=>s.week===1).flatMap(s=>s.exercises),lower=week.filter(e=>['squat','hinge'].includes(e.pattern)),upper=week.filter(e=>['push','pull','vertical_pull','shoulders'].includes(e.pattern));
+ assert.ok(lower.length&&upper.length);assert.ok(upper.every(e=>e.sets<=2));assert.ok(lower.some(e=>e.sets>=3));
+ assert.ok(week.some(e=>e.muscles.includes('Glúteos')&&!['squat','hinge'].includes(e.pattern)||e.pattern==='calves'||e.id.includes('bridge')||e.id.includes('thrust')));
+});
+test('mobility as the main goal starts every session with mobility work and keeps basic strength',()=>{
+ const result=engine.generate(profile({equipment:['dumbbells'],days:2,minutes:30,goals:['mobility'],primaryGoal:'mobility'}));assert.equal(result.errors,undefined);assert.equal(result.split,'mobility');
+ for(const s of result.sessions){assert.equal(s.exercises[0].pattern,'mobility');assert.ok(s.exercises.filter(e=>e.pattern==='mobility').length>=2);assert.ok(s.exercises.some(e=>e.pattern!=='mobility'));}
+});

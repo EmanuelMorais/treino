@@ -61,3 +61,12 @@ test('instantiation keeps definition identity while creating an independent occu
  assert.notEqual(a.id,b.id);assert.equal(a.exerciseKey,b.exerciseKey);assert.equal(a.loadReference,'per_dumbbell');
  assert.equal(a.target,'');a.equipment.push('anything');assert.equal(JSON.stringify(definition),before);
 });
+test('every catalogue exercise has an execution guide and a demonstration search',()=>{
+ const data=require('../src/data/exercise-catalog.js');
+ for(const e of data.exercises){
+  assert.ok(e.how&&e.how.length>=40,e.id+' needs a description');
+  const guide=data.guide(e);assert.ok(guide.length>=4,e.id+' needs a structured guide');assert.ok(guide.every(([label,text])=>label&&text.length>=20));
+  assert.ok(data.searchQuery(e).includes(e.name));
+ }
+ assert.deepEqual(data.guide({id:'own',name:'Movimento próprio',how:''}),[]);
+});

@@ -110,7 +110,38 @@
     posture: e.id === 'seated-press' || e.id === 'machine-overhead' ? 'seated' : e.id === 'kneeling-press' ? 'kneeling' : 'other',
     contentStatus: 'editorial', provenance: 'treino-catalogue-1', video: ''
   }));
-  const api = { VERSION: 1, EQUIPMENT, exercises };
+  // Execution guidance shared by every exercise of a movement pattern; the exercise adds its own cue.
+  const PATTERN_GUIDES = {
+    squat: { start: 'Pés à largura dos ombros ou um pouco mais, apoiados por inteiro. Peito aberto e abdómen firme.', move: 'Desce como se te fosses sentar, com os joelhos a acompanhar a direção dos pés, até onde manténs os calcanhares no chão. Sobe empurrando o chão.', avoid: 'Evita que os joelhos fujam para dentro e que os calcanhares levantem.' },
+    hinge: { start: 'Pés à largura da anca, joelhos ligeiramente fletidos e costas direitas.', move: 'Leva a bacia para trás mantendo o peso junto ao corpo, até sentires os posteriores da coxa. Regressa contraindo os glúteos.', avoid: 'Evita arredondar a lombar ou transformar o movimento num agachamento.' },
+    push: { start: 'Omoplatas juntas e apoiadas, pulsos alinhados com os cotovelos e pés firmes.', move: 'Desce com controlo durante 2–3 segundos até uma amplitude confortável e empurra sem bloquear os cotovelos com força.', avoid: 'Evita abrir os cotovelos a 90° do tronco e levantar os ombros.' },
+    pull: { start: 'Tronco estável, peito aberto e ombros afastados das orelhas.', move: 'Começa por puxar a omoplata para trás e leva o cotovelo junto ao tronco. Pausa breve no fim e regressa devagar.', avoid: 'Evita embalar o tronco ou puxar só com o braço.' },
+    vertical_pull: { start: 'Braços estendidos acima da cabeça, peito aberto e abdómen firme.', move: 'Puxa os cotovelos para baixo e para os lados do tronco, até as mãos chegarem à altura do queixo ou do peito. Regressa devagar.', avoid: 'Evita inclinar-te muito para trás ou encolher os ombros.' },
+    shoulders: { start: 'Abdómen e glúteos firmes, pesos à altura dos ombros e antebraços na vertical.', move: 'Empurra para cima até os braços ficarem quase estendidos e desce com controlo até à altura das orelhas.', avoid: 'Evita arquear a lombar; confirma a altura livre antes de começar.' },
+    accessory: { start: 'Tronco estável e uma carga leve que controles em toda a amplitude.', move: 'Sobe em 1–2 segundos, pausa breve e desce em 2–3 segundos.', avoid: 'Evita embalar o corpo ou encolher os ombros para ajudar.' },
+    scapular: { start: 'Peito aberto, pescoço relaxado e ombros afastados das orelhas.', move: 'Junta as omoplatas atrás, pausa um segundo e regressa devagar.', avoid: 'Evita compensar com a lombar ou com o pescoço.' },
+    arms: { start: 'Cotovelos fixos junto ao tronco (ou apontados para o teto, no tríceps) e pulsos direitos.', move: 'Move apenas o antebraço: sobe em 1–2 segundos e desce em 2–3 segundos, em toda a amplitude.', avoid: 'Evita embalar o tronco ou deslocar os cotovelos.' },
+    calves: { start: 'Apoia a parte da frente dos pés, de preferência num degrau, com um apoio leve para o equilíbrio.', move: 'Sobe o mais alto que conseguires, pausa um segundo e desce devagar até sentires os gémeos a alongar.', avoid: 'Evita saltitar ou encurtar o movimento.' },
+    core: { start: 'Coluna numa posição neutra, costelas para baixo e abdómen firme.', move: 'Mantém a posição ou move braços e pernas devagar, sem deixar a lombar arquear. Respira normalmente.', avoid: 'Evita suster a respiração ou deixar a bacia cair.' },
+    mobility: { start: 'Posição confortável e respiração calma.', move: 'Move-te devagar até sentires uma tensão suave, pausa 1–2 segundos e regressa.', avoid: 'Nunca forces até à dor nem faças movimentos bruscos.' },
+    carry: { start: 'Pega nos pesos com as costas direitas, ombros para baixo e abdómen firme.', move: 'Caminha com passos curtos e controlados, sem balançar o tronco.', avoid: 'Evita inclinar-te para o lado do peso; termina antes de perder a postura.' }
+  };
+  // Structured guide for any exercise: its own cue plus the guidance of its movement pattern.
+  function guide(exercise) {
+    const definition = exercises.find(e => e.id === (exercise.libraryId || exercise.id));
+    const general = PATTERN_GUIDES[exercise.pattern || definition?.pattern];
+    const steps = [];
+    if (general) steps.push(['Posição inicial', general.start]);
+    if (exercise.how || definition?.how) steps.push([general ? 'Neste exercício' : 'Execução', exercise.how || definition.how]);
+    if (general) steps.push(['Movimento', general.move], ['Atenção', general.avoid]);
+    return steps;
+  }
+  // English names find more demonstrations; the search is opened only when the person asks.
+  function searchQuery(exercise) {
+    const definition = exercises.find(e => e.id === (exercise.libraryId || exercise.id));
+    return [exercise.name, definition?.aliases?.[0], 'execução técnica'].filter(Boolean).join(' ');
+  }
+  const api = { VERSION: 1, EQUIPMENT, exercises, PATTERN_GUIDES, guide, searchQuery };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TreinoCatalogData = api;
 })(typeof window !== 'undefined' ? window : globalThis);

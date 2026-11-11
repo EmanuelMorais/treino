@@ -7,6 +7,8 @@
  const rules=[
   {id:'selection-v2',kind:'application_heuristic',sources:['acsm-2026'],description:'Preferências editoriais por dia, material, espaço e complexidade; variantes estáveis nas semanas.'},
   {id:'general-dose-v2',kind:'application_heuristic',sources:['acsm-2026'],description:'Faixas de repetições/tempo, 1–3 séries, descanso e semanas leves são aproximações da aplicação; não uma transcrição das recomendações.'},
+  {id:'split-v3',kind:'application_heuristic',sources:['acsm-2026'],description:'Divisões comuns (corpo inteiro, tronco/pernas, push/pull/legs, um grupo por dia) escolhidas pela pessoa ou pelos dias disponíveis; a ênfase ajusta séries por zona.'},
+  {id:'goal-dose-v3',kind:'application_heuristic',sources:['acsm-2026'],description:'Repetições, séries e descanso ajustados ao objetivo principal: cargas altas e descansos longos para força, volume para massa muscular, repetições altas e descansos curtos para tonificar/condição física, mobilidade primeiro quando é a prioridade.'},
   {id:'time-budget-v2',kind:'application_heuristic',sources:[],description:'Estimativa de execução, lados, descanso e transições; redução de séries para caber no tempo. Não é uma duração medida.'},
   {id:'progression-v1',kind:'application_heuristic',sources:['acsm-2026'],description:'Progressão orientada por desempenho/recuperação e menor aumento disponível, sem prescrever kg automaticamente.'}
  ];

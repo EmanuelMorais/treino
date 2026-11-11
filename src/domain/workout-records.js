@@ -1,6 +1,6 @@
 /* Additive contracts for v1 documents. No exercise is identified by its name. */
 (function (root) {
-  const CLIENT_BUILD = 10;
+  const CLIENT_BUILD = 11;
   const programs=typeof module==='object'&&module.exports?require('../../program-engine.js'):root.TreinoPrograms;
   const LOAD_REFERENCES = ['per_dumbbell', 'barbell_total', 'machine_stack', 'bodyweight', 'external_total', 'unspecified'];
   const copy = value => JSON.parse(JSON.stringify(value));

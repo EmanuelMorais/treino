@@ -46,3 +46,12 @@ Para cada programa gerado, preservar versão das regras/módulo, fontes aplicada
 Para módulos desportivos, selecionar orientações de entidades competentes e literatura relevante para a modalidade, população e objetivo; documentar a transferência para as regras e obter revisão qualificada antes de disponibilizar geração especializada. Esta seleção/revisão **ainda não foi feita** para maratona, ciclismo ou padel. Não usar apenas as duas referências gerais existentes nem um vídeo isolado como base de um plano completo.
 
 Uma eventual IA futura pode ajudar na explicação ou pesquisa de conteúdo, mas não é pré-requisito. Se for introduzida, deve ficar identificada, usar apenas conteúdo aprovado para prescrição, passar pelas mesmas validações de regras e não inventar citações, cargas ou equivalências.
+
+
+## Regras v3 (novembro de 2026)
+
+- **Divisão:** escolhida pela pessoa ou automática (corpo inteiro até 3 dias, tronco/pernas com 4, híbrido com 5, push/pull/legs com 6). Cada divisão só aceita as frequências que suporta; o bro split inclui um aviso sobre treinar cada grupo uma vez por semana.
+- **Dose por objetivo:** força 4–6 ou 5–8 repetições nos compostos bilaterais com 150 s de descanso (nunca para principiantes); massa muscular 8–12 / 10–15; tonificar, condição física e perder peso 12–15 com 45 s; core 8–12; mobilidade 6–8 ou 20–30 s.
+- **Ênfase:** a zona escolhida recebe mais uma série (não em principiantes) e a outra fica limitada a duas.
+- **Tempo:** corta séries dos acessórios primeiro, depois retira os últimos acessórios; os exercícios são os mesmos em todas as semanas.
+- Continuam a ser heurísticas da aplicação, sem IA e sem revisão independente. As descrições por padrão de movimento são texto editorial próprio; a ligação de vídeo é uma pesquisa no YouTube, não um vídeo revisto.

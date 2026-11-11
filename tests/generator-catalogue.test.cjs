@@ -47,7 +47,7 @@ test('weekly variants stay stable while doses may change; seconds never become r
  }
  const timed=movements(result).filter(e=>e.unit==='s');assert.ok(timed.length);
  assert.ok(timed.every(e=>e.target==='20–30'&&e.noLoad&&e.loadReference==='bodyweight'));
- assert.ok(result.ruleIds.length&&result.ruleVersion===2);
+ assert.ok(result.ruleIds.length&&result.ruleVersion===3);
 });
 test('malformed inventory/space fields are rejected, and old answers remain readable',()=>{
  for(const extra of [{machineInventory:['machines']},{machineInventory:['machine_row','machine_row']},{machineInventory:null},{overheadClearance:'unknown'}])assert.ok(engine.generate(profile(extra)).errors);
@@ -63,7 +63,7 @@ test('all general goals and time budgets preserve material, experience gates and
   assert.ok(result.sessions.every(s=>s.estimatedMinutes<=minutes&&s.exercises.length>=3));
   for(const e of movements(result)){
    assert.ok(e.equipment.every(key=>equipment.includes(key)));assert.notEqual(e.level,'experienced');
-   assert.ok(e.sets>=1&&e.sets<=3);assert.ok(e.video===''&&e.name);if(e.id==='prone-w')assert.equal(e.pattern,'scapular');
+   assert.ok(e.sets>=1&&e.sets<=4);assert.ok(e.video===''&&e.name);if(e.id==='prone-w')assert.equal(e.pattern,'scapular');
   }
   assert.equal(result.status,result.coverage.missing.length?'limited':'general');
   if(result.status==='limited')assert.ok(result.warnings.some(w=>w.includes('Proposta limitada')));
