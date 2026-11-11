@@ -90,7 +90,7 @@ Os testes incluem isolamento entre duas contas, bloqueio a visitantes sem login,
 
 ## Publicação
 
-Pages usa GitHub Actions. Depois de integrar em `main`, executar manualmente **Publish verified Treino** (ou `gh workflow run publish.yml --ref main`). O workflow repete os testes, exige `TREINO_SERVER_PROTOCOL=8` e publica só `dist/`. Um `git push` não publica por si só. Não é necessário comprar um domínio.
+Pages usa GitHub Actions. Cada integração em `main` (merge de um PR ou push) executa **Publish verified Treino** automaticamente; também pode ser executado à mão (`gh workflow run publish.yml --ref main`). O workflow repete os testes, exige `TREINO_SERVER_PROTOCOL=8` e publica só `dist/`; se os testes falharem ou o protocolo não corresponder, nada é publicado. Uma alteração que exija nova migração no Supabase deve ter a migração aplicada e a variável atualizada antes do merge. Não é necessário comprar um domínio.
 
 Para verificar localmente o artefacto: `npm run build`, `npm test`, `npm run package:site`, `TREINO_SITE_ROOT=dist npm run test:browser`, `TREINO_SITE_ROOT=dist TREINO_TEST_BROWSER=webkit npm run test:browser` e `TREINO_SITE_ROOT=dist npm run test:sync-browser`. Os testes de browser requerem os browsers do Playwright CLI instalados.
 

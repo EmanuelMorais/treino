@@ -1,5 +1,8 @@
 name: Publish verified Treino
 on:
+  # Publica sozinho depois de cada integração em main; continua disponível à mão.
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
