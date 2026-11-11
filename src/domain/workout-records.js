@@ -1,6 +1,6 @@
 /* Additive contracts for v1 documents. No exercise is identified by its name. */
 (function (root) {
-  const CLIENT_BUILD = 9;
+  const CLIENT_BUILD = 10;
   const programs=typeof module==='object'&&module.exports?require('../../program-engine.js'):root.TreinoPrograms;
   const LOAD_REFERENCES = ['per_dumbbell', 'barbell_total', 'machine_stack', 'bodyweight', 'external_total', 'unspecified'];
   const copy = value => JSON.parse(JSON.stringify(value));
@@ -145,7 +145,8 @@
       planName:plan.name,date:draft.date,note:draft.note,savedAt:existing?existing.savedAt:now,
       exercises,complete:draft.recoveryOnly?existing?.complete:done>=total,
       course:existing?existing.course:plan.course?{...copy(plan.course),week}:null,
-      effort:draft.effort||'',duration:draft.duration||'',planSignature:signature(plan),planSnapshot:planSnapshot(plan,draft)
+      effort:draft.effort||'',duration:draft.duration||'',planSignature:signature(plan),planSnapshot:planSnapshot(plan,draft),
+      ...(draft.watch||existing?.watch?{watch:copy(draft.watch||existing.watch)}:{})
     };
   }
 

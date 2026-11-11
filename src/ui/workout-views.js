@@ -7,7 +7,7 @@ function adoptWorkoutCommand(command,mode){
  selectedPlan=command.selectedPlanId;workoutView={key:activeStorageKey,id:selectedPlan,mode};closeModal();renderPlans();
 }
 function startWorkoutSession(){
- if(!accountAccess)return;try{adoptWorkoutCommand(window.TreinoSessions.start(state,{planId:getPlan().id,uid,date:today(),week:courseWeek(getPlan())}),'session');}catch(error){toast(error.message);}
+ if(!accountAccess)return;try{adoptWorkoutCommand(window.TreinoSessions.start(state,{planId:getPlan().id,uid,date:today(),week:courseWeek(getPlan()),now:Date.now()}),'session');requestWakeLock();}catch(error){toast(error.message);}
 }
 function openWorkoutEditor(){
  if(!accountAccess)return;const p=getPlan(),id=p.executionSourceId||p.id;
@@ -57,10 +57,20 @@ function swapPlanExercise(before){
   exerciseForm(replacement,'',{replaceId:before.id});
  }});
 }
+function sessionClockHTML(p,d){
+ if(d.editHistoryId)return '';
+ const started=Number.isFinite(d.startedAt),paused=Number.isFinite(d.pausedAt),core=Number.isInteger(p.coreMinutes)&&p.coreMinutes>0?p.coreMinutes:0;
+ return `<div class="session-clock" id="session-clock" data-core="${core}" role="timer" aria-label="Tempo de sessão"><span class="eyebrow">${paused?'Sessão em pausa':'Tempo de sessão'}</span><b id="session-clock-time">${formatTime(window.TreinoCourse.clockElapsed(d,Date.now()))}</b>${core?`<span class="session-clock-core" id="session-clock-core" hidden>Núcleo feito (${core} min) · os extras são opcionais</span>`:''}<button class="mini" id="session-clock-toggle">${!started?'Iniciar cronómetro':paused?'Retomar':'Pausar'}</button></div>`;
+}
+function bindSessionClock(p,d){
+ const button=$('#session-clock-toggle');if(!button)return;
+ button.onclick=()=>{window.TreinoCourse.clockToggle(d,Date.now());if(Number.isFinite(d.pausedAt))releaseWakeLock();else requestWakeLock();persist();renderPlans();};
+ if(Number.isFinite(d.startedAt)&&!Number.isFinite(d.pausedAt))requestWakeLock();updateSessionClock();
+}
 function renderWorkoutSession(p){
  const d=getDraft(p);if(typeof d.guided!=='boolean')d.guided=true;
  const steps=programSteps(p);d.step=Math.max(0,Math.min(Number.isInteger(d.step)?d.step:0,Math.max(0,steps.length-1)));const current=steps[d.step];
- $('#content').innerHTML=heading(esc(p.name),d.editHistoryId?'Corrigir o registo guardado. A ficha do plano mantém-se.':'Regista esta sessão. Os ajustes de hoje ficam separados da ficha do plano.')+workoutNavigation()+`
+ $('#content').innerHTML=heading(esc(p.name),d.editHistoryId?'Corrigir o registo guardado. A ficha do plano mantém-se.':'Regista esta sessão. Os ajustes de hoje ficam separados da ficha do plano.')+workoutNavigation()+sessionClockHTML(p,d)+`
   <div class="guide-toolbar"><span>${d.guided?'Passo a passo':'Todos os exercícios'}</span><button class="btn secondary" id="toggle-guide">${d.guided?'Ver todos os exercícios':'Seguir passo a passo'}</button></div>
   ${canUndoReplacement(p)?'<button class="btn secondary" id="undo-replacement">Desfazer última troca</button>':''}
   <div class="plan-layout session-layout"><section class="panel"><div class="draft-badge">● Guardado ao preencher</div>
@@ -68,10 +78,10 @@ function renderWorkoutSession(p){
   <div id="exercises">${d.guided&&current?exerciseHTML(p.exercises[current.index],current.index,d,current.row):p.exercises.map((e,i)=>exerciseHTML(e,i,d)).join('')}</div>
   ${d.guided&&current?`<div class="guide-controls"><button class="btn secondary" id="step-prev" ${d.step===0?'disabled':''}>← Anterior</button><span>${d.step+1} / ${steps.length}</span><button class="btn" id="step-next" ${d.step===steps.length-1?'disabled':''}>Seguinte →</button></div>`:''}
   <details class="proposal-help"><summary>Ajustes desta sessão</summary><div class="home-actions"><button class="btn secondary" id="add-exercise">Adicionar exercício</button>${!d.editHistoryId?'<button class="btn secondary" id="workout-edit">Editar ficha para próximas sessões</button><button class="btn secondary" id="discard-execution">Descartar ajustes desta sessão</button>':''}</div></details>
-  <details class="proposal-help"><summary>Data, notas e duração</summary><div class="session-meta"><label>Data do treino<input type="date" id="session-date" value="${esc(d.date)}" required></label><label>Notas da sessão<input id="session-note" maxlength="2000" value="${esc(d.note)}"></label><label>Duração real · minutos<input id="session-duration" type="number" min="1" max="240" value="${esc(d.duration||'')}" placeholder="Opcional"></label></div></details>
+  <details class="proposal-help"><summary>Data, notas e duração</summary><div class="session-meta"><label>Data do treino<input type="date" id="session-date" value="${esc(d.date)}" required></label><label>Notas da sessão<input id="session-note" maxlength="2000" value="${esc(d.note)}"></label><label>Duração real · minutos<input id="session-duration" type="number" min="1" max="240" value="${esc(d.duration||'')}" placeholder="${Number.isFinite(d.startedAt)?'Vazio = tempo medido':'Opcional'}"></label></div>${d.watch?`<p class="auth-note">Apple Watch: ${esc(d.watch.minutes)} min${Number.isInteger(d.watch.kcal)?' · '+esc(d.watch.kcal)+' kcal ativas':''}</p>`:''}</details>
   <button class="btn full" id="finish">${d.editHistoryId?'Guardar alterações ao registo':'Guardar sessão no histórico'}</button>${d.editHistoryId?'<button class="btn secondary full" id="cancel-edit">Cancelar edição; manter o registo anterior</button>':''}
   </section><aside><div class="timer-panel"><span class="eyebrow">Tempo de descanso</span><div id="timer" class="timer" role="timer" aria-label="Tempo restante"></div><div class="timer-choices">${[60,90,120].map(n=>`<button data-rest="${n}">${n}s</button>`).join('')}</div><div class="timer-bottom"><button class="btn lime" id="timer-toggle">Iniciar</button><button class="btn secondary" id="timer-reset" aria-label="Reiniciar temporizador">↺</button></div></div><div class="side-summary"><h3>Nesta sessão</h3><div id="session-progress"></div><details><summary>Ver ordem dos exercícios</summary><ol class="exercise-order">${p.exercises.map((e,i)=>`<li><button data-go-ex="${i}">${esc(e.name)}</button></li>`).join('')}</ol></details></div></aside></div>`;
- bindWorkoutNavigation();$('#toggle-guide').onclick=()=>{d.guided=!d.guided;persist();renderPlans();};if($('#workout-edit'))$('#workout-edit').onclick=openWorkoutEditor;if($('#undo-replacement'))$('#undo-replacement').onclick=undoReplacement;if($('#discard-execution'))$('#discard-execution').onclick=discardExecution;
+ bindWorkoutNavigation();bindSessionClock(p,d);$('#toggle-guide').onclick=()=>{d.guided=!d.guided;persist();renderPlans();};if($('#workout-edit'))$('#workout-edit').onclick=openWorkoutEditor;if($('#undo-replacement'))$('#undo-replacement').onclick=undoReplacement;if($('#discard-execution'))$('#discard-execution').onclick=discardExecution;
  $('#session-date').onchange=e=>{if(e.target.value){d.date=e.target.value;d.datePinned=true;persist();}};$('#session-note').oninput=e=>{d.note=e.target.value;persist();};$('#session-duration').oninput=e=>{if(e.target.checkValidity()){d.duration=e.target.value;persist();}};$('#finish').onclick=finishSession;$('#add-exercise').onclick=()=>openExercisePicker();
  if($('#cancel-edit'))$('#cancel-edit').onclick=()=>{delete state.drafts[p.id];if(p.sessionOnly)state.plans=state.plans.filter(plan=>plan.id!==p.id);persist();setView('history');};
  if($('#step-prev'))$('#step-prev').onclick=()=>{d.step--;persist();renderPlans();};if($('#step-next'))$('#step-next').onclick=()=>{d.step++;persist();renderPlans();};document.querySelectorAll('[data-go-ex]').forEach(button=>button.onclick=()=>{d.guided=true;d.step=steps.findIndex(step=>step.index===Number(button.dataset.goEx));persist();renderPlans();});

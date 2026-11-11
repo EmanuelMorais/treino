@@ -84,7 +84,7 @@
  'use strict';
  const cfg=window.TREINO_CONFIG||{},rules=window.TreinoSyncRules;
  const configured=/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(cfg.supabaseUrl||'')&&typeof cfg.supabasePublishableKey==='string'&&cfg.supabasePublishableKey.length>20;
- const clientBuild=window.TreinoRecords?.CLIENT_BUILD||9;
+ const clientBuild=window.TreinoRecords?.CLIENT_BUILD||10;
  // Server protocol 8 already enforces arbitrary minClientBuild values (including 9).
  const serverProtocol=8;
  const client=configured?window.TreinoSupabase.createClient(cfg.supabaseUrl,cfg.supabasePublishableKey,{global:{headers:{'X-Client-Info':'treino/'+clientBuild}},auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;

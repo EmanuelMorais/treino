@@ -73,7 +73,7 @@ test('partial-session snapshots preserve unperformed exercises and extra rows fo
  const restored=records.recoveryPlan(record,'recovered');assert.equal(restored.exercises.length,2);assert.equal(restored.exercises[0].sets,4);assert.equal(restored.exercises[1].sets,3);
 });
 test('future document builds are rejected instead of rewriting the minimum writer version',()=>{
- const old=document();old.minClientBuild=10;assert.throws(()=>records.upgrade(old),/Atualiza/);assert.equal(old.minClientBuild,10);assert.equal(records.validMetadata(old),false);
+ const old=document();old.minClientBuild=records.CLIENT_BUILD+1;assert.throws(()=>records.upgrade(old),/Atualiza/);assert.equal(old.minClientBuild,records.CLIENT_BUILD+1);assert.equal(records.validMetadata(old),false);
 });
 test('historical correction preserves identity, course week and unknown completion until the remaining prescription is known',()=>{
  const plan=records.upgrade(document()).plans[0];plan.name='Historical';plan.note='';plan.course={week:1,session:'M'};
