@@ -27,7 +27,7 @@
    const seen=new Set();
    for(const s of sessions){
     const key=s.week+':'+s.day;
-    if(!Number.isInteger(s.week)||s.week<1||s.week>proposal.profile.weeks||!Number.isInteger(s.day)||s.day<0||s.day>=proposal.profile.days||seen.has(key)||!Number.isInteger(s.weekday)||s.weekday<0||s.weekday>6||typeof s.light!=='boolean'||!Array.isArray(s.exercises)||!s.exercises.length||s.exercises.length>12||!s.exercises.every(validExercise))return false;
+    if(!Number.isInteger(s.week)||s.week<1||s.week>proposal.profile.weeks||!Number.isInteger(s.day)||s.day<0||s.day>=proposal.profile.days||seen.has(key)||!Number.isInteger(s.weekday)||s.weekday<0||s.weekday>6||typeof s.light!=='boolean'||(s.label!==undefined&&!text(s.label,80))||!Array.isArray(s.exercises)||!s.exercises.length||s.exercises.length>12||!s.exercises.every(validExercise))return false;
     const slots=s.exercises.filter(e=>e.proposalSlot!==undefined).map(e=>e.proposalSlot);if(new Set(slots).size!==slots.length)return false;seen.add(key);
    }
    }
@@ -102,7 +102,7 @@
   return result;
  }
  function createPlans(proposal,programId,uid){
-  return proposal.sessions.map(s=>({id:uid(),name:`Semana ${s.week} · ${String.fromCharCode(65+s.day)} — ${programs.GOALS[proposal.profile.primaryGoal]}`,note:proposal.notes.join('\n\n'),kind:'Programa pessoal',duration:s.estimatedMinutes+' min estimados',warmup:'4 minutos: marcha leve e ensaio dos movimentos sem carga.',description:programs.DAYS[s.weekday]+(s.light?' · semana de volume reduzido':''),program:{id:programId,week:s.week,day:s.day,weekday:s.weekday,ruleVersion:proposal.ruleVersion},exercises:s.exercises.map(e=>({...copy(e),id:uid(),libraryId:e.libraryId||(catalog.exercises.some(x=>x.id===e.id)?e.id:undefined)}))}));
+  return proposal.sessions.map(s=>({id:uid(),name:`Semana ${s.week} · ${String.fromCharCode(65+s.day)} — ${s.label||programs.GOALS[proposal.profile.primaryGoal]}`,note:proposal.notes.join('\n\n'),kind:'Programa pessoal',duration:s.estimatedMinutes+' min estimados',warmup:'4 minutos: marcha leve e ensaio dos movimentos sem carga.',description:programs.DAYS[s.weekday]+(s.light?' · semana de volume reduzido':''),program:{id:programId,week:s.week,day:s.day,weekday:s.weekday,ruleVersion:proposal.ruleVersion},exercises:s.exercises.map(e=>({...copy(e),id:uid(),libraryId:e.libraryId||(catalog.exercises.some(x=>x.id===e.id)?e.id:undefined)}))}));
  }
  const evidence=p=>({ruleVersion:p.ruleVersion,catalogVersion:p.catalogVersion,ruleIds:p.ruleIds||[],sources:p.sources||[],reviewStatus:p.reviewStatus||'editorial_not_independently_reviewed',coverage:p.coverage,warnings:[...new Set([...(p.warnings||[]),...(p.adjustmentWarnings||[])])]});
  function activate(document,proposal,{uid,now=Date.now()}={}){

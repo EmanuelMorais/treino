@@ -54,10 +54,10 @@ async function main(){
    await page.screenshot({path:'output/playwright/sync-private-account.png'});
   }`);
   await code(names[1],`async page=>{await page.waitForFunction(()=>document.querySelector('#plan-name')?.value==='Nome atualizado sem sair do campo',undefined,{timeout:45000});}`);
-  const token=fixture.session(fixture.users[1]).access_token,headers={Authorization:'Bearer '+token,'X-Client-Info':'treino/10','Content-Type':'application/json'};
+  const token=fixture.session(fixture.users[1]).access_token,headers={Authorization:'Bearer '+token,'X-Client-Info':'treino/11','Content-Type':'application/json'};
   const foreign=await fetch(fixture.origin+'/__api__/rest/v1/training_documents?select=payload&user_id=eq.'+fixture.users[0].id,{headers});assert.deepEqual(await foreign.json(),[]);
   const denied=await fetch(fixture.origin+'/__api__/rest/v1/rpc/save_training_document',{method:'POST',headers,body:JSON.stringify({p_user_id:fixture.users[0].id,p_payload:{version:1},p_expected_revision:1})});assert.equal(denied.status,403);assert.equal((await denied.json()).code,'42501');
-  assert.ok(fixture.metrics.reads>=4&&fixture.metrics.writes>=3);assert.ok([...fixture.metrics.clientHeaders].every(header=>header==='treino/10'));
+  assert.ok(fixture.metrics.reads>=4&&fixture.metrics.writes>=3);assert.ok([...fixture.metrics.clientHeaders].every(header=>header==='treino/11'));
   console.log('PASS: Chrome → HTTP/SDK → isolated SQL/RLS → WebKit, and back, without sync/reload, including the private weekly calendar; logout hides cache; another account stays empty; foreign reads/writes rejected.');
   console.log('Fixture Auth and HTTP adapter, real shipped clients and PGlite policies. No hosted Supabase, SMTP, Realtime socket or physical iPhone verification.');
  }catch(error){for(const name of opened)try{fs.writeFileSync(path.join(root,'output/playwright/'+name+'-failure.txt'),await command(name,['snapshot']));}catch{}throw error;}

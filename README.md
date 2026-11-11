@@ -6,6 +6,8 @@ Página de planos de treino, execução guiada e histórico de séries, cargas, 
 
 ## Novidades e plano
 
+**Gerador v3 e novo ecrã de treino:** o questionário aceita 1–6 dias e até 90 minutos, com divisões comuns (corpo inteiro, tronco/pernas, push/pull/legs, um grupo por dia), ênfase por zona e o objetivo «Tonificar e estar em forma». Repetições, séries e descanso mudam com o objetivo principal; a mobilidade como prioridade gera sessões que começam por mobilidade. O ecrã inicial tem modelos que pré-preenchem o questionário. Cada exercício mostra «Como fazer» (posição, movimento, atenção) e uma ligação para exemplos em vídeo; o descanso começa sozinho ao marcar uma série. Novo ícone e favicon em `assets/`. Compilação 11 do cliente.
+
 **Em preparação (PR desta entrega):** «Continuar» abre o próximo treino da sequência (uma sessão parcial conta), com «Próximo» depois de guardar; cronómetro da sessão que preenche a duração e avisa quando o núcleo acaba; programas de 4 sessões semanais (A–D); e associação do resumo do Apple Watch através de um Atalho do iPhone ([como configurar](docs/APPLE-WATCH-ATALHO.md)). Compilação 10 do cliente: documentos atualizados deixam de abrir em compilações anteriores.
 
 **Publicado em 10 de novembro de 2026:** catálogo/editor, substituições, propostas personalizáveis e revisão de programas, ficha separada da sessão e questionário em quatro passos. Há 93 definições para edição; as regras automáticas selecionam um subconjunto por material e condições de execução. A [entrega e publicação](docs/ENTREGA-PUBLICACAO.md) reúne versão, verificações, limites e próximas prioridades. A migração de compatibilidade está aplicada; Pages publica apenas o artefacto aprovado pelos testes.
