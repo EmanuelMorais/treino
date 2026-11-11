@@ -2,6 +2,8 @@
 (function(root){
  const DEFAULT_SESSIONS=['A','B','C'];
  const sessionsOf=course=>Array.isArray(course?.sessions)&&course.sessions.length?course.sessions.slice():DEFAULT_SESSIONS.slice();
+ const optionalOf=course=>Array.isArray(course?.optional)?course.optional:[];
+ const requiredOf=course=>sessionsOf(course).filter(s=>!optionalOf(course).includes(s));
  const weeksOf=course=>Array.isArray(course?.weeks)&&course.weeks.length?course.weeks.length:12;
  function planId(course,week,session){return session==='M'?course.prefix+'-mobility':`${course.prefix}-w${String(week).padStart(2,'0')}-${session}`;}
  const rowHasValue=row=>!!row&&(row.done===true||String(row.kg??'')!==''||String(row.reps??'')!=='');
@@ -35,8 +37,23 @@
  function counts(doc,course){
   const plans=(Array.isArray(doc?.plans)?doc.plans:[]).filter(p=>!p.sessionOnly&&belongs(course,p));
   const done=new Set((Array.isArray(doc?.history)?doc.history:[]).filter(h=>h&&h.complete===true).map(h=>h.planId));
-  return {total:sessionsOf(course).length*weeksOf(course),available:plans.length,complete:plans.filter(p=>done.has(p.id)).length};
+  return {total:requiredOf(course).length*weeksOf(course),available:plans.length,complete:plans.filter(p=>done.has(p.id)&&!optionalOf(course).includes(p.course.session)).length};
  }
+ // An optional session can be skipped: the sequence continues after it.
+ function skip(course,step){
+  if(!step||step.resume||!optionalOf(course).includes(step.session))return null;
+  const target=after(course,step.week,step.session);
+  return target.finished?null:{...target,planId:planId(course,target.week,target.session),resume:false};
+ }
+ // The account's chosen programme, if it has plans; otherwise the newest programme with plans.
+ function pick(doc,courses,requested){
+  const list=Array.isArray(courses)?courses:[],plans=Array.isArray(doc?.plans)?doc.plans:[];
+  const has=course=>plans.some(p=>!p.sessionOnly&&p.course?.version===course.version&&typeof p.id==='string'&&p.id.startsWith(course.prefix+'-'));
+  const chosen=list.find(course=>course.version===requested);
+  if(chosen&&has(chosen))return chosen;
+  return [...list].reverse().find(has)||chosen||list[list.length-1]||null;
+ }
+ function available(doc,courses){const plans=Array.isArray(doc?.plans)?doc.plans:[];return (Array.isArray(courses)?courses:[]).filter(course=>plans.some(p=>!p.sessionOnly&&p.course?.version===course.version&&typeof p.id==='string'&&p.id.startsWith(course.prefix+'-')));}
  // Session clock: wall-clock timestamps survive locking, reloads and other devices.
  const isTime=value=>Number.isFinite(value)&&value>0;
  function clockElapsed(draft,now){
@@ -59,6 +76,6 @@
   if(draft.pausedAt!==undefined&&draft.startedAt===undefined)return false;
   return true;
  }
- const api={sessionsOf,planId,after,next,counts,clockElapsed,clockStart,clockToggle,clockMinutes,validClock};
+ const api={sessionsOf,optionalOf,planId,after,next,skip,pick,available,counts,clockElapsed,clockStart,clockToggle,clockMinutes,validClock};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.TreinoCourse=api;
 })(typeof window!=='undefined'?window:globalThis);

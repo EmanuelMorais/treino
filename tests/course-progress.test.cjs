@@ -58,3 +58,20 @@ test('the document contract accepts a fourth session and rejects malformed clock
   const bad=doc();bad.drafts.x={date:'2026-11-12',note:'',rows:{},...draft};assert.equal(contract.valid(bad),false,JSON.stringify(draft));
  }
 });
+test('an optional session is suggested but can be skipped and does not count towards the total',()=>{
+ const OPT={...COURSE,optional:['D']};
+ const d=doc({history:[record(1,'C','2026-11-12',3,true)]});
+ const next=course.next(d,OPT);assert.equal(next.planId,'demo4-w01-D');
+ assert.equal(course.skip(OPT,next).planId,'demo4-w02-A');assert.equal(course.skip(COURSE,next),null,'required sessions cannot be skipped');
+ assert.equal(course.skip(OPT,{...next,resume:true}),null,'a started session is resumed, not skipped');
+ d.history.push(record(1,'D','2026-11-13',4,true));
+ assert.deepEqual(course.counts(d,OPT),{total:36,available:12,complete:1});
+});
+test('the chosen programme is used when it has plans; otherwise the newest programme with plans',()=>{
+ const older={version:2,prefix:'old3',sessions:['A','B','C'],weeks:COURSE.weeks},newer={version:5,prefix:'new',sessions:['A'],weeks:COURSE.weeks};
+ const d=doc();d.plans.push({id:'old3-w01-A',name:'x',note:'',exercises:[exercise('e1')],course:{version:2,week:1,session:'A',phase:1}});
+ assert.equal(course.pick(d,[older,COURSE,newer],2).version,2);
+ assert.equal(course.pick(d,[older,COURSE,newer],5).version,3,'a programme without plans is not chosen');
+ assert.equal(course.pick(d,[older,COURSE,newer],undefined).version,3);
+ assert.deepEqual(course.available(d,[older,COURSE,newer]).map(c=>c.version),[2,3]);
+});
