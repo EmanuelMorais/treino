@@ -24,3 +24,14 @@ img.brandmark{background:none;padding:0;transform:rotate(-5deg);border-radius:11
 .guide-steps{margin:12px 0;display:grid;gap:10px}.guide-steps dt{font-size:10px;letter-spacing:.8px;text-transform:uppercase;font-weight:650;color:#4b6b37}.guide-steps dd{margin:2px 0 0;font-size:13px;color:#445046}.guide-video{display:inline-block;margin:4px 0 12px;font-size:13px;font-weight:600;color:var(--green);text-underline-offset:3px}.session-technique>summary{cursor:pointer;font-weight:600;font-size:13px;padding:6px 0}
 #step-next.ready,#step-finish{box-shadow:0 0 0 4px #d7f28c}.set-row input{font-size:16px;padding:11px 12px}.tick{height:46px;font-size:20px}.exercise .exercise-title h3{font-size:19px;letter-spacing:-.3px}
 @media(max-width:760px){.next-card{padding:22px 20px}.next-card h2{font-size:25px}.next-card .btn.lime{width:100%}.timer-panel{display:none}.guide-controls{position:sticky;bottom:0;background:#fff;padding:12px 0 calc(12px + env(safe-area-inset-bottom));margin:15px -17px 0;padding-left:17px;padding-right:17px;border-top:1px solid var(--line);z-index:3}.guide-controls .btn{font-size:14px;padding:13px 18px}.template-grid{grid-template-columns:1fr 1fr}}
+.volume-chart{margin:16px 0}.volume-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px;font-size:13px}.volume-head span{color:var(--muted);font-size:12px}
+.volume-row{display:grid;grid-template-columns:128px 1fr 74px;align-items:center;gap:10px;margin-bottom:7px;font-size:13px}
+.volume-name{color:var(--ink);line-height:1.25;hyphens:auto}
+.volume-track{position:relative;height:16px;border-radius:8px;background:#eef2e8;overflow:hidden}
+.volume-band{position:absolute;top:0;bottom:0;background:#d7f28c88;border-left:1px solid #b9d66a;border-right:1px solid #b9d66a}
+.volume-fill{position:absolute;top:3px;bottom:3px;left:0;border-radius:6px;background:var(--green)}
+.volume-row.low .volume-fill{background:#c08a3e}.volume-row.high .volume-fill{background:#8a5fb0}
+.volume-value{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}.volume-value small{font-weight:400;color:var(--muted)}
+.volume-legend{font-size:11px;color:var(--muted);margin:12px 0 6px;line-height:1.5}
+.volume-notes{font-size:12.5px;color:#445046;margin:8px 0 0;padding-left:18px}.volume-notes li{margin-bottom:4px}
+@media(max-width:560px){.volume-row{grid-template-columns:96px 1fr 66px;font-size:12px;gap:8px}.volume-value small{display:block;line-height:1.2}}

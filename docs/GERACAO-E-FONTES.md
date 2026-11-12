@@ -55,3 +55,9 @@ Uma eventual IA futura pode ajudar na explicação ou pesquisa de conteúdo, mas
 - **Ênfase:** a zona escolhida recebe mais uma série (não em principiantes) e a outra fica limitada a duas.
 - **Tempo:** corta séries dos acessórios primeiro, depois retira os últimos acessórios; os exercícios são os mesmos em todas as semanas.
 - Continuam a ser heurísticas da aplicação, sem IA e sem revisão independente. As descrições por padrão de movimento são texto editorial próprio; a ligação de vídeo é uma pesquisa no YouTube, não um vídeo revisto.
+
+## Relatório de volume (novembro de 2026)
+
+`src/domain/volume-report.js` conta séries efetivas por grupo muscular numa semana: 1 por série para o primeiro músculo do exercício e 0,5 para cada um dos restantes. Exclui mobilidade. A origem dos músculos é, por ordem: o próprio exercício, o catálogo (por `libraryId` ou `exerciseKey`) e, por último, uma classificação pelo nome — esta última é assinalada como estimativa e os exercícios são listados.
+
+Os alvos por objetivo são heurísticas da aplicação, não uma prescrição: massa muscular 10–20 séries efetivas por semana nos grupos grandes, força e os restantes objetivos 6–14, mobilidade 4–12; grupos pequenos (bíceps, tríceps, gémeos, core, pescoço) usam faixas mais baixas. A referência de partida são as recomendações ACSM de 2026 (cerca de 10 séries por grupo e cada grupo pelo menos 2 vezes por semana).
