@@ -5,8 +5,12 @@
  const SMALL=['Bíceps','Tríceps','Gémeos','Core','Adutores','Flexores da anca','Pescoço'];
  const ORDER=[...MAJOR,...SMALL];
  // Weekly effective sets per muscle that the app treats as balanced for each goal.
- const TARGETS={muscle:{major:[10,20],small:[4,16]},strength:{major:[6,14],small:[3,12]},tone:{major:[6,14],small:[3,12]},
-  fitness:{major:[6,14],small:[3,12]},weight_loss:{major:[6,14],small:[3,12]},mobility:{major:[4,12],small:[2,10]}};
+ // major: the goal's own band. maintain: the band for a region the person chose to de-emphasise.
+ const TARGETS={muscle:{major:[10,20],small:[4,16],maintain:[6,14]},strength:{major:[6,14],small:[3,12],maintain:[4,10]},
+  tone:{major:[6,14],small:[3,12],maintain:[4,10]},fitness:{major:[6,14],small:[3,12],maintain:[4,10]},
+  weight_loss:{major:[6,14],small:[3,12],maintain:[4,10]},mobility:{major:[4,12],small:[2,10],maintain:[3,10]}};
+ const LOWER=['Quadríceps','Posteriores da coxa','Glúteos','Gémeos','Adutores'],UPPER=['Peito','Costas','Ombros','Bíceps','Tríceps'];
+ const regionOf=muscle=>LOWER.includes(muscle)?'lower':UPPER.includes(muscle)?'upper':'core';
  // Plans written before the catalogue carried muscle tags are classified by name. First match wins.
  const BY_NAME=[
   [/pesco[çc]o|\bneck\b/i,['Pescoço']],
@@ -42,10 +46,16 @@
   return rule?{muscles:[...rule[1]],source:'name'}:{muscles:[],source:null};
  }
  const isMobility=exercise=>(exercise.pattern||definition(exercise)?.pattern)==='mobility';
- const band=(muscle,goal)=>(TARGETS[goal]||TARGETS.muscle)[MAJOR.includes(muscle)?'major':'small'];
+ // An emphasis on one region drops the other region's majors to the maintenance band, so a deliberate choice is not read as a gap.
+ function band(muscle,goal,emphasis){
+  const target=TARGETS[goal]||TARGETS.muscle;
+  if(!MAJOR.includes(muscle))return {range:target.small,kind:'alvo'};
+  const region=regionOf(muscle),other=emphasis==='lower'?'upper':emphasis==='upper'?'lower':null;
+  return other&&region===other?{range:target.maintain,kind:'manutenção'}:{range:target.major,kind:'alvo'};
+ }
  const round=value=>Math.round(value*10)/10;
  /* plans: the sessions of one week (mobility sessions excluded by the caller or by pattern). */
- function weeklyVolume(plans,{goal='muscle'}={}){
+ function weeklyVolume(plans,{goal='muscle',emphasis='balanced'}={}){
   const totals=new Map(),unknown=[],estimatedNames=[];let sets=0;
   for(const plan of Array.isArray(plans)?plans:[]){
    for(const exercise of Array.isArray(plan?.exercises)?plan.exercises:[]){
@@ -64,15 +74,34 @@
    }
   }
   const rows=[...totals.values()].map(entry=>{
-   const [low,high]=band(entry.muscle,goal),effective=round(entry.effective);
-   return {muscle:entry.muscle,effective,direct:round(entry.direct),sessions:entry.sessions.size,low,high,
+   const {range:[low,high],kind}=band(entry.muscle,goal,emphasis),effective=round(entry.effective);
+   return {muscle:entry.muscle,effective,direct:round(entry.direct),sessions:entry.sessions.size,low,high,kind,
     major:MAJOR.includes(entry.muscle),status:effective<low?'low':effective>high?'high':'ok'};
   }).sort((a,b)=>b.effective-a.effective||ORDER.indexOf(a.muscle)-ORDER.indexOf(b.muscle));
   const missing=MAJOR.filter(muscle=>!totals.has(muscle));
   const estimated=[...new Set(estimatedNames)];
-  return {rows,missing,unknown:[...new Set(unknown)],estimated,totalSets:round(sets),goal,
+  return {rows,missing,unknown:[...new Set(unknown)],estimated,totalSets:round(sets),goal,emphasis,kind:'plan',
    peak:rows.reduce((max,row)=>Math.max(max,row.effective,row.high),0)};
  }
- const api={MAJOR,SMALL,ORDER,TARGETS,musclesOf,weeklyVolume};
+ /* Sets actually completed, from saved sessions. history rows hold only the sets ticked as done. */
+ function performedVolume(history,{goal='muscle',emphasis='balanced',from,to}={}){
+  const within=(Array.isArray(history)?history:[]).filter(record=>{
+   const date=typeof record?.date==='string'?record.date:'';
+   return date&&(!from||date>=from)&&(!to||date<=to);
+  });
+  const plans=within.map(record=>({
+   id:record.date+'|'+(record.id||''),
+   exercises:(Array.isArray(record.exercises)?record.exercises:[]).map(exercise=>{
+    const snapshot=(record.planSnapshot?.exercises||[]).find(x=>x&&x.id===exercise.id);
+    return {...exercise,sets:Array.isArray(exercise.rows)?exercise.rows.length:0,
+     muscles:Array.isArray(exercise.muscles)&&exercise.muscles.length?exercise.muscles:snapshot?.muscles,
+     pattern:exercise.pattern||snapshot?.pattern,libraryId:exercise.libraryId||snapshot?.libraryId};
+   })
+  }));
+  const report=weeklyVolume(plans,{goal,emphasis});
+  const dates=[...new Set(within.map(record=>record.date))].sort();
+  return {...report,kind:'performed',sessions:within.length,days:dates.length,first:dates[0]||null,last:dates.at(-1)||null,from:from||null,to:to||null};
+ }
+ const api={MAJOR,SMALL,ORDER,TARGETS,LOWER,UPPER,regionOf,musclesOf,weeklyVolume,performedVolume};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.TreinoVolume=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -109,12 +109,39 @@ function courseTabs(p){const w=courseWeek(p);return [...courseSessions(),'M'].fi
 function bindCourse(p){const w=courseWeek(p);document.querySelectorAll('[data-course-week]').forEach(b=>b.onclick=()=>chooseCourse(+b.dataset.courseWeek,p.course.session));document.querySelectorAll('[data-course-session]').forEach(b=>b.onclick=()=>chooseCourse(w,b.dataset.courseSession));$('#course-overview').onclick=courseOverview;$('#course-balance').onclick=courseBalance;$('#course-sources').onclick=courseSources;$('#course-profile').onclick=courseProfile;$('#course-originals').onclick=courseOriginals;document.querySelectorAll('[data-course-check]').forEach(input=>input.oninput=()=>{if(input.type==='number'&&!input.checkValidity())return;state.courseChecks??={};state.courseChecks[w]??={};state.courseChecks[w][input.dataset.courseCheck]=input.value;persist()});}
 function courseOverview(){const sessions=courseSessions();modal(COURSE.label||'O programa de 12 semanas',`<p class="dialog-note" style="margin-top:0">${esc(COURSE.overview||'Mantém a sequência; se falhares uma sessão, retoma onde ficaste.')} Sequência: ${sessions.join(' → ')}. O botão «Continuar» abre sempre a sessão seguinte.</p><div class="course-table"><table><thead><tr><th>Semana</th><th>Foco</th><th>Séries ${sessions.join(' / ')}</th><th>Margem</th></tr></thead><tbody>${COURSE.weeks.map(w=>`<tr><td>${w.week}</td><td>${esc(w.focus)}</td><td>${sessions.map(s=>state.plans.find(p=>p.id===courseId(w.week,s))?.exercises.reduce((n,e)=>n+e.sets,0)||'—').join(' / ')}</td><td>${esc(w.rir)} reps</td></tr>`).join('')}</tbody></table></div><div class="overview-rule"><b>Como aumentar a carga</b><p>Primeiro ganha repetições dentro da faixa. Quando completares as séries no topo da faixa, com a mesma amplitude, a margem planeada e boa recuperação, usa o menor aumento disponível. Volta à parte baixa da faixa. Se isso não acontecer, mantém a dose.</p></div><div class="overview-rule"><b>Como caber no tempo</b><p>${esc(COURSE.timeRule||'Faz os exercícios pela ordem e usa os descansos da ficha. Se o tempo acabar, guarda uma sessão parcial; não cortes a técnica ou o descanso para completar todos os cartões.')}</p></div><div class="overview-rule"><b>Se a resposta ao treino piorar</b><p>Não avances a variante só pelo calendário. Mantém a anterior, reduz a dose ou usa a alternativa. Se o desconforto persistir ou surgirem sintomas novos, revê com um profissional.</p></div><p class="dialog-note">As semanas 4 e 8 têm volume reduzido e a 12 serve para comparação submáxima.</p>`);}
 function courseProfile(){modal('Como usar este modelo',`<p>Este programa está guardado na tua conta. As fichas, adaptações e registos são privados e não são distribuídos às contas novas. Podes editar os exercícios ou importar uma ficha recebida.</p><p>Guarda a carga por haltere ou o total da barra conforme a indicação de cada exercício. Não transfiras cargas automaticamente entre variantes.</p>`);}
-// Weekly volume of the selected programme week, measured against the account's main goal.
-function courseGoal(){return state.profile?.answers?.primaryGoal||'muscle';}
+// Weekly volume: what the programme prescribes, and what was actually recorded.
+function courseGoal(){return state.balance?.goal||state.profile?.answers?.primaryGoal||'muscle';}
+function courseEmphasis(){return state.balance?.emphasis||state.profile?.answers?.emphasis||'balanced';}
+function volumeOptions(){return {goal:courseGoal(),emphasis:courseEmphasis()};}
+function dayOffset(days){const date=new Date();date.setDate(date.getDate()-days);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
+let balanceRange='plan';
+function balanceReport(week){
+ if(balanceRange==='plan'){
+  const sessions=courseSessions().map(id=>state.plans.find(p=>p.id===courseId(week,id))).filter(Boolean);
+  return {report:window.TreinoVolume.weeklyVolume(sessions,volumeOptions()),title:`Semana ${week} · previsto`};
+ }
+ const days=balanceRange==='28'?28:7;
+ return {report:window.TreinoVolume.performedVolume(state.history,{...volumeOptions(),from:dayOffset(days-1)}),
+  title:days===7?'Últimos 7 dias':'Últimas 4 semanas'};
+}
+function renderBalance(week){
+ const {report,title}=balanceReport(week);
+ $('#balance-body').innerHTML=volumeChartHTML(report,{title});
+ document.querySelectorAll('[data-balance]').forEach(b=>b.classList.toggle('active',b.dataset.balance===balanceRange));
+}
 function courseBalance(){
- const week=courseWeek(),sessions=courseSessions().map(id=>state.plans.find(p=>p.id===courseId(week,id))).filter(Boolean);
- const report=window.TreinoVolume.weeklyVolume(sessions,{goal:courseGoal()});
- modal(`Equilíbrio · semana ${week}`,`<p class="dialog-note" style="margin-top:0">${esc(COURSE.label||'Programa')} · objetivo ${esc(programs.GOALS[courseGoal()]||'ganhar massa muscular').toLowerCase()}. As sessões de mobilidade não contam.</p>${volumeChartHTML(report,{title:`Semana ${week}`})}`);
+ const week=courseWeek();
+ modal('Equilíbrio por grupo muscular',`<p class="dialog-note" style="margin-top:0">${esc(COURSE.label||'Programa')} · objetivo ${esc((programs.GOALS[courseGoal()]||'ganhar massa muscular').toLowerCase())}. A mobilidade não conta.</p>
+  <div class="plan-tabs" role="group" aria-label="Período">${[['plan','Plano da semana'],['7','Últimos 7 dias'],['28','Últimas 4 semanas']].map(([key,label])=>`<button class="mini" data-balance="${key}">${label}</button>`).join('')}</div>
+  <div id="balance-body"></div>
+  <details class="proposal-help"><summary>Ajustar o alvo</summary><div class="form-grid"><label>Objetivo<select id="balance-goal">${Object.entries(programs.GOALS).map(([k,v])=>`<option value="${k}" ${k===courseGoal()?'selected':''}>${esc(v)}</option>`).join('')}</select></label><label>Ênfase<select id="balance-emphasis">${Object.entries(programs.EMPHASIS).map(([k,v])=>`<option value="${k}" ${k===courseEmphasis()?'selected':''}>${esc(v)}</option>`).join('')}</select></label></div><p class="dialog-note">Só muda os alvos do gráfico, não as fichas. Os grupos fora da ênfase passam a ser comparados com uma faixa de manutenção.</p></details>`);
+ document.querySelectorAll('[data-balance]').forEach(b=>b.onclick=()=>{balanceRange=b.dataset.balance;renderBalance(week);});
+ for(const [id,key] of [['#balance-goal','goal'],['#balance-emphasis','emphasis']])$(id).onchange=e=>{
+  const next={...state.balance,[key]:e.target.value};
+  if(!validState({...state,balance:next}))return toast('Valor inválido.');
+  state.balance=next;persist();renderBalance(week);
+ };
+ renderBalance(week);
 }
 function courseSources(){const w=courseWeek();const rows=courseSessions().map(id=>state.plans.find(p=>p.id===courseId(w,id))).filter(Boolean);modal('Sessões, fontes e adaptações',`${rows.map(p=>`<p><b>${esc(p.course.session)} — ${esc(p.shortTitle||p.name)}</b>${p.description?'<br>'+esc(p.description):''}</p>`).join('')}${(COURSE.sources||[]).length?`<div class="source-links">${COURSE.sources.map(([n,url])=>/^https:\/\//.test(url)?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(n)} ↗</a>`:'').join('')}</div>`:''}<p>${esc(COURSE.sourcesNote||'A sequência, o volume e a progressão são uma organização própria.')}</p>`);}
 function courseOriginals(){const originals=state.plans.filter(p=>p.sourceExact);modal('Rotinas originais de referência',`<p class="dialog-note" style="margin-top:0">Estas fichas preservam as doses publicadas. Não são sessões para acrescentar ao programa pessoal; servem para veres a origem da seleção.</p><div class="other-plans">${originals.map(p=>`<button class="other-plan" data-original-plan="${esc(p.id)}"><strong>${esc(p.name)}</strong><span>${p.exercises.length} exercícios · ${p.exercises.reduce((n,e)=>n+e.sets,0)} séries ↗</span></button>`).join('')}</div>`,true);document.querySelectorAll('[data-original-plan]').forEach(b=>b.onclick=()=>{selectedPlan=b.dataset.originalPlan;closeModal();renderPlans()});}
