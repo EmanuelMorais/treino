@@ -1,11 +1,12 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const programs=require('../program-engine.js'),domain=require('../src/domain/programme-proposal.js'),contract=require('../src/domain/document-contract.js');
+const volume=require('../src/domain/volume-report.js');
 function fixture({canPersist=true}={}){
  const proposal=programs.generate({...programs.defaults(),name:'Fixture',adult:true,consent:true,goals:['muscle'],primaryGoal:'muscle',equipment:['dumbbells','bench'],weeks:4,minutes:45});
  const state={version:1,plans:[],history:[],drafts:{},favorites:[],proposal},controls=new Map(),messages=[];let i=0;
  const $=selector=>{if(!controls.has(selector))controls.set(selector,{textContent:'',focus(){},checked:true});return controls.get(selector);};
- const ctx=vm.createContext({window:{TreinoProposal:domain},programs,accountAccess:true,activeStorageKey:'account-a',state,$,validState:contract.valid,document:{querySelectorAll:()=>[]},modal(){},closeModal(){},setView(){},selectedPlan:'',persist:()=>canPersist,uid:()=> 'fixture-'+(++i),toast:message=>messages.push(message),esc:String});
- vm.runInContext(fs.readFileSync('src/ui/programme-proposal.js','utf8'),ctx);vm.runInContext('previewProposal()',ctx);
+ const ctx=vm.createContext({window:{TreinoProposal:domain,TreinoVolume:volume},programs,accountAccess:true,activeStorageKey:'account-a',state,$,validState:contract.valid,document:{querySelectorAll:()=>[]},modal(){},closeModal(){},setView(){},selectedPlan:'',persist:()=>canPersist,uid:()=> 'fixture-'+(++i),toast:message=>messages.push(message),esc:String});
+ vm.runInContext(fs.readFileSync('src/ui/volume-chart.js','utf8'),ctx);vm.runInContext(fs.readFileSync('src/ui/programme-proposal.js','utf8'),ctx);vm.runInContext('previewProposal()',ctx);
  return {ctx,$,messages,activate:()=>$('#activate-proposal').onclick()};
 }
 test('a stale activation callback cannot create a duplicate programme',()=>{

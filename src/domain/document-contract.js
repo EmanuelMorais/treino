@@ -53,6 +53,12 @@
     if(!safeKeys(doc)||!doc||doc.version!==1||!Array.isArray(doc.plans)||doc.plans.length>256||!Array.isArray(doc.history)||doc.history.length>10000||!Array.isArray(doc.favorites)||doc.favorites.length>1000||!doc.drafts||typeof doc.drafts!=='object'||Array.isArray(doc.drafts))return false;
     if(doc.courseWeek!==undefined&&(!Number.isInteger(doc.courseWeek)||doc.courseWeek<1||doc.courseWeek>12))return false;
     if(doc.courseSession!==undefined&&!SESSIONS.includes(doc.courseSession))return false;
+  if(doc.balance!==undefined){
+   const b=doc.balance;
+   if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['goal','emphasis'].includes(k)))return false;
+   if(b.goal!==undefined&&!Object.keys(programs.GOALS).includes(b.goal))return false;
+   if(b.emphasis!==undefined&&!Object.keys(programs.EMPHASIS).includes(b.emphasis))return false;
+  }
     if(!doc.favorites.every(value=>/^[\w-]{11}$/.test(value)))return false;
     if(!doc.plans.every(plan=>plan&&safeId(plan.id)&&text(plan.name,100)&&plan.name.trim()&&text(plan.note)&&Array.isArray(plan.exercises)&&plan.exercises.length<=100&&plan.exercises.every(exercise)&&(!plan.course||course(plan.course))))return false;
     if(new Set(doc.plans.map(plan=>plan.id)).size!==doc.plans.length||doc.plans.some(plan=>new Set(plan.exercises.map(e=>e.id)).size!==plan.exercises.length))return false;

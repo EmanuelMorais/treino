@@ -26,6 +26,7 @@ function previewProposal(){
   <p class="auth-note">Revê cada sessão. As personalizações aplicam-se ao mesmo dia em todas as semanas; as semanas leves mantêm menos séries.</p>
   ${p.warnings.map(w=>`<p class="overview-rule">${esc(w)}</p>`).join('')}
   ${issueList.length?`<details class="proposal-help" open><summary>O que precisa de atenção</summary><ul>${issueList.map(issue=>`<li>${esc(issue.message)}</li>`).join('')}</ul></details>`:''}
+  <details class="proposal-help" open><summary>Equilíbrio da semana por grupo muscular</summary>${volumeChartHTML(window.TreinoVolume.weeklyVolume(first,{goal:p.profile.primaryGoal}),{title:'Semana 1'})}</details>
   <div class="proposal-grid">${first.map(s=>`<section class="panel"><h3>${String.fromCharCode(65+s.day)} · ${esc(s.label||'Sessão')}</h3><p class="auth-note">${programs.DAYS[s.weekday]}</p><p>${s.estimatedMinutes} min estimados</p><ol>${s.exercises.map(e=>`<li>${esc(e.name)} · ${e.sets} × ${esc(e.target)}${e.unit==='s'?' segundos':e.unit==='steps'?' passos':''}${e.unilateral?' por lado':''} · ${e.restSeconds}s descanso</li>`).join('')}</ol><button class="btn secondary" data-proposal-day="${s.day}">Personalizar sessão ${String.fromCharCode(65+s.day)}</button></section>`).join('')}</div>
 ${p.profile.athlete?.calendar.length?athleteWeekHTML(p.profile.athlete,first):''}
   <details class="proposal-help"><summary>Como seguir e progredir</summary>${p.notes.slice(1).map(n=>`<p class="auth-note">${esc(n)}</p>`).join('')}</details>
