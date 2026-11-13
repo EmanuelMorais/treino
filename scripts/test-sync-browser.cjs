@@ -19,6 +19,7 @@ async function main(){
    }`);
   }
   await code(names[0],`async page=>{
+   await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
    await page.getByRole('button',{name:'+ Criar plano',exact:true}).click();await page.locator('#new-name').fill('Treino sincronizado fictício');await page.getByRole('button',{name:'Criar treino',exact:true}).click();
    await page.getByRole('button',{name:'Adicionar exercício',exact:true}).click();await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Curl martelo com halteres');await page.getByRole('checkbox',{name:/^Curl martelo com halteres/}).check();await page.getByRole('button',{name:'Adicionar 1 exercício',exact:true}).click();
    await page.getByRole('button',{name:'Concluir edição',exact:true}).click();await page.getByRole('button',{name:'Começar sessão',exact:true}).click();
