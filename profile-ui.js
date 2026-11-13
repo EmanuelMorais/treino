@@ -62,7 +62,7 @@ function renderProfile(){
    state.proposal=proposal;if(!persist()){feedback('Não foi possível guardar a proposta',['As respostas estão nesta página. Exporta uma cópia antes de fechar.']);return;}previewProposal();
   }catch{feedback('Não foi possível preparar a proposta',['As respostas foram mantidas. Tenta novamente ou exporta uma cópia para as preservar.']);}
  };
- $('#profile-home').onclick=()=>setView('plans');
+ $('#profile-home').onclick=()=>{selectedPlan='';workoutView=null;setView('plans');};
  $('#profile-delete').onclick=()=>{modal('Apagar respostas do questionário','<p>Apagar as respostas ativas e a proposta por ativar? Os planos ativados e o histórico de treinos mantêm-se. As respostas podem continuar nas últimas 20 cópias de segurança até estas serem substituídas.</p><button class="btn danger" id="confirm-profile-delete">Apagar respostas ativas</button>',true);$('#confirm-profile-delete').onclick=()=>{delete state.profile;delete state.proposal;delete state.previousProposal;delete state.questionnaireVersions;persist();closeModal();renderProfile();};};
 }
 const exampleFilters={muscle:'Todos',equipment:'all',query:''};

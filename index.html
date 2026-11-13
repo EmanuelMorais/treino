@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-PT">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#183e32">
 <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
@@ -9,17 +9,19 @@
 <meta name="apple-mobile-web-app-title" content="Treino">
 <title>Treino — planos e evolução</title>
 <meta name="description" content="Os teus planos de treino e registos, numa conta privada.">
-<link rel="stylesheet" href="styles.css?v=11">
+<link rel="stylesheet" href="styles.css?v=12">
 <link rel="stylesheet" href="src/styles/exercise-catalog.css?v=15">
-<style>body:not([data-auth="ready"])>.side,body:not([data-auth="ready"])>.main,body:not([data-auth="ready"])>#storage-error{display:none!important}body[data-auth="ready"]>#auth-gate{display:none!important}</style>
+<link rel="stylesheet" href="src/styles/app-shell.css?v=2">
+<style>body:not([data-auth="ready"])>.side,body:not([data-auth="ready"])>.main,body:not([data-auth="ready"])>.rest-bar,body:not([data-auth="ready"])>#storage-error{display:none!important}body[data-auth="ready"]>#auth-gate{display:none!important}</style>
 </head>
 <body data-auth="loading">
 <main id="auth-gate" class="auth-gate"><div class="gate-card"><div class="brand"><img class="brandmark" src="assets/icon.svg" alt="" width="37" height="37">treino<span>.</span></div><h1>O teu espaço de treino.</h1><p id="auth-gate-detail">A verificar a sessão…</p><button id="gate-login" class="btn">Entrar ou criar conta</button><p class="auth-note">Os treinos, a biblioteca e o histórico só estão disponíveis depois de entrares na tua conta.</p></div></main>
 <div id="storage-error" hidden class="error-bar" role="alert"></div>
-<aside class="side"><div><div class="brand" role="img" aria-label="Treino"><img class="brandmark" src="assets/icon.svg" alt="" width="37" height="37">treino<span style="color:#799665">.</span></div><p class="tagline">Planos e evolução</p></div><nav class="nav" aria-label="Navegação principal"><button data-view="plans" class="active"></button><button data-view="library"></button><button data-view="history"></button></nav><div class="side-bottom"><span class="local-dot"></span>Guardado neste navegador<br><a href="https://www.youtube.com/@bioforceman" target="_blank" rel="noopener">Vídeos de @bioforceman ↗</a></div></aside>
-<main class="main"><header class="top"><span class="eyebrow">Treino / planos e evolução</span><div class="backup-actions"><button id="account" class="btn">Entrar</button><button id="import" class="btn secondary">Importar</button><button id="export" class="btn secondary"></button></div></header><section id="sync-bar" class="sync-bar" aria-live="polite"><div class="sync-copy"><strong id="sync-title">Guardado neste navegador</strong><span id="sync-detail">Entra para sincronizar.</span></div><div class="sync-tools"><button id="sync-now" class="btn secondary" hidden>Sincronizar</button><button id="online-backups" class="btn secondary" hidden>Cópias online</button></div></section><div id="content"></div><footer class="footer"><span>Força baseada nos vídeos de <a href="https://www.youtube.com/@bioforceman" target="_blank" rel="noopener">Bioforceman ↗</a> · Catálogo recolhido a 09/11/2026</span><span>Planos e registos privados por conta · Exporta cópias regularmente.</span></footer></main>
+<aside class="side"><div><div class="brand" role="img" aria-label="Treino"><img class="brandmark" src="assets/icon.svg" alt="" width="37" height="37">treino<span style="color:#799665">.</span></div><p class="tagline">Planos e evolução</p></div><nav class="nav" aria-label="Navegação principal"><button data-view="plans" class="active"></button><button data-view="program"></button><button data-view="history"></button><button data-view="me"></button></nav><div class="side-bottom"><span class="local-dot"></span>Guardado neste navegador<br><a href="https://www.youtube.com/@bioforceman" target="_blank" rel="noopener">Vídeos de @bioforceman ↗</a></div></aside>
+<main class="main"><div id="content"></div><section id="account-panel" class="panel account-panel" aria-labelledby="account-panel-title"><h2 id="account-panel-title">Conta e cópias</h2><div class="backup-actions"><button id="account" class="btn">Entrar</button><button id="import" class="btn secondary">Importar</button><button id="export" class="btn secondary"></button></div><section id="sync-bar" class="sync-bar" aria-live="polite"><div class="sync-copy"><strong id="sync-title">Guardado neste navegador</strong><span id="sync-detail">Entra para sincronizar.</span></div><div class="sync-tools"><button id="sync-now" class="btn secondary" hidden>Sincronizar</button><button id="online-backups" class="btn secondary" hidden>Cópias online</button></div></section><p class="auth-note">A gravação é automática. Podes exportar uma cópia completa e consultar versões anteriores em Cópias online.</p></section><footer class="footer"><span>Força baseada nos vídeos de <a href="https://www.youtube.com/@bioforceman" target="_blank" rel="noopener">Bioforceman ↗</a> · Catálogo recolhido a 09/11/2026</span><span>Planos e registos privados por conta · Exporta cópias regularmente.</span></footer></main>
 <input type="file" id="import-file" class="import-input" accept="application/json,.json" aria-label="Importar cópia de segurança">
 <dialog id="modal"><div class="dialog-head"><h2 id="dialog-title"></h2><button class="close" aria-label="Fechar janela">×</button></div><div class="dialog-body" id="dialog-content"></div></dialog>
+<div id="rest-bar" class="rest-bar" role="timer" aria-label="Descanso" hidden><div class="rest-copy"><span class="eyebrow">Descanso</span><b id="rest-time">0:00</b></div><button id="rest-minus" aria-label="Menos 15 segundos">−15 s</button><button id="rest-plus" aria-label="Mais 15 segundos">+15 s</button><button id="rest-skip" class="rest-skip">Saltar</button></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="config.js"></script>
 <script src="vendor/supabase.js"></script>
@@ -39,17 +41,18 @@
 <script src="src/domain/watch-import.js?v=1"></script>
 <script src="src/domain/document-contract.js?v=12"></script>
 <script src="src/data/backup-format.js?v=8"></script>
-<script src="app.js?v=21"></script>
-<script src="src/ui/workout-views.js?v=14"></script>
+<script src="app.js?v=25"></script>
+<script src="src/ui/workout-views.js?v=18"></script>
+<script src="src/ui/home-views.js?v=2"></script>
 <script src="src/ui/exercise-editor.js?v=11"></script>
 <script src="src/ui/volume-chart.js?v=3"></script>
-<script src="src/ui/exercise-help.js?v=9"></script>
+<script src="src/ui/exercise-help.js?v=10"></script>
 <script src="src/ui/exercise-picker.js?v=10"></script>
 <script src="src/ui/exercise-replacement.js?v=8"></script>
 <script src="src/ui/programme-proposal.js?v=17"></script>
 <script src="src/ui/athlete-context.js?v=15"></script>
 <script src="src/ui/profile-steps.js?v=14"></script>
-<script src="profile-ui.js?v=16"></script>
+<script src="profile-ui.js?v=17"></script>
 <script src="sync-core.js?v=5"></script>
 <script src="cloud.js?v=17"></script>
 </body></html>

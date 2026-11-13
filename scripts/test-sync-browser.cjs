@@ -19,6 +19,7 @@ async function main(){
    }`);
   }
   await code(names[0],`async page=>{
+   await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
    await page.getByRole('button',{name:'+ Criar plano',exact:true}).click();await page.locator('#new-name').fill('Treino sincronizado fictício');await page.getByRole('button',{name:'Criar treino',exact:true}).click();
    await page.getByRole('button',{name:'Adicionar exercício',exact:true}).click();await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Curl martelo com halteres');await page.getByRole('checkbox',{name:/^Curl martelo com halteres/}).check();await page.getByRole('button',{name:'Adicionar 1 exercício',exact:true}).click();
    await page.getByRole('button',{name:'Concluir edição',exact:true}).click();await page.getByRole('button',{name:'Começar sessão',exact:true}).click();
@@ -27,11 +28,11 @@ async function main(){
   }`);
   // No sync button, reload, app callbacks or accelerated timers: wait for the real fallback poll.
   await code(names[1],`async page=>{
-   await page.getByRole('navigation').getByRole('button',{name:'Histórico',exact:true}).click();
+   await page.getByRole('navigation').getByRole('button',{name:'Progresso',exact:true}).click();
    await page.waitForFunction(()=>document.querySelectorAll('.history-item').length===1,undefined,{timeout:45000});
    if(!(await page.locator('.history-item').innerText()).includes('Treino sincronizado fictício'))throw Error('PC session did not arrive on the second device');
-   await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();await page.getByRole('button',{name:'+ Criar plano',exact:true}).click();await page.locator('#new-name').fill('Criado no segundo dispositivo');await page.getByRole('button',{name:'Criar treino',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
-   await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();await page.getByRole('button',{name:'Preencher questionário',exact:true}).click();
+   await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();await page.getByRole('button',{name:'+ Criar plano',exact:true}).click();await page.locator('#new-name').fill('Criado no segundo dispositivo');await page.getByRole('button',{name:'Criar treino',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
+   await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();await page.getByRole('button',{name:'Preencher questionário',exact:true}).click();
    await page.getByLabel('Nome de apresentação',{exact:true}).fill('Perfil de sincronização fictício');await page.getByRole('checkbox',{name:/Quero guardar estas respostas/}).check();
    await page.getByRole('button',{name:'2. Tempo e local',exact:true}).click();await page.getByText('Outros treinos, jogos ou saídas',{exact:true}).click();await page.getByRole('button',{name:'Adicionar atividade',exact:true}).click();
    await page.getByLabel('Nome da atividade',{exact:true}).fill('Saída fictícia');await page.getByRole('combobox',{name:'Modalidade da atividade',exact:true}).selectOption('cycling');await page.getByRole('combobox',{name:'Dia da atividade',exact:true}).selectOption('6');await page.getByLabel('Duração da atividade · minutos',{exact:true}).fill('60');await page.getByRole('button',{name:'Guardar atividade',exact:true}).click();
@@ -39,13 +40,14 @@ async function main(){
    await page.getByRole('button',{name:'Voltar aos meus treinos',exact:true}).click();await page.getByRole('button',{name:/^Criado no segundo dispositivo/}).click();
   }`);
   await code(names[0],`async page=>{
-   await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+   await page.getByRole('navigation').getByRole('button',{name:'Hoje',exact:true}).click();
    await page.getByRole('button',{name:/^Criado no segundo dispositivo/}).waitFor({timeout:45000});
    await page.getByRole('heading',{name:'Modalidade e calendário',exact:true}).waitFor({timeout:45000});await page.locator('.athlete-week summary').click();
    if(!(await page.locator('.athlete-week').innerText()).includes('Saída fictícia'))throw Error('Calendar did not propagate to the PC automatically');
    await page.getByRole('button',{name:/^Criado no segundo dispositivo/}).click();
    await page.locator('#plan-name').fill('Nome atualizado sem sair do campo');
    await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
+   await page.getByRole('navigation').getByRole('button',{name:'Perfil',exact:true}).click();
    await page.getByRole('button',{name:'A minha conta',exact:true}).click();await page.getByRole('button',{name:'Terminar sessão',exact:true}).click();
    await page.waitForFunction(()=>document.body.dataset.auth==='locked');if(await page.locator('#content').innerText())throw Error('Private cached data remained in the signed-out DOM');
    await page.getByRole('button',{name:'Entrar ou criar conta',exact:true}).click();await page.locator('#auth-email').fill('fixture-1@example.invalid');await page.locator('#auth-password').fill(${JSON.stringify(fixture.password)});await page.locator('#auth-submit').click();
