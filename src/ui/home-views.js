@@ -51,7 +51,7 @@ function renderProgram(){
  if(hasCourse){
   const week=programWeek;
   document.querySelectorAll('[data-program-week]').forEach(b=>b.onclick=()=>{programWeek=Number(b.dataset.programWeek);const top=window.scrollY;renderProgram();window.scrollTo({top,behavior:'instant'});});
-  document.querySelectorAll('[data-program-session]').forEach(b=>b.onclick=()=>chooseCourse(week,b.dataset.programSession));
+  document.querySelectorAll('[data-program-session]').forEach(b=>b.onclick=()=>openPlan(courseId(week,b.dataset.programSession)));
   $('#course-sources').onclick=courseSources;$('#course-profile').onclick=courseProfile;$('#course-originals').onclick=courseOriginals;
   document.querySelectorAll('[data-course-check]').forEach(input=>input.oninput=()=>{if(input.type==='number'&&!input.checkValidity())return;state.courseChecks??={};state.courseChecks[week]??={};state.courseChecks[week][input.dataset.courseCheck]=input.value;persist();});
   if($('#course-select'))$('#course-select').onchange=e=>{const chosen=COURSES.find(c=>c.version===Number(e.target.value));if(!chosen)return;COURSE=chosen;state.courseVersion=chosen.version;state.courseEnabled=true;programWeek=null;persist();renderProgram();toast('Programa escolhido: '+(chosen.label||chosen.version)+'. Os outros ficam no arquivo.');};

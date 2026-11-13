@@ -29,12 +29,12 @@ function workoutMetadata(p){return `<details class="proposal-help"><summary>Orie
 function renderWorkoutOverview(p){
  setScreen('plan');
  const pending=state.plans.find(s=>s.sessionOnly&&s.executionSourceId===p.id&&state.drafts[s.id])||window.TreinoSessions.hasValues(state.drafts[p.id]);
- $('#content').innerHTML=heading(esc(p.name),'Revê o treino e começa quando estiveres pronto.')+workoutNavigation()+`
+ $('#content').innerHTML=heading(esc(p.name),'Abre cada exercício para ver o movimento. Começa quando quiseres.')+workoutNavigation()+`
   <section class="panel workout-overview"><p>${p.exercises.length} exercícios · ${esc(p.duration||'Duração ajustável')}</p>${p.warmup?`<p class="visible-warmup"><b>Aquecimento:</b> ${esc(p.warmup)}</p>`:''}
-  <ol class="workout-prescription">${p.exercises.map(e=>`<li><b>${esc(e.name)}</b><span>${e.sets} × ${esc(targetLabel(e))}${Number.isFinite(e.restSeconds)?' · '+e.restSeconds+'s descanso':''}</span></li>`).join('')}</ol>
+  <ol class="workout-prescription review-list">${p.exercises.map((e,i)=>`<li><details class="review-exercise"><summary><span class="review-index">${i+1}</span><span class="review-copy"><b>${esc(e.name)}</b><span>${e.sets} × ${esc(targetLabel(e))}${Number.isFinite(e.restSeconds)?' · '+e.restSeconds+' s descanso':''}</span>${exerciseMuscles(e).length?`<small>${exerciseMuscles(e).map(esc).join(' · ')}</small>`:''}</span>${icon('chevron')}</summary><div class="review-sheet">${exerciseSheetHTML(e,{heading:false,muscles:false})}</div></details></li>`).join('')}</ol>
   <div class="home-actions"><button class="btn" id="start-session">${pending?'Retomar sessão':'Começar sessão'}</button><button class="btn secondary" id="workout-edit">Editar ficha</button></div>${workoutMetadata(p)}</section>
   ${isCurrentCourse(p)?'<button class="btn secondary full" id="open-programme">Ver as 12 semanas do programa</button>':''}`;
- bindWorkoutNavigation();$('#start-session').onclick=startWorkoutSession;$('#workout-edit').onclick=openWorkoutEditor;
+ bindWorkoutNavigation();$('#start-session').onclick=startWorkoutSession;$('#workout-edit').onclick=openWorkoutEditor;bindExerciseSheet();
  if($('#open-programme'))$('#open-programme').onclick=()=>setView('program');
 }
 function renderWorkoutEditor(p){

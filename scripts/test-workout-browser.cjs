@@ -103,7 +103,8 @@ async function main() {
       await page.getByRole('button',{name:/^Treino fictício/}).click();await enterSession();
       check(await page.getByText(/Último registo/).count()>0,'Same-day history missing');
       await page.getByRole('button',{name:'Pesquisar demonstração ↗',exact:true}).first().click();
-      const search=page.getByRole('link',{name:'Pesquisar no YouTube ↗',exact:true});
+      const search=page.getByRole('link',{name:'Vídeos deste exercício no YouTube ↗',exact:true});
+      check(await page.locator('svg.demo-figure').count()===1,'Animated demonstration missing');
       check((await search.getAttribute('href')).includes('results?search_query='),'Demo search missing');
       await page.getByRole('button',{name:'Adicionar o meu vídeo',exact:true}).click();
       await page.locator('#e-video').fill('https://youtu.be/ACyCx_s15ME');

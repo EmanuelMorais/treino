@@ -71,9 +71,10 @@ function openExercisePicker({onChoose = null, replacing = null, sourceExercises 
 
   function detail(exercise) {
     modal('Detalhes do exercício', `<button class="mini" id="catalog-back">← Voltar à lista</button><h3>${esc(exercise.name)}</h3>
-      <p>${esc(exercise.muscles.join(' · '))}</p><p class="dialog-note">${esc(equipmentLabel(exercise))}${exercise.level ? ' · ' + esc(({beginner:'Complexidade inicial',regular:'Complexidade intermédia',experienced:'Complexidade elevada'})[exercise.level]) : ''}</p><p>${esc(exercise.how)}</p>
-      <div class="video-links"><a class="btn secondary" href="${esc(exercise.video ? 'https://www.youtube.com/watch?v=' + exercise.video : exerciseSearchURL(exercise))}" target="_blank" rel="noopener noreferrer">${exercise.video ? 'Abrir exemplo no YouTube ↗' : 'Pesquisar demonstração no YouTube ↗'}</a></div>
+      <p class="dialog-note">${esc(equipmentLabel(exercise))}${exercise.level ? ' · ' + esc(({beginner:'Complexidade inicial',regular:'Complexidade intermédia',experienced:'Complexidade elevada'})[exercise.level]) : ''}</p><p>${esc(exercise.how)}</p>
+      ${exerciseSheetHTML(exercise, { heading: false })}
       <button class="btn" id="catalog-detail-select">${chosen.has(exercise.id) ? 'Retirar da seleção' : 'Selecionar exercício'}</button>`, true);
+    bindExerciseSheet();
     $('#catalog-back').onclick = renderPicker;
     $('#catalog-detail-select').onclick = () => { if (chosen.has(exercise.id)) chosen.delete(exercise.id); else {if(onChoose)chosen.clear();chosen.add(exercise.id);} renderPicker(); };
   }

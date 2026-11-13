@@ -175,3 +175,34 @@ body[data-screen="session"] .main{padding-bottom:116px}
  .set-grid{grid-template-columns:24px minmax(0,1fr) 58px 58px 44px;gap:5px}
  .set-prev{font-size:11px}
 }
+
+/* --- Exercise sheet: demonstration, muscles, steps, videos ---------------- */
+.sheet-title{font-size:18px;margin-bottom:6px}
+.sheet-muscles{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.sheet-muscles span{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--lime);color:var(--green);font-weight:600}
+.demo{margin:0 0 14px;padding:10px 12px 6px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.demo-figure{display:block;width:100%;max-width:260px;height:auto;margin:0 auto}
+.demo figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
+.demo-limb,.demo-torso{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.demo-head{fill:var(--ink)}
+.demo-floor{stroke:var(--line);stroke-width:2;stroke-linecap:round}
+.demo-prop{fill:var(--line)}
+.demo-weight{fill:var(--green);stroke:var(--green);stroke-width:6;stroke-linecap:round}
+.demo-band{fill:none;stroke:#8fb37a;stroke-width:2.5;stroke-dasharray:4 3;stroke-linecap:round}
+.exercise-videos{margin-top:12px}
+.exercise-videos .btn{min-height:44px}
+
+/* Workout review: one row per exercise, the sheet behind it. */
+.review-list{list-style:none;padding:0;margin:14px 0 18px;border-top:1px solid var(--line)}
+.review-list li{border-bottom:1px solid var(--line)}
+.review-exercise>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 2px;cursor:pointer}
+.review-exercise>summary::-webkit-details-marker{display:none}
+.review-exercise>summary .icon{flex-shrink:0;color:var(--muted);transform:rotate(-90deg);transition:transform .2s}
+.review-exercise[open]>summary .icon{transform:rotate(90deg)}
+.review-index{display:flex;align-items:center;justify-content:center;width:30px;height:30px;flex-shrink:0;border-radius:15px;background:var(--paper);color:var(--ink);font-size:13px;font-weight:700}
+.review-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.review-copy b{font-size:15px}
+.review-copy>span{font-size:13px;color:var(--muted)}
+.review-copy small{font-size:12px;color:var(--green)}
+.review-sheet{padding:4px 2px 18px 44px}
+@media(max-width:760px){.review-sheet{padding-left:2px}}
