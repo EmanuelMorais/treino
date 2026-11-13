@@ -37,6 +37,12 @@ body:not([data-screen="me"]) .footer{display:none}
 .week-day.next b{background:var(--lime);color:var(--green);box-shadow:inset 0 0 0 2px var(--green)}
 
 /* --- Programa ------------------------------------------------------------- */
+.course-about{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.course-about h3{font-size:14px;margin-bottom:10px}
+.course-week-focus{display:block;margin:18px 0}
+.course-about{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.course-about h3{font-size:14px;margin-bottom:10px}
+.course-week-focus{display:block;margin:18px 0}
 .program-select{font-size:12px}
 .program-select select{margin-top:4px;min-height:44px}
 .session-rows{display:flex;flex-direction:column;margin-top:18px;border-top:1px solid var(--line)}
@@ -119,17 +125,23 @@ body:not([data-screen="me"]) .footer{display:none}
 .rest-bar .rest-skip{background:var(--lime);color:var(--green);border-color:var(--lime)}
 
 /* --- Progresso ------------------------------------------------------------ */
-.balance-top{display:flex;flex-wrap:wrap;gap:4px;padding:4px;border:1px solid var(--line);
- border-radius:14px;background:#fff;margin-bottom:16px}
-.balance-top button{flex:1;min-height:44px;border-radius:10px;background:none;color:var(--ink);
- font-size:13px;font-weight:600}
-.balance-top button.active{background:var(--green);color:#fff}
 .balance-panel{margin-bottom:18px}
-.balance-target{margin-top:14px}
-.seg{display:flex;gap:4px}
+.balance-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.balance-top h2{font-size:17px}
+/* The three periods are one segmented control, not three loose buttons. */
+.seg{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.seg button{min-height:40px;padding:0 12px;border-radius:9px;background:none;color:var(--ink);
+ font-size:13px;font-weight:600;white-space:nowrap}
+.seg button.active{background:var(--green);color:#fff}
+.balance-target{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}
+.balance-target select{min-height:44px}
 
 /* --- Small screens: the navigation sits at the bottom --------------------- */
 @media(max-width:760px){
+ /* Everything tappable keeps 44 px on a phone. */
+ .btn,.recovery-button,.backup-actions .btn,.other-plan,.template-card{min-height:44px}
+ .balance-top{gap:8px}
+ .seg button{flex:1;padding:0 8px;font-size:12px}
  /* A fixed 72 px tab bar, so the rest bar and the page can both clear it exactly. */
  .side{position:fixed;inset:auto 0 0 0;width:100%;height:calc(72px + env(safe-area-inset-bottom));
   padding:0 0 env(safe-area-inset-bottom);flex-direction:row;align-items:stretch;border-right:0;

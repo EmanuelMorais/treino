@@ -21,7 +21,7 @@ function renderPlans(){
  if(workoutView.mode==='edit')return renderWorkoutEditor(p);
  renderWorkoutOverview(p);
 }
-function workoutNavigation(){return '<div class="home-actions workout-nav"><button class="btn secondary" id="workout-home">← Os meus treinos</button><button class="btn secondary" id="other-plans">Arquivo de planos</button></div>';}
+function workoutNavigation(){return '<div class="home-actions workout-nav"><button class="btn secondary" id="workout-home">← Voltar</button><button class="btn secondary" id="other-plans">Arquivo de planos</button></div>';}
 function bindWorkoutNavigation(){
  $('#workout-home').onclick=()=>{selectedPlan='';workoutView=null;setView('plans');};$('#other-plans').onclick=otherPlans;
 }
@@ -33,8 +33,9 @@ function renderWorkoutOverview(p){
   <section class="panel workout-overview"><p>${p.exercises.length} exercícios · ${esc(p.duration||'Duração ajustável')}</p>${p.warmup?`<p class="visible-warmup"><b>Aquecimento:</b> ${esc(p.warmup)}</p>`:''}
   <ol class="workout-prescription">${p.exercises.map(e=>`<li><b>${esc(e.name)}</b><span>${e.sets} × ${esc(targetLabel(e))}${Number.isFinite(e.restSeconds)?' · '+e.restSeconds+'s descanso':''}</span></li>`).join('')}</ol>
   <div class="home-actions"><button class="btn" id="start-session">${pending?'Retomar sessão':'Começar sessão'}</button><button class="btn secondary" id="workout-edit">Editar ficha</button></div>${workoutMetadata(p)}</section>
-  ${isCurrentCourse(p)?`<details class="panel proposal-help"><summary>Semanas e detalhes do programa</summary>${courseBoard(p)}<div class="plan-tabs">${courseTabs(p)}</div></details>`:''}`;
- bindWorkoutNavigation();$('#start-session').onclick=startWorkoutSession;$('#workout-edit').onclick=openWorkoutEditor;if(isCurrentCourse(p))bindCourse(p);
+  ${isCurrentCourse(p)?'<button class="btn secondary full" id="open-programme">Ver as 12 semanas do programa</button>':''}`;
+ bindWorkoutNavigation();$('#start-session').onclick=startWorkoutSession;$('#workout-edit').onclick=openWorkoutEditor;
+ if($('#open-programme'))$('#open-programme').onclick=()=>setView('program');
 }
 function renderWorkoutEditor(p){
  if(p.sessionOnly)return showWorkoutView('session');
