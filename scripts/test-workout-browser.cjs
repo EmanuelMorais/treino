@@ -39,7 +39,8 @@ async function main() {
   fs.mkdirSync(path.join(root, 'output/playwright'), {recursive:true});
   let opened = false;
   try {
-    await command(['open', url, '--browser', browser]);
+    // TREINO_TEST_CONFIG points at a playwright-cli config, for hosts that need launch flags.
+    await command(['open', url, '--browser', browser, ...(process.env.TREINO_TEST_CONFIG ? ['--config=' + process.env.TREINO_TEST_CONFIG] : [])]);
     opened = true;
     await command(['snapshot']);
     await command(['run-code', `async page => {
@@ -67,7 +68,6 @@ async function main() {
       await page.getByRole('button',{name:'Adicionar 2 exercícios',exact:true}).click();
       check(await page.locator('[data-field]').count()===0,'Plan editor exposes performed-set inputs');
       await page.getByRole('button',{name:'Concluir edição',exact:true}).click();await enterSession();
-      await page.getByRole('button',{name:'Ver todos os exercícios',exact:true}).click();
       const first=page.locator('article.exercise').filter({has:page.getByRole('heading',{name:'Peso morto romeno com halteres',exact:true})});
       await page.getByLabel('Carga, Peso morto romeno com halteres, série 1',{exact:true}).fill('10');
       await page.getByLabel('Repetições, Peso morto romeno com halteres, série 1',{exact:true}).fill('8');
@@ -83,12 +83,13 @@ async function main() {
       check(isolated.plans.find(p=>p.sessionOnly).exercises[0].target!=='6–10','Future edit changed the ongoing session');
       check(Object.values(isolated.drafts).some(d=>Object.values(d.rows).some(rows=>rows.some(r=>r.kg==='10'&&r.done))),'Future editing lost performed values');
       await first.getByRole('button',{name:'+ Adicionar série',exact:true}).click();
-      await first.locator('.session-exercise-options summary').click();
+      await first.locator('[data-menu]').click();
       await first.getByRole('button',{name:'Editar',exact:true}).click();
       await page.getByLabel('Medida',{exact:true}).selectOption('s');
       await page.getByRole('button',{name:'Guardar exercício',exact:true}).click();
       check((await page.locator('#exercise-error').innerText()).includes('séries preenchidas'),'Unit conversion was not blocked visibly');
       await page.getByRole('button',{name:'Cancelar',exact:true}).click();
+      await first.locator('[data-menu]').click();
       await first.getByRole('button',{name:'Retirar Peso morto romeno com halteres',exact:true}).click();
       check((await page.locator('#toast').innerText()).includes('séries preenchidas'),'Filled exercise removal was not blocked');
       await page.getByRole('button',{name:/Guardar sessão no histórico/}).click();
@@ -98,7 +99,7 @@ async function main() {
       check(saved.history[0].exercises[0].loadReference==='per_dumbbell','Load reference missing');
       check(saved.history[0].exercises[0].rows[0].kg==='10','Performed value changed');
       check(await page.evaluate(key=>validState(JSON.parse(localStorage.getItem(key))),${JSON.stringify(storageKey)}),'Saved document does not pass import validation');
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Hoje',exact:true}).click();
       await page.getByRole('button',{name:/^Treino fictício/}).click();await enterSession();
       check(await page.getByText(/Último registo/).count()>0,'Same-day history missing');
       await page.getByRole('button',{name:'Pesquisar demonstração ↗',exact:true}).first().click();
@@ -129,10 +130,10 @@ async function main() {
       await page.getByRole('checkbox',{name:/^Leg press/}).check();
       await page.getByRole('button',{name:'Adicionar 1 exercício',exact:true}).click();
       // A live substitution must preserve the entered block and isolate today.
-      await page.getByRole('button',{name:'Ver todos os exercícios',exact:true}).isVisible().then(visible=>visible?page.getByRole('button',{name:'Ver todos os exercícios',exact:true}).click():undefined);
       await page.getByLabel('Carga, Peso morto romeno com halteres, série 1',{exact:true}).fill('11');
       await page.getByLabel('Repetições, Peso morto romeno com halteres, série 1',{exact:true}).fill('8');
       await page.getByRole('button',{name:'Concluir série 1 de Peso morto romeno com halteres',exact:true}).click();
+      await first.locator('[data-menu]').click();
       await first.getByRole('button',{name:'Trocar',exact:true}).click();
       await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Ponte de glúteos com haltere');
       await page.getByRole('checkbox',{name:/^Ponte de glúteos com haltere/}).check();
@@ -146,16 +147,17 @@ async function main() {
       check(changed.drafts[execution.id].rows[execution.exercises[0].id][0].kg==='11','Entered weight was lost');
       check(changed.drafts[execution.id].rows[execution.exercises[1].id][0].kg==='','Replacement inherited another exercise weight');
       check(await page.evaluate(key=>validState(JSON.parse(localStorage.getItem(key))),${JSON.stringify(storageKey)}),'Replacement document failed validation');
-      await page.getByRole('button',{name:'Desfazer última troca',exact:true}).click();
+      await options();await page.getByRole('button',{name:'Desfazer última troca',exact:true}).click();
       changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
       check(changed.plans.some(p=>p.sessionOnly&&Object.values(changed.drafts[p.id].rows).some(rows=>rows.some(r=>r.kg==='11'))),'Undo lost the pre-existing session');
+      await first.locator('[data-menu]').click();
       await first.getByRole('button',{name:'Trocar',exact:true}).click();
       await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Ponte de glúteos com haltere');
       await page.getByRole('checkbox',{name:/^Ponte de glúteos com haltere/}).check();
       await page.getByRole('button',{name:'Continuar com a seleção',exact:true}).click();
       await page.getByRole('button',{name:'Aplicar substituição',exact:true}).click();
       await page.getByLabel('Repetições, Ponte de glúteos com haltere, série 1',{exact:true}).fill('1');
-      await page.getByRole('button',{name:'Desfazer última troca',exact:true}).click();
+      await options();await page.getByRole('button',{name:'Desfazer última troca',exact:true}).click();
       check((await page.locator('#toast').innerText()).includes('alterações posteriores'),'Undo discarded later entered values');
       await page.getByRole('button',{name:/Guardar sessão no histórico/}).click();
       changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
@@ -178,8 +180,9 @@ async function main() {
       await page.getByRole('button',{name:/Guardar alterações ao registo/}).click();
       changed=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
       check(changed.history[0].complete===true&&changed.history.length===recordCount,'Resuming remaining work did not complete the same session');
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Hoje',exact:true}).click();
       await page.getByRole('button',{name:/^Treino fictício/}).click();await enterSession();
+      await page.locator('[data-menu]').first().click();
       await page.getByRole('button',{name:'Trocar',exact:true}).first().click();
       await page.getByLabel('Pesquisar exercício',{exact:true}).fill('Ponte de glúteos com haltere');
       await page.getByRole('checkbox',{name:/^Ponte de glúteos com haltere/}).check();
@@ -197,7 +200,7 @@ async function main() {
       check(changed.history[0].exercises[0].name==='Peso morto romeno com halteres','Future swap rewrote a historical movement');
       // Exercise the real questionnaire submit/preview/activation with the shared catalogue.
       const priorPlans=changed.plans.length,priorHistory=changed.history.map(h=>h.id);
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
       await page.getByRole('button',{name:'Preencher questionário',exact:true}).click();
       check(await page.locator('.profile-section:visible').count()===1,'Questionnaire did not reveal one step at a time');
       await page.getByRole('button',{name:'Continuar →',exact:true}).click();
@@ -291,6 +294,7 @@ async function main() {
       check(draftProposal.plans.length===priorPlans,'Proposal edits changed active plans before confirmation');
       check(draftProposal.proposal.sessions.filter(s=>s.day===0).every(s=>s.exercises[1].id==='db-front-squat'&&s.exercises[1].target==='7–9'),'Proposal edit did not apply to the intended day/weeks');
       await page.getByRole('button',{name:'Fechar janela',exact:true}).click();await page.reload();
+      await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
       await page.getByRole('button',{name:'Rever proposta guardada',exact:true}).click();
       check((await page.locator('#dialog-content').innerText()).includes('7–9'),'Reopening regenerated away the personal dose');
       await page.getByRole('button',{name:'Corrigir respostas',exact:true}).click();
@@ -324,15 +328,15 @@ async function main() {
       check(await page.locator('[data-catalog-select]').count()===1,'Explicit full-catalogue search is inaccessible');
       await page.getByRole('button',{name:'Fechar janela',exact:true}).click();
       // An active programme revision preserves confirmed edits and saved sessions.
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Hoje',exact:true}).click();
       await page.locator('#active-program-week').selectOption('2');
-      await page.locator('[data-home-plan]').nth(1).click();await enterSession();
+      await page.locator('section:has(#active-program-week) [data-home-plan]').nth(1).click();await enterSession();
       await page.getByLabel('Repetições, Peso morto romeno em apoio desencontrado, série 1',{exact:true}).fill('8');
       await page.getByRole('button',{name:'Concluir série 1 de Peso morto romeno em apoio desencontrado',exact:true}).click();
       await page.getByRole('button',{name:/Guardar sessão no histórico/}).click();
       const beforeRevision=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
       const preservedRecord=JSON.stringify(beforeRevision.history[0]),preservedA=beforeRevision.plans.filter(p=>p.program?.day===0&&p.program.week>=2).map(p=>JSON.stringify(p));
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
       await page.getByRole('button',{name:'Editar questionário',exact:true}).click();
       await page.getByRole('button',{name:'2. Tempo e local',exact:true}).click();
       await page.getByLabel('Minutos por sessão',{exact:true}).fill('45');
@@ -358,7 +362,7 @@ async function main() {
       check(await page.evaluate(key=>validState(JSON.parse(localStorage.getItem(key))),${JSON.stringify(storageKey)}),'Revised document failed import validation');
       await page.reload();
       // A personal movement can declare its zone and true no-equipment requirement.
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
       await page.getByRole('button',{name:'+ Criar plano',exact:true}).click();
       await page.locator('#new-name').fill('Ficha pessoal fictícia');await page.getByRole('button',{name:'Criar treino',exact:true}).click();
       await addExercise();await page.getByText('Mais opções',{exact:true}).click();
@@ -376,7 +380,7 @@ async function main() {
       check(await page.evaluate(key=>validState(JSON.parse(localStorage.getItem(key))),${JSON.stringify(storageKey)}),'Personal movement failed document validation');
       // Sport context is private, explicit about support, and separate from performed work.
       const beforeContext=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),${JSON.stringify(storageKey)});
-      await page.getByRole('navigation').getByRole('button',{name:'Os meus treinos',exact:true}).click();
+      await page.getByRole('navigation').getByRole('button',{name:'Programa',exact:true}).click();
       await page.getByRole('button',{name:'Editar questionário',exact:true}).click();
       await page.getByRole('combobox',{name:'Este plano é para',exact:true}).selectOption('event');
       await page.getByRole('button',{name:'2. Tempo e local',exact:true}).click();
