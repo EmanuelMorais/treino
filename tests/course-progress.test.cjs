@@ -44,6 +44,18 @@ test('the session clock uses wall-clock timestamps and excludes paused time',()=
  assert.equal(course.clockMinutes(d,181000),2);assert.equal(course.clockMinutes({},5000),0);
  assert.equal(course.clockMinutes({startedAt:1,pausedMs:0},1+300*60000),240,'duration is capped at the record limit');
 });
+test('restarting the clock counts from zero again and clears a pause',()=>{
+ const d={};course.clockStart(d,1000);course.clockToggle(d,61000);
+ assert.equal(course.clockElapsed(d,500000),60,'paused before the restart');
+ course.clockReset(d,600000);
+ assert.equal(d.pausedAt,undefined,'a restart leaves the clock running');
+ assert.equal(course.clockElapsed(d,600000),0);
+ assert.equal(course.clockElapsed(d,660000),60,'counts from the restart, not from the first start');
+ assert.equal(course.validClock(d),true);
+ const cleared=course.clockReset({startedAt:1000,pausedMs:5},0);
+ assert.deepEqual(cleared,{},'without a time the clock goes back to never started');
+ assert.equal(course.clockMinutes(cleared,99000),0);
+});
 test('starting a session records its start time; corrections of saved sessions do not',()=>{
  const started=sessions.start(doc(),{planId:'demo4-w01-A',uid:()=>'run-2',date:'2026-11-12',week:1,now:5000});
  assert.equal(started.document.drafts['run-2'].startedAt,5000);assert.equal(contract.valid(started.document),true);
