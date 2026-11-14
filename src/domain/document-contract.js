@@ -53,6 +53,13 @@
     if(!safeKeys(doc)||!doc||doc.version!==1||!Array.isArray(doc.plans)||doc.plans.length>256||!Array.isArray(doc.history)||doc.history.length>10000||!Array.isArray(doc.favorites)||doc.favorites.length>1000||!doc.drafts||typeof doc.drafts!=='object'||Array.isArray(doc.drafts))return false;
     if(doc.courseWeek!==undefined&&(!Number.isInteger(doc.courseWeek)||doc.courseWeek<1||doc.courseWeek>12))return false;
     if(doc.courseSession!==undefined&&!SESSIONS.includes(doc.courseSession))return false;
+  if(doc.exerciseNotes!==undefined){
+   const notes=doc.exerciseNotes;
+   if(!notes||typeof notes!=='object'||Array.isArray(notes))return false;
+   const keys=Object.keys(notes);if(keys.length>200)return false;
+   for(const key of keys){if(key.length>120||typeof notes[key]!=='string'||!notes[key]||notes[key].length>300)return false;}
+  }
+  if(doc.recordExercise!==undefined&&!(typeof doc.recordExercise==='string'&&doc.recordExercise.length<=120))return false;
   if(doc.balance!==undefined){
    const b=doc.balance;
    if(!b||typeof b!=='object'||Array.isArray(b)||Object.keys(b).some(k=>!['goal','emphasis'].includes(k)))return false;

@@ -3,13 +3,19 @@
  const node=typeof module==='object'&&module.exports,records=node?require('./workout-records.js'):root.TreinoRecords;
  const copy=value=>JSON.parse(JSON.stringify(value));
  function hasValues(draft){return !!draft&&(!!draft.editHistoryId||!!draft.note||Object.values(draft.rows||{}).some(rows=>records.hasValues(rows)));}
- function start(document,{planId,uid,date,week,now}){
+ function start(document,{planId,uid,date,week,now,limit}){
   const next=copy(document),source=next.plans.find(p=>p.id===planId);if(!source)throw Error('A ficha já não está disponível.');
   if(source.sessionOnly)return {document:next,selectedPlanId:source.id};
   const pending=next.plans.find(p=>p.sessionOnly&&p.executionSourceId===source.id&&next.drafts[p.id]&&!next.drafts[p.id].editHistoryId);
   if(pending){if(hasValues(next.drafts[source.id]))throw Error('Existem duas sessões preenchidas para esta ficha. Guarda a sessão em curso antes de iniciar outra.');return {document:next,selectedPlanId:pending.id};}
   if(next.plans.length>=256)throw Error('Limite de fichas atingido. Exporta e revê o arquivo antes de iniciar outra sessão.');
   const session={...copy(source),id:uid(),sessionOnly:true,executionSourceId:source.id,primary:false,sourceExact:false};
+  if(Number.isInteger(limit)&&limit>0&&limit<session.exercises.length){
+   if(hasValues(next.drafts[source.id]))throw Error('Esta ficha já tem valores preenchidos. Guarda ou descarta antes de começar um treino curto.');
+   session.exercises=session.exercises.slice(0,limit);
+   session.name=source.name+' · curto';
+   session.duration='';
+  }
   const draft=copy(next.drafts[source.id]||{date,note:'',rows:{}});
   if(source.course){const courseWeek=week??source.course.week;if(!Number.isInteger(courseWeek)||courseWeek<1||courseWeek>12)throw Error('Semana do programa inválida.');draft.courseWeek||=courseWeek;}
   for(const e of session.exercises){e.exerciseKey||=records.exerciseKey(e,source.id);e.loadReference||=records.loadReference(e);draft.rows[e.id]||=Array.from({length:e.sets},()=>({kg:'',reps:'',done:false}));}

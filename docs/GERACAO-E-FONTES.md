@@ -63,3 +63,20 @@ Uma eventual IA futura pode ajudar na explicação ou pesquisa de conteúdo, mas
 Os alvos por objetivo são heurísticas da aplicação, não uma prescrição: massa muscular 10–20 séries efetivas por semana nos grupos grandes, força e os restantes objetivos 6–14, mobilidade 4–12; grupos pequenos (bíceps, tríceps, gémeos, core, pescoço) usam faixas mais baixas. A referência de partida são as recomendações ACSM de 2026 (cerca de 10 séries por grupo e cada grupo pelo menos 2 vezes por semana).
 
 O mesmo relatório calcula o volume **realizado** a partir do histórico (`performedVolume`), contando apenas as séries marcadas como feitas numa janela de datas. A ênfase escolhida passa os grupos da zona não enfatizada para uma faixa de manutenção (massa muscular 6–14 em vez de 10–20).
+
+## Demonstrações dos exercícios
+
+Cada exercício mostra duas fotografias — início e fim do movimento — que
+alternam no lugar. As imagens vêm de **free-exercise-db**
+(github.com/yuhonas/free-exercise-db), publicadas em domínio público ao abrigo
+da Unlicense. Foram recortadas para 4:3, reduzidas a 520 px e convertidas para
+WebP; ficam em `assets/demos/`.
+
+`src/data/exercise-photos.js` liga cada exercício do catálogo à sua pasta de
+origem. O mapa é verificado à mão: um exercício sem correspondência honesta
+fica de fora e recai na figura desenhada de `src/ui/movement-demos.js`. Hoje
+são 90 com fotografia e 3 com desenho.
+
+Ao acrescentar um exercício ao catálogo, procurar o nome em inglês no conjunto
+de origem e juntar a entrada ao mapa; sem correspondência, confirmar que o
+padrão de movimento tem figura desenhada.
