@@ -77,6 +77,7 @@ body:not([data-screen="me"]) .footer{display:none}
 .session-top-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .session-clock{position:static;display:inline-flex;align-items:baseline;gap:5px;margin:0;padding:0;background:none;color:var(--muted);border-radius:0;box-shadow:none}
 .session-clock b{font-size:15px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.session-clock i{font-style:normal}
 .session-finish{flex-shrink:0;min-height:44px;padding:0 18px;font-size:15px}
 .session-progress{height:4px;background:var(--line);margin:0 calc(-1 * var(--gutter)) 18px;overflow:hidden}
 .session-progress span{display:block;height:100%;width:0;background:var(--green);transition:width .25s}
