@@ -68,6 +68,13 @@
   else draft.pausedAt=now;
   return draft;
  }
+ // Back to zero and running, so a clock left going by mistake can be fixed mid-session.
+ function clockReset(draft,now){
+  if(!draft)return draft;
+  if(!isTime(now)){delete draft.startedAt;delete draft.pausedAt;delete draft.pausedMs;return draft;}
+  draft.startedAt=now;draft.pausedMs=0;delete draft.pausedAt;
+  return draft;
+ }
  function clockMinutes(draft,now){const seconds=clockElapsed(draft,now);return seconds?Math.min(240,Math.max(1,Math.round(seconds/60))):0;}
  function validClock(draft){
   if(!draft)return true;
@@ -76,6 +83,6 @@
   if(draft.pausedAt!==undefined&&draft.startedAt===undefined)return false;
   return true;
  }
- const api={sessionsOf,optionalOf,planId,after,next,skip,pick,available,counts,clockElapsed,clockStart,clockToggle,clockMinutes,validClock};
+ const api={sessionsOf,optionalOf,planId,after,next,skip,pick,available,counts,clockElapsed,clockStart,clockToggle,clockReset,clockMinutes,validClock};
  if(typeof module==='object'&&module.exports)module.exports=api;else root.TreinoCourse=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -74,7 +74,7 @@ function swapPlanExercise(before){
 function sessionTopHTML(p,d){
  // One fixed strip: where to go back, how long you have been at it, and how to stop.
  const paused=Number.isFinite(d.pausedAt),core=Number.isInteger(p.coreMinutes)&&p.coreMinutes>0?p.coreMinutes:0;
- const clock=d.editHistoryId?'<span>A corrigir um registo guardado</span>':`<span class="session-clock" id="session-clock" data-core="${core}" role="timer" aria-label="Tempo de sessão"><b id="session-clock-time">${formatTime(window.TreinoCourse.clockElapsed(d,Date.now()))}</b>${paused?' · em pausa':''}</span><span id="session-bar-label"></span>`;
+ const clock=d.editHistoryId?'<span>A corrigir um registo guardado</span>':`<span class="session-clock" id="session-clock" data-core="${core}" role="timer" aria-label="Tempo de sessão"><b id="session-clock-time">${formatTime(window.TreinoCourse.clockElapsed(d,Date.now()))}</b><i id="session-clock-note">${paused?' · em pausa':''}</i></span><span id="session-bar-label"></span>`;
  return `<header class="session-top"><button class="icon-btn" id="workout-home" aria-label="Voltar aos treinos; a sessão fica guardada">${icon('back')}</button>
  <div class="session-top-copy"><strong>${esc(p.shortTitle||p.name)}</strong><div class="session-top-meta">${clock}</div></div>
  <button class="btn lime session-finish" id="finish">${d.editHistoryId?'Guardar':'Terminar'}</button></header>
@@ -83,7 +83,8 @@ function sessionTopHTML(p,d){
 }
 function bindSessionClock(p,d){
  const button=$('#session-pause');if(!button)return;
- button.onclick=()=>{window.TreinoCourse.clockToggle(d,Date.now());if(Number.isFinite(d.pausedAt))releaseWakeLock();else requestWakeLock();persist();renderPlans();};
+ button.onclick=()=>{window.TreinoCourse.clockToggle(d,Date.now());if(Number.isFinite(d.pausedAt))releaseWakeLock();else requestWakeLock();persist();updateSessionClock();};
+ if($('#session-restart'))$('#session-restart').onclick=()=>{window.TreinoCourse.clockReset(d,Date.now());requestWakeLock();persist();updateSessionClock();toast('Cronómetro a contar de novo desde zero');};
  if(Number.isFinite(d.startedAt)&&!Number.isFinite(d.pausedAt))requestWakeLock();updateSessionClock();
 }
 function renderWorkoutSession(p){
@@ -93,7 +94,7 @@ function renderWorkoutSession(p){
   ${!d.editHistoryId&&warmupText(p)?`<section class="warmup-card"><div><b>Aquecimento</b><p>${esc(warmupText(p))}</p></div><button class="btn secondary" id="warmup-start">Contar 3 min</button></section>`:''}
   <div id="exercises" class="session-list">${p.exercises.map((e,i)=>exerciseHTML(e,i,d)).join('')}</div>
   <details class="session-more"><summary>Ajustes desta sessão</summary><div class="session-more-body">
-  <div class="home-actions"><button class="btn secondary" id="add-exercise">Adicionar exercício</button><button class="btn secondary" id="session-balance">Ver séries por músculo</button>${!d.editHistoryId?`<button class="btn secondary" id="session-pause">${!started?'Iniciar cronómetro':paused?'Retomar cronómetro':'Pausar cronómetro'}</button><button class="btn secondary" id="workout-edit">Editar ficha para próximas sessões</button><button class="btn secondary" id="discard-execution">Descartar ajustes desta sessão</button>`:''}${canUndoReplacement(p)?'<button class="btn secondary" id="undo-replacement">Desfazer última troca</button>':''}</div>
+  <div class="home-actions"><button class="btn secondary" id="add-exercise">Adicionar exercício</button><button class="btn secondary" id="session-balance">Ver séries por músculo</button>${!d.editHistoryId?`<button class="btn secondary" id="session-pause">${!started?'Iniciar cronómetro':paused?'Retomar cronómetro':'Pausar cronómetro'}</button><button class="btn secondary" id="session-restart"${started?'':' hidden'}>Reiniciar cronómetro</button><button class="btn secondary" id="workout-edit">Editar ficha para próximas sessões</button><button class="btn secondary" id="discard-execution">Descartar ajustes desta sessão</button>`:''}${canUndoReplacement(p)?'<button class="btn secondary" id="undo-replacement">Desfazer última troca</button>':''}</div>
   <div class="session-meta"><label>Data do treino<input type="date" id="session-date" value="${esc(d.date)}" required></label><label>Notas da sessão<input id="session-note" maxlength="2000" value="${esc(d.note)}"></label><label>Duração real · minutos<input id="session-duration" type="number" min="1" max="240" value="${esc(d.duration||'')}" placeholder="${started?'Vazio = tempo medido':'Opcional'}"></label></div>
   ${d.watch?`<p class="auth-note">Apple Watch: ${esc(d.watch.minutes)} min${Number.isInteger(d.watch.kcal)?' · '+esc(d.watch.kcal)+' kcal ativas':''}</p>`:''}
   <p class="auth-note">Guardado ao preencher. Podes sair e voltar sem perder nada.</p></div></details>
