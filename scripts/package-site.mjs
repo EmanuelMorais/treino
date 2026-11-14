@@ -26,6 +26,16 @@ export async function packageSite(root=project){
   if(asset==='config.js')await fs.writeFile(path.join(out,asset),'window.TREINO_CONFIG='+JSON.stringify(publicConfig(await fs.readFile(source,'utf8')))+';\n');
   else await fs.copyFile(source,path.join(out,asset));
  }
- return {out,assets:assets.size};
+ let media=0;
+ const demos=path.join(root,'assets','demos');
+ let entries=[];try{entries=await fs.readdir(demos);}catch(error){if(error.code!=='ENOENT')throw error;}
+ if(entries.length){
+  await fs.mkdir(path.join(out,'assets','demos'),{recursive:true});
+  for(const name of entries){
+   if(!/^[A-Za-z0-9_.()-]+\.webp$/.test(name))throw Error('Invalid demo asset: '+name);
+   await fs.copyFile(path.join(demos,name),path.join(out,'assets','demos',name));media++;
+  }
+ }
+ return {out,assets:assets.size,media};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))console.log(JSON.stringify(await packageSite()));

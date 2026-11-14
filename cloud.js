@@ -98,9 +98,16 @@
  const metaKey=id=>cacheKey(id)+'-sync';
  const snapshot=()=>JSON.parse(JSON.stringify(state));
  const readJSON=key=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
+ async function signOut(){
+  if(saving)return toast('Espera pela confirmação de gravação antes de sair.');if(dirty){await flush();if(dirty)return toast('Há registos por sincronizar. Exporta uma cópia e resolve a sincronização antes de sair.');}
+  const {error}=await client.auth.signOut({scope:'local'});if(error)return toast(error.message);closeModal();await enterAccount(null);
+ }
  function showStatus(title,detail,status='ok'){
   $('#sync-title').textContent=title;$('#sync-detail').textContent=detail;$('#sync-bar').dataset.status=status;
-  $('#account').textContent=authNeeded?'Renovar acesso':user?'A minha conta':'Entrar';$('#sync-now').hidden=!user;$('#online-backups').hidden=!user;
+  const signedIn=!!user&&!authNeeded;
+  $('#account').textContent=authNeeded?'Renovar acesso':user?'A minha conta':'Entrar';$('#account').classList?.toggle('secondary',signedIn);
+  if($('#signout'))$('#signout').hidden=!signedIn;
+  $('#sync-now').hidden=!user;$('#online-backups').hidden=!user;
  }
  function needAuth(){authNeeded=true;accountVerified=false;clearTimeout(timer);clearTimeout(retryTimer);stopAutoSync();setAccountAccess(false,'A sessão terminou. Entra novamente para continuar; os dados locais foram preservados.');showStatus('Renova o acesso para sincronizar','As alterações continuam guardadas neste navegador. Usa Renovar acesso; não é preciso apagar os dados.','error');}
  function writeMeta(){if(!user)return;try{localStorage.setItem(metaKey(user.id),JSON.stringify({revision:baseRevision,dirty,updatedAt:Date.now()}))}catch{showStatus('Cópia local sem espaço','Exporta uma cópia; a sincronização online será tentada.','error')}}
@@ -227,10 +234,7 @@
  }
  function authDialog(force=false){
   if(!configured){modal('Ligação online por configurar','<p>O site já guarda planos e registos neste navegador e permite exportar uma cópia. O login e a sincronização ainda aguardam a configuração do novo projeto Supabase.</p><p class="auth-note">Quando essa ligação estiver ativa, poderás entrar na mesma conta no computador e no telemóvel. Os registos locais existentes mantêm-se disponíveis.</p>');return}
-  if(user&&!force&&!authNeeded&&accountVerified){modal('A minha conta',`<p class="account-name">${esc(user.email||'Conta pessoal')}</p><p class="auth-note">Os planos, rascunhos e registos pertencem a esta conta. Para outra pessoa, termina a sessão e usa outro email.</p><div class="home-actions"><button class="btn" id="account-password">Definir / alterar palavra-passe</button><button class="btn secondary" id="account-sync">Sincronizar agora</button><button class="btn secondary" id="account-export">Exportar cópia</button><button class="btn secondary" id="account-signout">Terminar sessão</button></div>`);$('#account-password').onclick=()=>authUI.open({mode:'password',email:user.email||'',accountId:user.id});$('#account-export').onclick=downloadBackup;$('#account-sync').onclick=()=>{closeModal();syncNow()};$('#account-signout').onclick=async()=>{
-    if(saving)return toast('Espera pela confirmação de gravação antes de sair.');if(dirty){await flush();if(dirty)return toast('Há registos por sincronizar. Exporta uma cópia e resolve a sincronização antes de sair.');}
-    const {error}=await client.auth.signOut({scope:'local'});if(error)return toast(error.message);closeModal();await enterAccount(null);
-   };return}
+  if(user&&!force&&!authNeeded&&accountVerified){modal('A minha conta',`<p class="account-name">${esc(user.email||'Conta pessoal')}</p><p class="auth-note">Os planos, rascunhos e registos pertencem a esta conta. Para outra pessoa, termina a sessão e usa outro email.</p><div class="home-actions"><button class="btn" id="account-password">Definir / alterar palavra-passe</button><button class="btn secondary" id="account-sync">Sincronizar agora</button><button class="btn secondary" id="account-export">Exportar cópia</button><button class="btn secondary" id="account-signout">Terminar sessão</button></div>`);$('#account-password').onclick=()=>authUI.open({mode:'password',email:user.email||'',accountId:user.id});$('#account-export').onclick=downloadBackup;$('#account-sync').onclick=()=>{closeModal();syncNow()};$('#account-signout').onclick=signOut;return}
   const guestWarning=!user&&(state.history.length||state.plans.some(p=>!p.prepared&&!p.course&&!p.sourceExact))?'<p class="auth-note">Tens dados guardados sem conta. Exporta uma cópia antes de entrar e importa-a depois na conta pretendida.</p><button class="btn secondary" id="guest-export">Exportar antes de entrar</button>':'';
   authUI.open({email:user?.email||'',guestWarning});if($('#guest-export'))$('#guest-export').onclick=downloadBackup;
  }
@@ -252,7 +256,7 @@
  }
  window.TreinoCloud={changed,syncNow};
  $('#gate-login').onclick=()=>clientUpgradeNeeded?location.reload():user&&!authNeeded&&!accountVerified?enterAccount({user}):authDialog(true);
- $('#account').onclick=()=>authDialog();$('#sync-now').onclick=()=>syncNow();$('#online-backups').onclick=backupsDialog;
+ $('#account').onclick=()=>authDialog();if($('#signout'))$('#signout').onclick=signOut;$('#sync-now').onclick=()=>syncNow();$('#online-backups').onclick=backupsDialog;
  window.addEventListener('online',queueAutoSync);
  window.addEventListener('offline',()=>{if(user&&!conflict)showStatus('Sem ligação · cópia local',dirty?'Os dados serão enviados quando a ligação regressar.':'A última versão confirmada continua disponível neste navegador.')});
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dirty)flush();else if(document.visibilityState==='visible')queueAutoSync()});

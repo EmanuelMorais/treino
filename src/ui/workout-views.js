@@ -6,8 +6,19 @@ function adoptWorkoutCommand(command,mode){
  const before=state;state=command.document;if(!persist()){state=before;throw Error('Não foi possível guardar. A ficha anterior mantém-se.');}
  selectedPlan=command.selectedPlanId;workoutView={key:activeStorageKey,id:selectedPlan,mode};closeModal();renderPlans();
 }
-function startWorkoutSession(){
- if(!accountAccess)return;try{adoptWorkoutCommand(window.TreinoSessions.start(state,{planId:getPlan().id,uid,date:today(),week:courseWeek(getPlan()),now:Date.now()}),'session');requestWakeLock();}catch(error){toast(error.message);}
+function startWorkoutSession(limit){
+ if(!accountAccess)return;try{adoptWorkoutCommand(window.TreinoSessions.start(state,{planId:getPlan().id,uid,date:today(),week:courseWeek(getPlan()),now:Date.now(),limit:Number.isInteger(limit)?limit:undefined}),'session');requestWakeLock();}catch(error){toast(error.message);}
+}
+const SHORT_SESSION=3;
+function bindReviewSheets(p){
+ bindExerciseSheet();
+ document.querySelectorAll('.review-exercise').forEach((node,i)=>{const e=p.exercises[i];if(!e)return;node.querySelectorAll('[data-own-video]').forEach(b=>b.onclick=()=>exerciseForm(e));});
+}
+function warmupText(p){
+ if(p.warmup)return p.warmup;
+ const first=p.exercises.find(e=>!e.noLoad&&e.unit==='reps');
+ if(!first)return 'Três a cinco minutos a mexer as ancas, os ombros e a coluna antes da primeira série.';
+ return `Duas séries leves de ${first.name} antes da primeira série a sério, para subir a carga aos poucos.`;
 }
 function openWorkoutEditor(){
  if(!accountAccess)return;const p=getPlan(),id=p.executionSourceId||p.id;
@@ -29,12 +40,12 @@ function workoutMetadata(p){return `<details class="proposal-help"><summary>Orie
 function renderWorkoutOverview(p){
  setScreen('plan');
  const pending=state.plans.find(s=>s.sessionOnly&&s.executionSourceId===p.id&&state.drafts[s.id])||window.TreinoSessions.hasValues(state.drafts[p.id]);
- $('#content').innerHTML=heading(esc(p.name),'Revê o treino e começa quando estiveres pronto.')+workoutNavigation()+`
+ $('#content').innerHTML=heading(esc(p.name),'Abre cada exercício para ver o movimento. Começa quando quiseres.')+workoutNavigation()+`
   <section class="panel workout-overview"><p>${p.exercises.length} exercícios · ${esc(p.duration||'Duração ajustável')}</p>${p.warmup?`<p class="visible-warmup"><b>Aquecimento:</b> ${esc(p.warmup)}</p>`:''}
-  <ol class="workout-prescription">${p.exercises.map(e=>`<li><b>${esc(e.name)}</b><span>${e.sets} × ${esc(targetLabel(e))}${Number.isFinite(e.restSeconds)?' · '+e.restSeconds+'s descanso':''}</span></li>`).join('')}</ol>
-  <div class="home-actions"><button class="btn" id="start-session">${pending?'Retomar sessão':'Começar sessão'}</button><button class="btn secondary" id="workout-edit">Editar ficha</button></div>${workoutMetadata(p)}</section>
+  <ol class="workout-prescription review-list">${p.exercises.map((e,i)=>`<li><details class="review-exercise"><summary><span class="review-index">${i+1}</span><span class="review-copy"><b>${esc(e.name)}</b><span>${e.sets} × ${esc(targetLabel(e))}${Number.isFinite(e.restSeconds)?' · '+e.restSeconds+' s descanso':''}</span>${exerciseMuscles(e).length?`<small>${exerciseMuscles(e).map(esc).join(' · ')}</small>`:''}</span>${icon('chevron')}</summary><div class="review-sheet">${exerciseSheetHTML(e,{heading:false,muscles:false})}</div></details></li>`).join('')}</ol>
+  <div class="home-actions"><button class="btn" id="start-session">${pending?'Retomar sessão':'Começar sessão'}</button>${!pending&&p.exercises.length>SHORT_SESSION?`<button class="btn secondary" id="start-short">Treino curto · ${SHORT_SESSION} exercícios</button>`:''}<button class="btn secondary" id="workout-edit">Editar ficha</button></div>${workoutMetadata(p)}</section>
   ${isCurrentCourse(p)?'<button class="btn secondary full" id="open-programme">Ver as 12 semanas do programa</button>':''}`;
- bindWorkoutNavigation();$('#start-session').onclick=startWorkoutSession;$('#workout-edit').onclick=openWorkoutEditor;
+ bindWorkoutNavigation();$('#start-session').onclick=()=>startWorkoutSession();if($('#start-short'))$('#start-short').onclick=()=>startWorkoutSession(SHORT_SESSION);$('#workout-edit').onclick=openWorkoutEditor;bindReviewSheets(p);
  if($('#open-programme'))$('#open-programme').onclick=()=>setView('program');
 }
 function renderWorkoutEditor(p){
@@ -80,6 +91,7 @@ function renderWorkoutSession(p){
  setScreen('session');
  const d=getDraft(p),paused=Number.isFinite(d.pausedAt),started=Number.isFinite(d.startedAt);
  $('#content').innerHTML=sessionTopHTML(p,d)+`
+  ${!d.editHistoryId&&warmupText(p)?`<section class="warmup-card"><div><b>Aquecimento</b><p>${esc(warmupText(p))}</p></div><button class="btn secondary" id="warmup-start">Contar 3 min</button></section>`:''}
   <div id="exercises" class="session-list">${p.exercises.map((e,i)=>exerciseHTML(e,i,d)).join('')}</div>
   <details class="session-more"><summary>Ajustes desta sessão</summary><div class="session-more-body">
   <div class="home-actions"><button class="btn secondary" id="add-exercise">Adicionar exercício</button><button class="btn secondary" id="session-balance">Ver séries por músculo</button>${!d.editHistoryId?`<button class="btn secondary" id="session-pause">${!started?'Iniciar cronómetro':paused?'Retomar cronómetro':'Pausar cronómetro'}</button><button class="btn secondary" id="session-restart"${started?'':' hidden'}>Reiniciar cronómetro</button><button class="btn secondary" id="workout-edit">Editar ficha para próximas sessões</button><button class="btn secondary" id="discard-execution">Descartar ajustes desta sessão</button>`:''}${canUndoReplacement(p)?'<button class="btn secondary" id="undo-replacement">Desfazer última troca</button>':''}</div>
@@ -93,6 +105,7 @@ function renderWorkoutSession(p){
  $('#session-date').onchange=e=>{if(e.target.value){d.date=e.target.value;d.datePinned=true;persist();}};$('#session-note').oninput=e=>{d.note=e.target.value;persist();};$('#session-duration').oninput=e=>{if(e.target.checkValidity()){d.duration=e.target.value;persist();}};
  $('#finish').onclick=finishSession;$('#finish-bottom').onclick=finishSession;$('#add-exercise').onclick=()=>openExercisePicker();
  $('#session-balance').onclick=()=>setView('history');
+ if($('#warmup-start'))$('#warmup-start').onclick=()=>{startRest(180);toast('Aquecimento a contar. Começa quando estiveres pronto.');};
  if($('#cancel-edit'))$('#cancel-edit').onclick=()=>{delete state.drafts[p.id];if(p.sessionOnly)state.plans=state.plans.filter(plan=>plan.id!==p.id);persist();setView('history');};
  bindExercises();document.querySelectorAll('[data-variant]').forEach(button=>button.onclick=()=>changeVariant(p.exercises.find(e=>e.id===button.dataset.variant)));
  updateProgress();

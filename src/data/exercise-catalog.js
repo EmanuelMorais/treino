@@ -139,7 +139,7 @@
   // English names find more demonstrations; the search is opened only when the person asks.
   function searchQuery(exercise) {
     const definition = exercises.find(e => e.id === (exercise.libraryId || exercise.id));
-    return [exercise.name, definition?.aliases?.[0], 'execução técnica'].filter(Boolean).join(' ');
+    return ['como fazer', exercise.name, definition?.aliases?.[0], 'técnica'].filter(Boolean).join(' ');
   }
   const api = { VERSION: 1, EQUIPMENT, exercises, PATTERN_GUIDES, guide, searchQuery };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

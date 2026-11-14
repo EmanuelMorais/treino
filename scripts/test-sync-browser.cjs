@@ -48,7 +48,8 @@ async function main(){
    await page.locator('#plan-name').fill('Nome atualizado sem sair do campo');
    await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');
    await page.getByRole('navigation').getByRole('button',{name:'Perfil',exact:true}).click();
-   await page.getByRole('button',{name:'A minha conta',exact:true}).click();await page.getByRole('button',{name:'Terminar sessão',exact:true}).click();
+   if(!(await page.locator('#account').evaluate(e=>e.classList.contains('secondary'))))throw Error('Signed in, the account button must not look like a selected state');
+   await page.locator('#signout').click();
    await page.waitForFunction(()=>document.body.dataset.auth==='locked');if(await page.locator('#content').innerText())throw Error('Private cached data remained in the signed-out DOM');
    await page.getByRole('button',{name:'Entrar ou criar conta',exact:true}).click();await page.locator('#auth-email').fill('fixture-1@example.invalid');await page.locator('#auth-password').fill(${JSON.stringify(fixture.password)});await page.locator('#auth-submit').click();
    await page.waitForFunction(()=>document.body.dataset.auth==='ready');await page.waitForFunction(()=>document.querySelector('#sync-title').textContent==='Tudo guardado online');

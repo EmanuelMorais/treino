@@ -176,3 +176,76 @@ body[data-screen="session"] .main{padding-bottom:116px}
  .set-grid{grid-template-columns:24px minmax(0,1fr) 58px 58px 44px;gap:5px}
  .set-prev{font-size:11px}
 }
+
+/* --- Exercise sheet: demonstration, muscles, steps, videos ---------------- */
+.sheet-title{font-size:18px;margin-bottom:6px}
+.sheet-muscles{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.sheet-muscles span{font-size:12px;padding:4px 9px;border-radius:999px;background:var(--lime);color:var(--green);font-weight:600}
+.demo{margin:0 0 14px;padding:10px 12px 6px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.demo-figure{display:block;width:100%;max-width:260px;height:auto;margin:0 auto}
+.demo figcaption{font-size:12px;color:var(--muted);text-align:center;margin-top:4px}
+.demo-limb,.demo-torso{fill:none;stroke:var(--ink);stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.demo-head{fill:var(--ink)}
+.demo-floor{stroke:var(--line);stroke-width:2;stroke-linecap:round}
+.demo-prop{fill:var(--line)}
+.demo-weight{fill:var(--green);stroke:var(--green);stroke-width:6;stroke-linecap:round}
+.demo-band{fill:none;stroke:#8fb37a;stroke-width:2.5;stroke-dasharray:4 3;stroke-linecap:round}
+.exercise-videos{margin-top:12px}
+.exercise-videos .btn{min-height:44px}
+
+/* Workout review: one row per exercise, the sheet behind it. */
+.review-list{list-style:none;padding:0;margin:14px 0 18px;border-top:1px solid var(--line)}
+.review-list li{border-bottom:1px solid var(--line)}
+.review-exercise>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 2px;cursor:pointer}
+.review-exercise>summary::-webkit-details-marker{display:none}
+.review-exercise>summary .icon{flex-shrink:0;color:var(--muted);transform:rotate(-90deg);transition:transform .2s}
+.review-exercise[open]>summary .icon{transform:rotate(90deg)}
+.review-index{display:flex;align-items:center;justify-content:center;width:30px;height:30px;flex-shrink:0;border-radius:15px;background:var(--paper);color:var(--ink);font-size:13px;font-weight:700}
+.review-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.review-copy b{font-size:15px}
+.review-copy>span{font-size:13px;color:var(--muted)}
+.review-copy small{font-size:12px;color:var(--green)}
+.review-sheet{padding:4px 2px 18px 44px}
+@media(max-width:760px){.review-sheet{padding-left:2px}}
+
+/* Photographed demonstration: two frames alternating in place. */
+.demo-photo{padding:0;overflow:hidden}
+.demo-frames{position:relative;aspect-ratio:4/3;background:var(--paper)}
+.demo-frames img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.demo-frame-end{animation:demo-swap 2.4s steps(1,end) infinite}
+@keyframes demo-swap{0%,50%{opacity:0}50.01%,100%{opacity:1}}
+.demo-photo figcaption{padding:7px 10px}
+.demo-photo.is-still .demo-frames{display:grid;grid-template-columns:1fr 1fr;aspect-ratio:8/3}
+.demo-photo.is-still .demo-frames img{position:static}
+.demo-photo.is-still .demo-frame-end{animation:none;opacity:1}
+@media(prefers-reduced-motion:reduce){.demo-frame-end{animation:none}}
+
+/* What to aim for this set, from the last time the exercise was logged. */
+.suggestion{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 8px;font-size:13px}
+.suggestion b{padding:4px 10px;border-radius:999px;background:var(--lime);color:var(--green);font-weight:700}
+.suggestion.down b{background:#f6e2cf;color:#8a4a14}
+.suggestion.hold b{background:var(--paper);color:var(--muted)}
+.suggestion .mini{min-height:44px;padding:0 6px;font-size:12px}
+
+/* Records: the two bests and the load curve. */
+.records-panel{margin-bottom:18px}
+.records-panel .program-select{display:block;margin-bottom:14px}
+.records-stats{margin-bottom:14px}
+.records-stats .stat span{font-size:11px;line-height:1.35}
+.load-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.load-chart path{fill:none;stroke:var(--green);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.load-chart circle{fill:var(--green)}
+.load-chart-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+
+/* Warm-up, at the top of the session, before the first set. */
+.warmup-card{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:13px 16px;
+ border:1px solid var(--line);border-radius:14px;background:#fff}
+.warmup-card>div{flex:1;min-width:180px}
+.warmup-card b{font-size:14px}
+.warmup-card p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.warmup-card .btn{min-height:44px;flex-shrink:0}
+
+/* A note you left yourself on an exercise. */
+.exercise-note{display:flex;gap:8px;align-items:flex-start;margin:2px 0 8px;padding:8px 11px;border-radius:10px;
+ background:var(--paper);font-size:13px}
+.exercise-note b{color:var(--green);flex-shrink:0}
